@@ -310,7 +310,7 @@ export default function HomeScreen() {
             onPress={() => navigation.navigate(getAddScreen())}
             className="border border-terminal-border px-4 py-2"
           >
-            <TerminalText>ADD {activeTab.toUpperCase()}</TerminalText>
+            <TerminalText className="text-2xl">+</TerminalText>
           </TouchableOpacity>
         </View>
       </View>
