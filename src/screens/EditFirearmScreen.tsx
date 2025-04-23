@@ -46,6 +46,7 @@ export default function EditFirearmScreen() {
 
   const fetchFirearm = async () => {
     try {
+      setLoading(true);
       const data = await api.getFirearm(route.params!.id);
       setFormData({
         modelName: data.modelName,
@@ -57,6 +58,8 @@ export default function EditFirearmScreen() {
     } catch (error) {
       console.error("Error fetching firearm:", error);
       Alert.alert("Error", "Failed to load firearm data");
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -95,13 +95,43 @@ export const api = {
   // Get a single firearm
   getFirearm: async (id: string): Promise<Firearm> => {
     try {
-      const response = await fetch(`${API_URL}/firearms/${id}`);
+      console.log("Making API request to:", `${API_URL}/firearms/${id}`);
+
+      const response = await fetchWithTimeout(
+        `${API_URL}/firearms/${id}`,
+        {
+          method: "GET",
+          headers: defaultHeaders,
+        },
+        10000 // 10 second timeout
+      );
+      console.log("API Response status:", response.status);
+
       if (!response.ok) {
-        throw new Error("Failed to fetch firearm");
+        const errorText = await response.text();
+        console.error("API Error response:", errorText);
+        throw new Error(
+          `Failed to fetch firearm: ${response.status} ${errorText}`
+        );
       }
-      return await response.json();
+
+      const data = await response.json();
+      console.log("API Response data:", data);
+
+      return data;
     } catch (error) {
       console.error("Error fetching firearm:", error);
+      if (error instanceof TypeError) {
+        if (error.message === "Network request failed") {
+          throw new Error(
+            "Cannot connect to the server. Please check if the server is running and accessible."
+          );
+        } else if (error.name === "AbortError") {
+          throw new Error(
+            "Request timed out. Please check your connection and try again."
+          );
+        }
+      }
       throw error;
     }
   },

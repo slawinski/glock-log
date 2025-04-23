@@ -18,36 +18,11 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
   "Home"
 >;
 
-// Mock data for testing
-const mockFirearms: Firearm[] = [
-  {
-    id: "1",
-    modelName: "Glock 19",
-    caliber: "9mm",
-    datePurchased: new Date("2023-01-15"),
-    amountPaid: 599.99,
-    photos: [],
-    createdAt: new Date("2023-01-15"),
-    updatedAt: new Date("2023-01-15"),
-  },
-  {
-    id: "2",
-    modelName: "Glock 17",
-    caliber: "9mm",
-    datePurchased: new Date("2023-03-20"),
-    amountPaid: 549.99,
-    photos: [],
-    createdAt: new Date("2023-03-20"),
-    updatedAt: new Date("2023-03-20"),
-  },
-];
-
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [firearms, setFirearms] = useState<Firearm[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [useMockData, setUseMockData] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
 
   // Fetch firearms when the screen is focused
@@ -82,11 +57,6 @@ export default function HomeScreen() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const useSampleData = () => {
-    setFirearms(mockFirearms);
-    setError(null);
   };
 
   const renderFirearmItem = ({ item }: { item: Firearm }) => (
@@ -137,20 +107,12 @@ export default function HomeScreen() {
           <TerminalText className="text-terminal-error text-center mb-4">
             {error}
           </TerminalText>
-          <View className="flex-row space-x-2">
-            <TouchableOpacity
-              onPress={fetchFirearms}
-              className="border border-terminal-border px-4 py-2"
-            >
-              <TerminalText>RETRY</TerminalText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={useSampleData}
-              className="border border-terminal-border px-4 py-2"
-            >
-              <TerminalText>USE SAMPLE DATA</TerminalText>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            onPress={fetchFirearms}
+            className="border border-terminal-border px-4 py-2"
+          >
+            <TerminalText>RETRY</TerminalText>
+          </TouchableOpacity>
         </View>
       ) : firearms.length === 0 ? (
         <View className="flex-1 justify-center items-center p-4">
@@ -160,20 +122,12 @@ export default function HomeScreen() {
           <TerminalText className="text-terminal-dim text-center mb-6">
             INITIALIZE DATABASE WITH NEW ENTRY
           </TerminalText>
-          <View className="flex-row space-x-2">
-            <TouchableOpacity
-              onPress={() => navigation.navigate("AddFirearm")}
-              className="border border-terminal-border px-6 py-3"
-            >
-              <TerminalText>ADD FIREARM</TerminalText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={useSampleData}
-              className="border border-terminal-border px-6 py-3"
-            >
-              <TerminalText>LOAD SAMPLE DATA</TerminalText>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("AddFirearm")}
+            className="border border-terminal-border px-6 py-3"
+          >
+            <TerminalText>ADD FIREARM</TerminalText>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
