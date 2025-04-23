@@ -15,6 +15,7 @@ import { RootStackParamList } from "../../App";
 import { format } from "date-fns";
 import { api } from "../services/api";
 import { Firearm } from "../types/firearm";
+import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -83,90 +84,105 @@ export default function FirearmDetailsScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-100">
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View className="flex-1 justify-center items-center bg-terminal-bg">
+        <ActivityIndicator size="large" color="#00ff00" />
+        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
       </View>
     );
   }
 
   if (error || !firearm) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-100">
-        <Text className="text-red-500 text-lg">
-          {error || "Firearm not found"}
-        </Text>
+      <View className="flex-1 justify-center items-center bg-terminal-bg">
+        <TerminalText className="text-terminal-error text-lg">
+          {error || "ENTRY NOT FOUND"}
+        </TerminalText>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-100">
+    <ScrollView className="flex-1 bg-terminal-bg">
       <View className="p-4">
-        <View className="bg-white rounded-lg p-4 mb-4">
-          <Text className="text-2xl font-bold mb-2">{firearm.modelName}</Text>
-          <Text className="text-lg text-gray-600 mb-4">{firearm.caliber}</Text>
+        <Terminal title="DATABASE ENTRY">
+          <View className="mb-4">
+            <TerminalText className="text-2xl mb-2">
+              {firearm.modelName}
+            </TerminalText>
+            <TerminalText className="text-lg text-terminal-dim mb-4">
+              {firearm.caliber}
+            </TerminalText>
 
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-600">Date Purchased:</Text>
-            <Text className="font-semibold">
-              {format(firearm.datePurchased, "MMM dd, yyyy")}
-            </Text>
+            <View className="flex-row justify-between mb-2">
+              <TerminalText className="text-terminal-dim">
+                DATE PURCHASED:
+              </TerminalText>
+              <TerminalText>
+                {format(firearm.datePurchased, "MMM dd, yyyy")}
+              </TerminalText>
+            </View>
+
+            <View className="flex-row justify-between mb-2">
+              <TerminalText className="text-terminal-dim">
+                AMOUNT PAID:
+              </TerminalText>
+              <TerminalText>${firearm.amountPaid.toFixed(2)}</TerminalText>
+            </View>
+
+            <View className="flex-row justify-between mb-2">
+              <TerminalText className="text-terminal-dim">
+                ROUNDS FIRED:
+              </TerminalText>
+              <TerminalText>{firearm.roundsFired}</TerminalText>
+            </View>
+
+            <View className="flex-row justify-between">
+              <TerminalText className="text-terminal-dim">
+                ROUNDS IN INVENTORY:
+              </TerminalText>
+              <TerminalText>{firearm.totalRoundsInInventory}</TerminalText>
+            </View>
           </View>
 
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-600">Amount Paid:</Text>
-            <Text className="font-semibold">
-              ${firearm.amountPaid.toFixed(2)}
-            </Text>
-          </View>
-
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-600">Rounds Fired:</Text>
-            <Text className="font-semibold">{firearm.roundsFired}</Text>
+          <View className="mb-4">
+            <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
+            <View className="flex-row flex-wrap">
+              {firearm.photos.length > 0 ? (
+                firearm.photos.map((photo, index) => (
+                  <Image
+                    key={index}
+                    source={{ uri: photo }}
+                    className="w-32 h-32 m-1 border border-terminal-border"
+                  />
+                ))
+              ) : (
+                <TerminalText className="text-terminal-dim">
+                  NO PHOTOS AVAILABLE
+                </TerminalText>
+              )}
+            </View>
           </View>
 
           <View className="flex-row justify-between">
-            <Text className="text-gray-600">Rounds in Inventory:</Text>
-            <Text className="font-semibold">
-              {firearm.totalRoundsInInventory}
-            </Text>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("EditFirearm", { id: firearm.id })
+              }
+              className="border border-terminal-border p-4 flex-1 mr-2"
+            >
+              <TerminalText>EDIT</TerminalText>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleDelete}
+              className="border border-terminal-error p-4 flex-1 ml-2"
+            >
+              <TerminalText className="text-terminal-error">
+                DELETE
+              </TerminalText>
+            </TouchableOpacity>
           </View>
-        </View>
-
-        <View className="bg-white rounded-lg p-4 mb-4">
-          <Text className="text-lg font-semibold mb-2">Photos</Text>
-          <View className="flex-row flex-wrap">
-            {firearm.photos.length > 0 ? (
-              firearm.photos.map((photo, index) => (
-                <Image
-                  key={index}
-                  source={{ uri: photo }}
-                  className="w-32 h-32 m-1 rounded-lg"
-                />
-              ))
-            ) : (
-              <Text className="text-gray-500">No photos available</Text>
-            )}
-          </View>
-        </View>
-
-        <View className="flex-row justify-between">
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("EditFirearm", { id: firearm.id })
-            }
-            className="bg-accent p-4 rounded-lg flex-1 mr-2"
-          >
-            <Text className="text-white text-center font-semibold">Edit</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={handleDelete}
-            className="bg-red-500 p-4 rounded-lg flex-1 ml-2"
-          >
-            <Text className="text-white text-center font-semibold">Delete</Text>
-          </TouchableOpacity>
-        </View>
+        </Terminal>
       </View>
     </ScrollView>
   );

@@ -16,6 +16,7 @@ import { RootStackParamList } from "../../App";
 import * as ImagePicker from "react-native-image-picker";
 import { FirearmInput } from "../types/firearm";
 import { api } from "../services/api";
+import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
 
 type EditFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -111,137 +112,154 @@ export default function EditFirearmScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-100">
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View className="flex-1 justify-center items-center bg-terminal-bg">
+        <ActivityIndicator size="large" color="#00ff00" />
+        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-100">
-        <Text className="text-red-500 text-lg">{error}</Text>
+      <View className="flex-1 justify-center items-center bg-terminal-bg">
+        <TerminalText className="text-terminal-error text-lg">
+          {error}
+        </TerminalText>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-100">
+    <ScrollView className="flex-1 bg-terminal-bg">
       <View className="p-4">
-        <View className="bg-white rounded-lg p-4 mb-4">
-          <Text className="text-lg font-semibold mb-2">Model Information</Text>
-          <TextInput
-            className="border border-gray-300 rounded-lg p-2 mb-2"
-            placeholder="Model Name"
-            value={formData.modelName}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, modelName: text }))
-            }
-          />
-          <TextInput
-            className="border border-gray-300 rounded-lg p-2"
-            placeholder="Caliber"
-            value={formData.caliber}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, caliber: text }))
-            }
-          />
-        </View>
-
-        <View className="bg-white rounded-lg p-4 mb-4">
-          <Text className="text-lg font-semibold mb-2">Purchase Details</Text>
-          <TextInput
-            className="border border-gray-300 rounded-lg p-2 mb-2"
-            placeholder="Amount Paid"
-            keyboardType="numeric"
-            value={formData.amountPaid.toString()}
-            onChangeText={(text) =>
-              setFormData((prev) => ({
-                ...prev,
-                amountPaid: parseFloat(text) || 0,
-              }))
-            }
-          />
-          <TextInput
-            className="border border-gray-300 rounded-lg p-2"
-            placeholder="Date Purchased (YYYY-MM-DD)"
-            value={formData.datePurchased.toISOString().split("T")[0]}
-            onChangeText={(text) =>
-              setFormData((prev) => ({
-                ...prev,
-                datePurchased: new Date(text),
-              }))
-            }
-          />
-        </View>
-
-        <View className="bg-white rounded-lg p-4 mb-4">
-          <Text className="text-lg font-semibold mb-2">Ammunition</Text>
-          <TextInput
-            className="border border-gray-300 rounded-lg p-2 mb-2"
-            placeholder="Rounds Fired"
-            keyboardType="numeric"
-            value={formData.roundsFired.toString()}
-            onChangeText={(text) =>
-              setFormData((prev) => ({
-                ...prev,
-                roundsFired: parseInt(text) || 0,
-              }))
-            }
-          />
-          <TextInput
-            className="border border-gray-300 rounded-lg p-2"
-            placeholder="Total Rounds in Inventory"
-            keyboardType="numeric"
-            value={formData.totalRoundsInInventory.toString()}
-            onChangeText={(text) =>
-              setFormData((prev) => ({
-                ...prev,
-                totalRoundsInInventory: parseInt(text) || 0,
-              }))
-            }
-          />
-        </View>
-
-        <View className="bg-white rounded-lg p-4 mb-4">
-          <Text className="text-lg font-semibold mb-2">Photos</Text>
-          <TouchableOpacity
-            onPress={handleImagePick}
-            className="bg-accent p-3 rounded-lg mb-2"
-          >
-            <Text className="text-white text-center">Add Photo</Text>
-          </TouchableOpacity>
-          <View className="flex-row flex-wrap">
-            {formData.photos.map((photo, index) => (
-              <View key={index} className="relative">
-                <Image
-                  source={{ uri: photo }}
-                  className="w-20 h-20 m-1 rounded-lg"
-                />
-                <TouchableOpacity
-                  onPress={() => handleDeletePhoto(index)}
-                  className="absolute top-0 right-0 bg-red-500 rounded-full w-6 h-6 items-center justify-center"
-                >
-                  <Text className="text-white">×</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
+        <Terminal title="EDIT ENTRY">
+          <View className="mb-4">
+            <TerminalText className="text-lg mb-2">
+              MODEL INFORMATION
+            </TerminalText>
+            <TextInput
+              className="bg-terminal-bg border border-terminal-border p-2 mb-2 text-terminal-text font-terminal"
+              placeholder="Model Name"
+              placeholderTextColor="#003300"
+              value={formData.modelName}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, modelName: text }))
+              }
+            />
+            <TextInput
+              className="bg-terminal-bg border border-terminal-border p-2 text-terminal-text font-terminal"
+              placeholder="Caliber"
+              placeholderTextColor="#003300"
+              value={formData.caliber}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, caliber: text }))
+              }
+            />
           </View>
-        </View>
 
-        <TouchableOpacity
-          onPress={handleSubmit}
-          disabled={saving}
-          className={`${saving ? "bg-gray-400" : "bg-primary"} p-4 rounded-lg`}
-        >
-          {saving ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="text-white text-center font-semibold">
-              Save Changes
-            </Text>
-          )}
-        </TouchableOpacity>
+          <View className="mb-4">
+            <TerminalText className="text-lg mb-2">
+              PURCHASE DETAILS
+            </TerminalText>
+            <TextInput
+              className="bg-terminal-bg border border-terminal-border p-2 mb-2 text-terminal-text font-terminal"
+              placeholder="Amount Paid"
+              placeholderTextColor="#003300"
+              keyboardType="numeric"
+              value={formData.amountPaid.toString()}
+              onChangeText={(text) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  amountPaid: parseFloat(text) || 0,
+                }))
+              }
+            />
+            <TextInput
+              className="bg-terminal-bg border border-terminal-border p-2 text-terminal-text font-terminal"
+              placeholder="Date Purchased (YYYY-MM-DD)"
+              placeholderTextColor="#003300"
+              value={formData.datePurchased.toISOString().split("T")[0]}
+              onChangeText={(text) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  datePurchased: new Date(text),
+                }))
+              }
+            />
+          </View>
+
+          <View className="mb-4">
+            <TerminalText className="text-lg mb-2">AMMUNITION</TerminalText>
+            <TextInput
+              className="bg-terminal-bg border border-terminal-border p-2 mb-2 text-terminal-text font-terminal"
+              placeholder="Rounds Fired"
+              placeholderTextColor="#003300"
+              keyboardType="numeric"
+              value={formData.roundsFired.toString()}
+              onChangeText={(text) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  roundsFired: parseInt(text) || 0,
+                }))
+              }
+            />
+            <TextInput
+              className="bg-terminal-bg border border-terminal-border p-2 text-terminal-text font-terminal"
+              placeholder="Total Rounds in Inventory"
+              placeholderTextColor="#003300"
+              keyboardType="numeric"
+              value={formData.totalRoundsInInventory.toString()}
+              onChangeText={(text) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  totalRoundsInInventory: parseInt(text) || 0,
+                }))
+              }
+            />
+          </View>
+
+          <View className="mb-4">
+            <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
+            <TouchableOpacity
+              onPress={handleImagePick}
+              className="border border-terminal-border p-3 mb-2"
+            >
+              <TerminalText>ADD PHOTO</TerminalText>
+            </TouchableOpacity>
+            <View className="flex-row flex-wrap">
+              {formData.photos.map((photo, index) => (
+                <View key={index} className="relative">
+                  <Image
+                    source={{ uri: photo }}
+                    className="w-20 h-20 m-1 border border-terminal-border"
+                  />
+                  <TouchableOpacity
+                    onPress={() => handleDeletePhoto(index)}
+                    className="absolute top-0 right-0 border border-terminal-error bg-terminal-bg w-6 h-6 items-center justify-center"
+                  >
+                    <TerminalText className="text-terminal-error">
+                      ×
+                    </TerminalText>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={saving}
+            className={`border border-terminal-border p-4 ${
+              saving ? "opacity-50" : ""
+            }`}
+          >
+            {saving ? (
+              <ActivityIndicator color="#00ff00" />
+            ) : (
+              <TerminalText>SAVE CHANGES</TerminalText>
+            )}
+          </TouchableOpacity>
+        </Terminal>
       </View>
     </ScrollView>
   );

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, ScrollView } from "react-native";
 import { FirearmStats } from "../types/firearm";
+import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
 
 // Temporary mock data - will be replaced with actual data from the database
 const mockStats: FirearmStats = {
@@ -14,57 +15,69 @@ export default function StatsScreen() {
   const stats = mockStats; // TODO: Fetch actual stats from the database
 
   return (
-    <ScrollView className="flex-1 bg-gray-100">
+    <ScrollView className="flex-1 bg-terminal-bg">
       <View className="p-4">
-        <View className="bg-white rounded-lg p-4 mb-4">
-          <Text className="text-2xl font-bold mb-4">Collection Overview</Text>
+        <Terminal title="SYSTEM STATISTICS">
+          <View className="mb-4">
+            <TerminalText className="text-2xl mb-4">
+              COLLECTION OVERVIEW
+            </TerminalText>
 
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-600">Total Firearms:</Text>
-            <Text className="font-semibold">{stats.totalFirearms}</Text>
+            <View className="flex-row justify-between mb-2">
+              <TerminalText className="text-terminal-dim">
+                TOTAL FIREARMS:
+              </TerminalText>
+              <TerminalText>{stats.totalFirearms}</TerminalText>
+            </View>
+
+            <View className="flex-row justify-between mb-2">
+              <TerminalText className="text-terminal-dim">
+                TOTAL VALUE:
+              </TerminalText>
+              <TerminalText>${stats.totalValue.toFixed(2)}</TerminalText>
+            </View>
+
+            <View className="flex-row justify-between mb-2">
+              <TerminalText className="text-terminal-dim">
+                TOTAL ROUNDS:
+              </TerminalText>
+              <TerminalText>{stats.totalRounds}</TerminalText>
+            </View>
+
+            <View className="flex-row justify-between">
+              <TerminalText className="text-terminal-dim">
+                MOST USED CALIBER:
+              </TerminalText>
+              <TerminalText>{stats.mostUsedCaliber}</TerminalText>
+            </View>
           </View>
 
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-600">Total Value:</Text>
-            <Text className="font-semibold">
-              ${stats.totalValue.toFixed(2)}
-            </Text>
+          <View className="mb-4">
+            <TerminalText className="text-lg mb-2">
+              VALUE BREAKDOWN
+            </TerminalText>
+            <View className="h-40 border border-terminal-border mb-2">
+              {/* TODO: Add chart visualization */}
+            </View>
+            <TerminalText className="text-terminal-dim text-center">
+              AVERAGE VALUE PER FIREARM: $
+              {(stats.totalValue / stats.totalFirearms).toFixed(2)}
+            </TerminalText>
           </View>
 
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-600">Total Rounds:</Text>
-            <Text className="font-semibold">{stats.totalRounds}</Text>
+          <View>
+            <TerminalText className="text-lg mb-2">
+              AMMUNITION OVERVIEW
+            </TerminalText>
+            <View className="h-40 border border-terminal-border mb-2">
+              {/* TODO: Add chart visualization */}
+            </View>
+            <TerminalText className="text-terminal-dim text-center">
+              AVERAGE ROUNDS PER FIREARM:{" "}
+              {Math.round(stats.totalRounds / stats.totalFirearms)}
+            </TerminalText>
           </View>
-
-          <View className="flex-row justify-between">
-            <Text className="text-gray-600">Most Used Caliber:</Text>
-            <Text className="font-semibold">{stats.mostUsedCaliber}</Text>
-          </View>
-        </View>
-
-        <View className="bg-white rounded-lg p-4 mb-4">
-          <Text className="text-lg font-semibold mb-2">Value Breakdown</Text>
-          <View className="h-40 bg-gray-200 rounded-lg mb-2">
-            {/* TODO: Add chart visualization */}
-          </View>
-          <Text className="text-gray-500 text-center">
-            Average value per firearm: $
-            {(stats.totalValue / stats.totalFirearms).toFixed(2)}
-          </Text>
-        </View>
-
-        <View className="bg-white rounded-lg p-4">
-          <Text className="text-lg font-semibold mb-2">
-            Ammunition Overview
-          </Text>
-          <View className="h-40 bg-gray-200 rounded-lg mb-2">
-            {/* TODO: Add chart visualization */}
-          </View>
-          <Text className="text-gray-500 text-center">
-            Average rounds per firearm:{" "}
-            {Math.round(stats.totalRounds / stats.totalFirearms)}
-          </Text>
-        </View>
+        </Terminal>
       </View>
     </ScrollView>
   );

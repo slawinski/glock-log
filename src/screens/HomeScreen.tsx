@@ -11,6 +11,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
 import { Firearm } from "../types/firearm";
 import { api } from "../services/api";
+import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -92,89 +93,89 @@ export default function HomeScreen() {
   const renderFirearmItem = ({ item }: { item: Firearm }) => (
     <TouchableOpacity
       onPress={() => navigation.navigate("FirearmDetails", { id: item.id })}
-      className="bg-white p-4 mb-2 rounded-lg shadow-sm"
+      className="bg-terminal-bg border border-terminal-border p-4 mb-2"
     >
       <View className="flex-row justify-between items-center">
         <View>
-          <Text className="text-lg font-bold text-gray-800">
-            {item.modelName}
-          </Text>
-          <Text className="text-gray-600">{item.caliber}</Text>
+          <TerminalText className="text-lg">{item.modelName}</TerminalText>
+          <TerminalText className="text-terminal-dim">
+            {item.caliber}
+          </TerminalText>
         </View>
         <View className="items-end">
-          <Text className="text-gray-600">
+          <TerminalText className="text-terminal-dim">
             Rounds: {item.totalRoundsInInventory}
-          </Text>
-          <Text className="text-gray-600">Fired: {item.roundsFired}</Text>
+          </TerminalText>
+          <TerminalText className="text-terminal-dim">
+            Fired: {item.roundsFired}
+          </TerminalText>
         </View>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <View className="flex-1 bg-gray-100">
-      <View className="flex-row justify-between p-4 bg-white shadow-sm">
+    <View className="flex-1 bg-terminal-bg p-4">
+      <View className="flex-row justify-between mb-4">
         <TouchableOpacity
           onPress={() => navigation.navigate("Stats")}
-          className="bg-primary px-4 py-2 rounded-lg"
+          className="border border-terminal-border px-4 py-2"
         >
-          <Text className="text-white font-semibold">Stats</Text>
+          <TerminalText>STATS</TerminalText>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => navigation.navigate("AddFirearm")}
-          className="bg-accent px-4 py-2 rounded-lg"
+          className="border border-terminal-border px-4 py-2"
         >
-          <Text className="text-white font-semibold">Add Firearm</Text>
+          <TerminalText>ADD FIREARM</TerminalText>
         </TouchableOpacity>
       </View>
 
       {loading ? (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#0284c7" />
-          <Text className="mt-4 text-gray-600">Loading firearms...</Text>
+          <ActivityIndicator color="#00ff00" size="large" />
+          <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
         </View>
       ) : error ? (
         <View className="flex-1 justify-center items-center p-4">
-          <Text className="text-red-500 text-center mb-4">{error}</Text>
+          <TerminalText className="text-terminal-error text-center mb-4">
+            {error}
+          </TerminalText>
           <View className="flex-row space-x-2">
             <TouchableOpacity
               onPress={fetchFirearms}
-              className="bg-accent px-4 py-2 rounded-lg"
+              className="border border-terminal-border px-4 py-2"
             >
-              <Text className="text-white font-semibold">Retry</Text>
+              <TerminalText>RETRY</TerminalText>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={useSampleData}
-              className="bg-primary px-4 py-2 rounded-lg"
+              className="border border-terminal-border px-4 py-2"
             >
-              <Text className="text-white font-semibold">Use Sample Data</Text>
+              <TerminalText>USE SAMPLE DATA</TerminalText>
             </TouchableOpacity>
           </View>
         </View>
       ) : firearms.length === 0 ? (
         <View className="flex-1 justify-center items-center p-4">
-          <Text className="text-gray-500 text-center text-lg mb-2">
-            No firearms added yet
-          </Text>
-          <Text className="text-gray-400 text-center mb-6">
-            Start by adding your first firearm to your collection
-          </Text>
+          <TerminalText className="text-center text-lg mb-2">
+            NO FIREARMS DETECTED
+          </TerminalText>
+          <TerminalText className="text-terminal-dim text-center mb-6">
+            INITIALIZE DATABASE WITH NEW ENTRY
+          </TerminalText>
           <View className="flex-row space-x-2">
             <TouchableOpacity
               onPress={() => navigation.navigate("AddFirearm")}
-              className="bg-accent px-6 py-3 rounded-lg"
+              className="border border-terminal-border px-6 py-3"
             >
-              <Text className="text-white font-semibold text-lg">
-                Add Your First Firearm
-              </Text>
+              <TerminalText>ADD FIREARM</TerminalText>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={useSampleData}
-              className="bg-primary px-6 py-3 rounded-lg"
+              className="border border-terminal-border px-6 py-3"
             >
-              <Text className="text-white font-semibold text-lg">
-                Use Sample Data
-              </Text>
+              <TerminalText>LOAD SAMPLE DATA</TerminalText>
             </TouchableOpacity>
           </View>
         </View>
@@ -183,7 +184,7 @@ export default function HomeScreen() {
           data={firearms}
           renderItem={renderFirearmItem}
           keyExtractor={(item) => item.id}
-          className="flex-1 p-4"
+          className="flex-1"
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       )}

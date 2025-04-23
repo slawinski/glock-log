@@ -28,41 +28,45 @@ export default function App() {
           initialRouteName="Home"
           screenOptions={{
             headerStyle: {
-              backgroundColor: "#1a365d",
+              backgroundColor: "#0a0a0a",
             },
-            headerTintColor: "#fff",
+            headerTintColor: "#00ff00",
             headerTitleStyle: {
+              fontFamily: "Courier New",
               fontWeight: "bold",
+            },
+            contentStyle: {
+              backgroundColor: "#0a0a0a",
             },
           }}
         >
           <Stack.Screen
             name="Home"
             component={HomeScreen}
-            options={{ title: "My Firearms" }}
+            options={{ title: "> TERMINAL ACCESS" }}
           />
           <Stack.Screen
             name="AddFirearm"
             component={AddFirearmScreen}
-            options={{ title: "Add New Firearm" }}
+            options={{ title: "> NEW ENTRY" }}
           />
           <Stack.Screen
             name="FirearmDetails"
             component={FirearmDetailsScreen}
-            options={{ title: "Firearm Details" }}
+            options={{ title: "> DATABASE QUERY" }}
           />
           <Stack.Screen
             name="EditFirearm"
             component={EditFirearmScreen}
-            options={{ title: "Edit Firearm" }}
+            options={{ title: "> EDIT ENTRY" }}
           />
           <Stack.Screen
             name="Stats"
             component={StatsScreen}
-            options={{ title: "Statistics" }}
+            options={{ title: "> SYSTEM STATISTICS" }}
           />
         </Stack.Navigator>
-        <StatusBar style="auto" />
+        <StatusBar style="light" />
       </NavigationContainer>
     </SafeAreaProvider>
   );
