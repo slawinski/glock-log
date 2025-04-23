@@ -1,5 +1,7 @@
 import { Firearm, FirearmInput } from "../types/firearm";
 import { Platform } from "react-native";
+import { RangeVisit, RangeVisitInput } from "../types/rangeVisit";
+import { RangeVisitStats } from "../types/rangeVisitStats";
 
 // Determine the correct API URL based on the platform
 let API_URL = "";
@@ -220,6 +222,165 @@ export const api = {
       return await response.json();
     } catch (error) {
       console.error("Error fetching statistics:", error);
+      throw error;
+    }
+  },
+
+  // Get all range visits
+  getRangeVisits: async (): Promise<RangeVisit[]> => {
+    try {
+      const response = await fetch(`${API_URL}/range-visits`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch range visits");
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching range visits:", error);
+      throw error;
+    }
+  },
+
+  // Get a single range visit
+  getRangeVisit: async (id: string): Promise<RangeVisit> => {
+    try {
+      const response = await fetch(`${API_URL}/range-visits/${id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch range visit");
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching range visit:", error);
+      throw error;
+    }
+  },
+
+  // Create a new range visit
+  createRangeVisit: async (visit: RangeVisitInput) => {
+    console.log("Creating range visit with data:", visit);
+
+    const formData = new FormData();
+    formData.append("date", visit.date.toISOString());
+    formData.append("location", visit.location);
+    if (visit.notes) {
+      formData.append("notes", visit.notes);
+    }
+    formData.append("firearmsUsed", JSON.stringify(visit.firearmsUsed));
+    formData.append("roundsFired", visit.roundsFired.toString());
+    if (visit.photos) {
+      visit.photos.forEach((photo, index) => {
+        formData.append("photos", {
+          uri: photo,
+          type: "image/jpeg",
+          name: `photo${index}.jpg`,
+        } as any);
+      });
+    }
+
+    console.log("Sending form data:", {
+      date: visit.date.toISOString(),
+      location: visit.location,
+      notes: visit.notes,
+      firearmsUsed: JSON.stringify(visit.firearmsUsed),
+      roundsFired: visit.roundsFired.toString(),
+      photosCount: visit.photos?.length || 0,
+    });
+
+    try {
+      const response = await fetch(`${API_URL}/range-visits`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response from server:", errorText);
+        throw new Error(
+          `Server error (${response.status}): ${
+            errorText || "No error message provided"
+          }`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Successfully created range visit:", data);
+      return data;
+    } catch (error) {
+      console.error("Error in createRangeVisit:", error);
+      if (
+        error instanceof TypeError &&
+        error.message === "Network request failed"
+      ) {
+        throw new Error(
+          "Cannot connect to the server. Please check:\n" +
+            "1. The server is running\n" +
+            "2. Your network connection\n" +
+            "3. The API URL is correct (currently: " +
+            API_URL +
+            ")"
+        );
+      }
+      throw error;
+    }
+  },
+
+  // Update a range visit
+  updateRangeVisit: async (id: string, visit: RangeVisitInput) => {
+    const formData = new FormData();
+    formData.append("date", visit.date.toISOString());
+    formData.append("location", visit.location);
+    if (visit.notes) {
+      formData.append("notes", visit.notes);
+    }
+    formData.append("firearmsUsed", JSON.stringify(visit.firearmsUsed));
+    formData.append("roundsFired", visit.roundsFired.toString());
+    if (visit.photos) {
+      visit.photos.forEach((photo, index) => {
+        formData.append("photos", {
+          uri: photo,
+          type: "image/jpeg",
+          name: `photo${index}.jpg`,
+        } as any);
+      });
+    }
+
+    const response = await fetch(`${API_URL}/range-visits/${id}`, {
+      method: "PUT",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update range visit");
+    }
+
+    return response.json();
+  },
+
+  // Delete a range visit
+  deleteRangeVisit: async (id: string): Promise<void> => {
+    try {
+      const response = await fetch(`${API_URL}/range-visits/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete range visit");
+      }
+    } catch (error) {
+      console.error("Error deleting range visit:", error);
+      throw error;
+    }
+  },
+
+  // Get range visit statistics
+  getRangeVisitStats: async (): Promise<RangeVisitStats> => {
+    try {
+      const response = await fetch(`${API_URL}/range-visits/stats/overview`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch range visit statistics");
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching range visit statistics:", error);
       throw error;
     }
   },

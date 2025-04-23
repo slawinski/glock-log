@@ -3,12 +3,15 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-// Import screens (we'll create these next)
+// Import screens
 import HomeScreen from "./src/screens/HomeScreen";
 import AddFirearmScreen from "./src/screens/AddFirearmScreen";
 import FirearmDetailsScreen from "./src/screens/FirearmDetailsScreen";
 import EditFirearmScreen from "./src/screens/EditFirearmScreen";
 import StatsScreen from "./src/screens/StatsScreen";
+import AddRangeVisitScreen from "./src/screens/AddRangeVisitScreen";
+import RangeVisitDetailsScreen from "./src/screens/RangeVisitDetailsScreen";
+import EditRangeVisitScreen from "./src/screens/EditRangeVisitScreen";
 
 export type RootStackParamList = {
   Home: undefined;
@@ -16,6 +19,9 @@ export type RootStackParamList = {
   FirearmDetails: { id: string };
   EditFirearm: { id: string };
   Stats: undefined;
+  AddRangeVisit: undefined;
+  RangeVisitDetails: { id: string };
+  EditRangeVisit: { id: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -64,6 +70,21 @@ export default function App() {
             name="Stats"
             component={StatsScreen}
             options={{ title: "> SYSTEM STATISTICS" }}
+          />
+          <Stack.Screen
+            name="AddRangeVisit"
+            component={AddRangeVisitScreen}
+            options={{ title: "> NEW RANGE VISIT" }}
+          />
+          <Stack.Screen
+            name="RangeVisitDetails"
+            component={RangeVisitDetailsScreen}
+            options={{ title: "> RANGE VISIT DETAILS" }}
+          />
+          <Stack.Screen
+            name="EditRangeVisit"
+            component={EditRangeVisitScreen}
+            options={{ title: "> EDIT RANGE VISIT" }}
           />
         </Stack.Navigator>
         <StatusBar style="light" />

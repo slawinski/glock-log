@@ -7,11 +7,14 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { FirearmStats } from "../types/firearm";
+import { RangeVisitStats } from "../types/rangeVisit";
 import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
 import { api } from "../services/api";
 
 export default function StatsScreen() {
-  const [stats, setStats] = useState<FirearmStats | null>(null);
+  const [firearmStats, setFirearmStats] = useState<FirearmStats | null>(null);
+  const [rangeVisitStats, setRangeVisitStats] =
+    useState<RangeVisitStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,8 +26,12 @@ export default function StatsScreen() {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getStats();
-      setStats(data);
+      const [firearmData, rangeVisitData] = await Promise.all([
+        api.getStats(),
+        api.getRangeVisitStats(),
+      ]);
+      setFirearmStats(firearmData);
+      setRangeVisitStats(rangeVisitData);
     } catch (error) {
       console.error("Error fetching stats:", error);
       setError("Failed to load statistics");
@@ -58,7 +65,7 @@ export default function StatsScreen() {
     );
   }
 
-  if (!stats) {
+  if (!firearmStats || !rangeVisitStats) {
     return (
       <View className="flex-1 justify-center items-center bg-terminal-bg">
         <TerminalText className="text-lg">NO DATA AVAILABLE</TerminalText>
@@ -79,21 +86,57 @@ export default function StatsScreen() {
               <TerminalText className="text-terminal-dim">
                 TOTAL FIREARMS:
               </TerminalText>
-              <TerminalText>{stats.totalFirearms}</TerminalText>
+              <TerminalText>{firearmStats.totalFirearms}</TerminalText>
             </View>
 
             <View className="flex-row justify-between mb-2">
               <TerminalText className="text-terminal-dim">
                 TOTAL VALUE:
               </TerminalText>
-              <TerminalText>${stats.totalValue.toFixed(2)}</TerminalText>
+              <TerminalText>${firearmStats.totalValue.toFixed(2)}</TerminalText>
             </View>
 
             <View className="flex-row justify-between">
               <TerminalText className="text-terminal-dim">
                 MOST USED CALIBER:
               </TerminalText>
-              <TerminalText>{stats.mostUsedCaliber}</TerminalText>
+              <TerminalText>{firearmStats.mostUsedCaliber}</TerminalText>
+            </View>
+          </View>
+
+          <View className="mb-4">
+            <TerminalText className="text-2xl mb-4">
+              RANGE VISIT OVERVIEW
+            </TerminalText>
+
+            <View className="flex-row justify-between mb-2">
+              <TerminalText className="text-terminal-dim">
+                TOTAL VISITS:
+              </TerminalText>
+              <TerminalText>{rangeVisitStats.totalVisits}</TerminalText>
+            </View>
+
+            <View className="flex-row justify-between mb-2">
+              <TerminalText className="text-terminal-dim">
+                TOTAL ROUNDS FIRED:
+              </TerminalText>
+              <TerminalText>{rangeVisitStats.totalRoundsFired}</TerminalText>
+            </View>
+
+            <View className="flex-row justify-between mb-2">
+              <TerminalText className="text-terminal-dim">
+                MOST VISITED LOCATION:
+              </TerminalText>
+              <TerminalText>{rangeVisitStats.mostVisitedLocation}</TerminalText>
+            </View>
+
+            <View className="flex-row justify-between">
+              <TerminalText className="text-terminal-dim">
+                AVERAGE ROUNDS PER VISIT:
+              </TerminalText>
+              <TerminalText>
+                {rangeVisitStats.averageRoundsPerVisit.toFixed(1)}
+              </TerminalText>
             </View>
           </View>
 
@@ -106,7 +149,9 @@ export default function StatsScreen() {
             </View>
             <TerminalText className="text-terminal-dim text-center">
               AVERAGE VALUE PER FIREARM: $
-              {(stats.totalValue / stats.totalFirearms).toFixed(2)}
+              {(firearmStats.totalValue / firearmStats.totalFirearms).toFixed(
+                2
+              )}
             </TerminalText>
           </View>
         </Terminal>

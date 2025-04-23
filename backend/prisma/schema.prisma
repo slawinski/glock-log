@@ -21,4 +21,18 @@ model Firearm {
   updatedAt            DateTime @updatedAt
 
   @@map("firearms")
+}
+
+model RangeVisit {
+  id                    String   @id @default(uuid())
+  date                  DateTime
+  location              String
+  notes                 String?
+  firearmsUsed          String[] // Array of firearm IDs
+  roundsFired           Int
+  photos                String[] // Array of photo URLs
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("range_visits")
 } 
