@@ -5,6 +5,7 @@ export interface Firearm {
   datePurchased: Date;
   amountPaid: number;
   photos: string[];
+  roundsFired: number;
   createdAt: Date;
   updatedAt: Date;
 }

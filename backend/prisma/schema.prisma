@@ -17,6 +17,7 @@ model Firearm {
   datePurchased        DateTime
   amountPaid           Float
   photos               String[] // Array of photo URLs
+  roundsFired          Int      @default(0) // Total rounds fired through this firearm
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
@@ -29,7 +30,7 @@ model RangeVisit {
   location              String
   notes                 String?
   firearmsUsed          String[] // Array of firearm IDs
-  roundsFired           Int
+  roundsPerFirearm      Json     // Map of firearmId to rounds fired
   photos                String[] // Array of photo URLs
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt

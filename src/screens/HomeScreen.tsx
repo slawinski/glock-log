@@ -97,7 +97,7 @@ export default function HomeScreen() {
         </View>
         <View className="items-end">
           <TerminalText className="text-terminal-dim">
-            ${item.amountPaid.toFixed(2)}
+            {item.roundsFired} rounds
           </TerminalText>
         </View>
       </View>

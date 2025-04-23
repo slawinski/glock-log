@@ -1,6 +1,10 @@
-import { Firearm, FirearmInput } from "../types/firearm";
+import { Firearm, FirearmInput, FirearmStats } from "../types/firearm";
 import { Platform } from "react-native";
-import { RangeVisit, RangeVisitInput } from "../types/rangeVisit";
+import {
+  RangeVisit,
+  RangeVisitInput,
+  RangeVisitStats,
+} from "../types/rangeVisit";
 import { Ammunition } from "../types/ammunition";
 
 // Determine the correct API URL based on the platform
@@ -256,7 +260,14 @@ export const api = {
 
   // Create a new range visit
   createRangeVisit: async (visit: RangeVisitInput) => {
-    console.log("Creating range visit with data:", visit);
+    console.log("Creating range visit with data:", {
+      date: visit.date.toISOString(),
+      location: visit.location,
+      notes: visit.notes,
+      firearmsUsed: visit.firearmsUsed,
+      roundsPerFirearm: visit.roundsPerFirearm,
+      photosCount: visit.photos?.length || 0,
+    });
 
     const formData = new FormData();
     formData.append("date", visit.date.toISOString());
@@ -265,7 +276,7 @@ export const api = {
       formData.append("notes", visit.notes);
     }
     formData.append("firearmsUsed", JSON.stringify(visit.firearmsUsed));
-    formData.append("roundsFired", visit.roundsFired.toString());
+    formData.append("roundsPerFirearm", JSON.stringify(visit.roundsPerFirearm));
     if (visit.photos) {
       visit.photos.forEach((photo, index) => {
         formData.append("photos", {
@@ -276,51 +287,16 @@ export const api = {
       });
     }
 
-    console.log("Sending form data:", {
-      date: visit.date.toISOString(),
-      location: visit.location,
-      notes: visit.notes,
-      firearmsUsed: JSON.stringify(visit.firearmsUsed),
-      roundsFired: visit.roundsFired.toString(),
-      photosCount: visit.photos?.length || 0,
+    const response = await fetch(`${API_URL}/range-visits`, {
+      method: "POST",
+      body: formData,
     });
 
-    try {
-      const response = await fetch(`${API_URL}/range-visits`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error response from server:", errorText);
-        throw new Error(
-          `Server error (${response.status}): ${
-            errorText || "No error message provided"
-          }`
-        );
-      }
-
-      const data = await response.json();
-      console.log("Successfully created range visit:", data);
-      return data;
-    } catch (error) {
-      console.error("Error in createRangeVisit:", error);
-      if (
-        error instanceof TypeError &&
-        error.message === "Network request failed"
-      ) {
-        throw new Error(
-          "Cannot connect to the server. Please check:\n" +
-            "1. The server is running\n" +
-            "2. Your network connection\n" +
-            "3. The API URL is correct (currently: " +
-            API_URL +
-            ")"
-        );
-      }
-      throw error;
+    if (!response.ok) {
+      throw new Error("Failed to create range visit");
     }
+
+    return response.json();
   },
 
   // Update a range visit
@@ -332,7 +308,7 @@ export const api = {
       formData.append("notes", visit.notes);
     }
     formData.append("firearmsUsed", JSON.stringify(visit.firearmsUsed));
-    formData.append("roundsFired", visit.roundsFired.toString());
+    formData.append("roundsPerFirearm", JSON.stringify(visit.roundsPerFirearm));
     if (visit.photos) {
       visit.photos.forEach((photo, index) => {
         formData.append("photos", {

@@ -102,78 +102,64 @@ export default function FirearmDetailsScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-terminal-bg">
-      <View className="p-4">
-        <Terminal title="DATABASE ENTRY">
-          <View className="mb-4">
-            <TerminalText className="text-2xl mb-2">
-              {firearm.modelName}
-            </TerminalText>
-            <TerminalText className="text-lg text-terminal-dim mb-4">
-              {firearm.caliber}
-            </TerminalText>
-
-            <View className="mb-4">
-              <TerminalText className="text-lg mb-2">
-                PURCHASE DETAILS
-              </TerminalText>
-              <View className="flex-row justify-between mb-2">
-                <TerminalText className="text-terminal-dim">
-                  Amount Paid:
-                </TerminalText>
-                <TerminalText>${firearm.amountPaid.toFixed(2)}</TerminalText>
-              </View>
-              <View className="flex-row justify-between">
-                <TerminalText className="text-terminal-dim">
-                  Date Purchased:
-                </TerminalText>
-                <TerminalText>
-                  {new Date(firearm.datePurchased).toLocaleDateString()}
-                </TerminalText>
-              </View>
-            </View>
-          </View>
-
-          <View className="mb-4">
-            <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
-            <View className="flex-row flex-wrap">
-              {firearm.photos.length > 0 ? (
-                firearm.photos.map((photo, index) => (
-                  <Image
-                    key={index}
-                    source={{ uri: photo }}
-                    className="w-32 h-32 m-1 border border-terminal-border"
-                  />
-                ))
-              ) : (
-                <TerminalText className="text-terminal-dim">
-                  NO PHOTOS AVAILABLE
-                </TerminalText>
-              )}
-            </View>
-          </View>
-
-          <View className="flex-row justify-between">
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("EditFirearm", { id: firearm.id })
-              }
-              className="border border-terminal-border p-4 flex-1 mr-2"
-            >
-              <TerminalText>EDIT</TerminalText>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={handleDelete}
-              className="border border-terminal-error p-4 flex-1 ml-2"
-            >
-              <TerminalText className="text-terminal-error">
-                DELETE
-              </TerminalText>
-            </TouchableOpacity>
-          </View>
-        </Terminal>
+    <View className="flex-1 bg-terminal-bg p-4">
+      <View className="mb-4">
+        <TerminalText className="text-lg">{firearm.modelName}</TerminalText>
+        <TerminalText className="text-terminal-dim">
+          {firearm.caliber}
+        </TerminalText>
       </View>
-    </ScrollView>
+
+      <View className="mb-4">
+        <TerminalText>ROUNDS FIRED</TerminalText>
+        <TerminalText className="text-terminal-dim">
+          {firearm.roundsFired} rounds
+        </TerminalText>
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>DATE PURCHASED</TerminalText>
+        <TerminalText className="text-terminal-dim">
+          {new Date(firearm.datePurchased).toLocaleDateString()}
+        </TerminalText>
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>AMOUNT PAID</TerminalText>
+        <TerminalText className="text-terminal-dim">
+          ${firearm.amountPaid.toFixed(2)}
+        </TerminalText>
+      </View>
+
+      {firearm.photos.length > 0 && (
+        <View className="mb-4">
+          <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
+          <ScrollView horizontal className="flex-row">
+            {firearm.photos.map((photo, index) => (
+              <Image
+                key={index}
+                source={{ uri: photo }}
+                className="w-32 h-32 m-1 border border-terminal-border"
+              />
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      <View className="flex-row justify-between mt-4">
+        <TouchableOpacity
+          onPress={() => navigation.navigate("EditFirearm", { id: firearm.id })}
+          className="border border-terminal-border px-4 py-2"
+        >
+          <TerminalText>EDIT</TerminalText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          className="border border-terminal-border px-4 py-2"
+        >
+          <TerminalText>BACK</TerminalText>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }

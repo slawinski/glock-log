@@ -4,16 +4,20 @@ export interface RangeVisit {
   location: string;
   notes?: string;
   firearmsUsed: string[];
-  roundsFired: number;
+  roundsPerFirearm: Record<string, number>;
   photos: string[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-export type RangeVisitInput = Omit<
-  RangeVisit,
-  "id" | "createdAt" | "updatedAt"
->;
+export interface RangeVisitInput {
+  date: Date;
+  location: string;
+  notes?: string;
+  firearmsUsed: string[];
+  roundsPerFirearm: Record<string, number>;
+  photos: string[];
+}
 
 export interface RangeVisitStats {
   totalVisits: number;
