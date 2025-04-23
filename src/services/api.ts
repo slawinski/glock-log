@@ -1,7 +1,7 @@
 import { Firearm, FirearmInput } from "../types/firearm";
 import { Platform } from "react-native";
 import { RangeVisit, RangeVisitInput } from "../types/rangeVisit";
-import { RangeVisitStats } from "../types/rangeVisitStats";
+import { Ammunition } from "../types/ammunition";
 
 // Determine the correct API URL based on the platform
 let API_URL = "";
@@ -382,6 +382,60 @@ export const api = {
     } catch (error) {
       console.error("Error fetching range visit statistics:", error);
       throw error;
+    }
+  },
+
+  // Get all ammunition
+  getAmmunition: async (): Promise<Ammunition[]> => {
+    const response = await fetch(`${API_URL}/ammunition`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch ammunition");
+    }
+    return response.json();
+  },
+
+  // Create a new ammunition
+  createAmmunition: async (
+    ammunition: Omit<Ammunition, "id" | "createdAt" | "updatedAt">
+  ): Promise<Ammunition> => {
+    const response = await fetch(`${API_URL}/ammunition`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(ammunition),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to create ammunition");
+    }
+    return response.json();
+  },
+
+  // Update an ammunition
+  updateAmmunition: async (
+    id: string,
+    ammunition: Partial<Ammunition>
+  ): Promise<Ammunition> => {
+    const response = await fetch(`${API_URL}/ammunition/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(ammunition),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to update ammunition");
+    }
+    return response.json();
+  },
+
+  // Delete an ammunition
+  deleteAmmunition: async (id: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/ammunition/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete ammunition");
     }
   },
 };

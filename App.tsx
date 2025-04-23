@@ -12,6 +12,9 @@ import StatsScreen from "./src/screens/StatsScreen";
 import AddRangeVisitScreen from "./src/screens/AddRangeVisitScreen";
 import RangeVisitDetailsScreen from "./src/screens/RangeVisitDetailsScreen";
 import EditRangeVisitScreen from "./src/screens/EditRangeVisitScreen";
+import AddAmmunitionScreen from "./src/screens/AddAmmunitionScreen";
+import AmmunitionDetailsScreen from "./src/screens/AmmunitionDetailsScreen";
+import EditAmmunitionScreen from "./src/screens/EditAmmunitionScreen";
 
 export type RootStackParamList = {
   Home: undefined;
@@ -22,6 +25,9 @@ export type RootStackParamList = {
   AddRangeVisit: undefined;
   RangeVisitDetails: { id: string };
   EditRangeVisit: { id: string };
+  AddAmmunition: undefined;
+  AmmunitionDetails: { id: string };
+  EditAmmunition: { id: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -85,6 +91,21 @@ export default function App() {
             name="EditRangeVisit"
             component={EditRangeVisitScreen}
             options={{ title: "> EDIT RANGE VISIT" }}
+          />
+          <Stack.Screen
+            name="AddAmmunition"
+            component={AddAmmunitionScreen}
+            options={{ title: "> NEW AMMUNITION" }}
+          />
+          <Stack.Screen
+            name="AmmunitionDetails"
+            component={AmmunitionDetailsScreen}
+            options={{ title: "> AMMUNITION DETAILS" }}
+          />
+          <Stack.Screen
+            name="EditAmmunition"
+            component={EditAmmunitionScreen}
+            options={{ title: "> EDIT AMMUNITION" }}
           />
         </Stack.Navigator>
         <StatusBar style="light" />

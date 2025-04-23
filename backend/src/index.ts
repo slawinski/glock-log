@@ -7,6 +7,7 @@ import path from "path";
 // Import routes
 import firearmRoutes from "./routes/firearmRoutes";
 import rangeVisitRoutes from "./routes/rangeVisitRoutes";
+import ammunitionRoutes from "./routes/ammunitionRoutes";
 
 // Load environment variables
 dotenv.config();
@@ -28,6 +29,7 @@ app.use(
 // Routes
 app.use("/api/firearms", firearmRoutes);
 app.use("/api/range-visits", rangeVisitRoutes);
+app.use("/api/ammunition", ammunitionRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
