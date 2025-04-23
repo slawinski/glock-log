@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   Image,
@@ -17,7 +15,7 @@ import * as ImagePicker from "react-native-image-picker";
 import { RangeVisitInput } from "../types/rangeVisit";
 import { Firearm } from "../types/firearm";
 import { api } from "../services/api";
-import { Terminal, TerminalText } from "../components/Terminal";
+import { TerminalText, TerminalInput } from "../components/Terminal";
 
 type EditRangeVisitScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -37,7 +35,7 @@ export default function EditRangeVisitScreen() {
     location: "",
     notes: "",
     firearmsUsed: [],
-    roundsFired: 0,
+    roundsPerFirearm: {},
     photos: [],
   });
   const [firearms, setFirearms] = useState<Firearm[]>([]);
@@ -61,7 +59,7 @@ export default function EditRangeVisitScreen() {
         location: data.location,
         notes: data.notes || "",
         firearmsUsed: data.firearmsUsed,
-        roundsFired: data.roundsFired,
+        roundsPerFirearm: data.roundsPerFirearm,
         photos: data.photos,
       });
     } catch (error) {
@@ -108,6 +106,21 @@ export default function EditRangeVisitScreen() {
         return;
       }
 
+      // Validate rounds per firearm
+      for (const firearmId of formData.firearmsUsed) {
+        if (
+          !formData.roundsPerFirearm[firearmId] ||
+          formData.roundsPerFirearm[firearmId] <= 0
+        ) {
+          Alert.alert(
+            "Missing Information",
+            `Please specify the number of rounds fired for each selected firearm.`,
+            [{ text: "OK" }]
+          );
+          return;
+        }
+      }
+
       await api.updateRangeVisit(route.params.id, formData);
       navigation.goBack();
     } catch (error) {
@@ -119,11 +132,32 @@ export default function EditRangeVisitScreen() {
   };
 
   const toggleFirearmSelection = (firearmId: string) => {
+    setFormData((prev) => {
+      const newFirearmsUsed = prev.firearmsUsed.includes(firearmId)
+        ? prev.firearmsUsed.filter((id) => id !== firearmId)
+        : [...prev.firearmsUsed, firearmId];
+
+      // Remove rounds data for deselected firearms
+      const newRoundsPerFirearm = { ...prev.roundsPerFirearm };
+      if (!newFirearmsUsed.includes(firearmId)) {
+        delete newRoundsPerFirearm[firearmId];
+      }
+
+      return {
+        ...prev,
+        firearmsUsed: newFirearmsUsed,
+        roundsPerFirearm: newRoundsPerFirearm,
+      };
+    });
+  };
+
+  const updateRoundsForFirearm = (firearmId: string, rounds: string) => {
     setFormData((prev) => ({
       ...prev,
-      firearmsUsed: prev.firearmsUsed.includes(firearmId)
-        ? prev.firearmsUsed.filter((id) => id !== firearmId)
-        : [...prev.firearmsUsed, firearmId],
+      roundsPerFirearm: {
+        ...prev.roundsPerFirearm,
+        [firearmId]: parseInt(rounds) || 0,
+      },
     }));
   };
 
@@ -154,122 +188,115 @@ export default function EditRangeVisitScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-terminal-bg">
-      <View className="p-4">
-        <Terminal title="EDIT RANGE VISIT">
-          <View className="mb-4">
-            <TerminalText className="text-lg mb-2">
-              VISIT INFORMATION
-            </TerminalText>
-            <TextInput
-              className="bg-terminal-bg border border-terminal-border p-2 mb-2 text-terminal-text font-terminal"
-              placeholder="Location"
-              placeholderTextColor="#003300"
-              value={formData.location}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, location: text }))
-              }
-            />
-            <TextInput
-              className="bg-terminal-bg border border-terminal-border p-2 mb-2 text-terminal-text font-terminal"
-              placeholder="Date (YYYY-MM-DD)"
-              placeholderTextColor="#003300"
-              value={formData.date.toISOString().split("T")[0]}
-              onChangeText={(text) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  date: new Date(text),
-                }))
-              }
-            />
-            <TextInput
-              className="bg-terminal-bg border border-terminal-border p-2 mb-2 text-terminal-text font-terminal"
-              placeholder="Rounds Fired"
-              placeholderTextColor="#003300"
-              keyboardType="numeric"
-              value={
-                formData.roundsFired > 0 ? formData.roundsFired.toString() : ""
-              }
-              onChangeText={(text) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  roundsFired: parseInt(text) || 0,
-                }))
-              }
-            />
-            <TextInput
-              className="bg-terminal-bg border border-terminal-border p-2 text-terminal-text font-terminal"
-              placeholder="Notes (optional)"
-              placeholderTextColor="#003300"
-              value={formData.notes}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, notes: text }))
-              }
-              multiline
-            />
-          </View>
+    <ScrollView className="flex-1 bg-terminal-bg p-4">
+      <TerminalText className="text-2xl mb-6">EDIT RANGE VISIT</TerminalText>
 
-          <View className="mb-4">
-            <TerminalText className="text-lg mb-2">FIREARMS USED</TerminalText>
-            {firearms.map((firearm) => (
-              <TouchableOpacity
-                key={firearm.id}
-                onPress={() => toggleFirearmSelection(firearm.id)}
-                className={`border border-terminal-border p-2 mb-2 ${
-                  formData.firearmsUsed.includes(firearm.id)
-                    ? "bg-terminal-selection"
-                    : ""
-                }`}
-              >
-                <TerminalText>
-                  {firearm.modelName} ({firearm.caliber})
-                </TerminalText>
-              </TouchableOpacity>
-            ))}
-          </View>
+      <View className="mb-4">
+        <TerminalText>LOCATION</TerminalText>
+        <TerminalInput
+          value={formData.location}
+          onChangeText={(text) =>
+            setFormData((prev) => ({ ...prev, location: text }))
+          }
+          placeholder="e.g., Local Range"
+        />
+      </View>
 
-          <View className="mb-4">
-            <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
+      <View className="mb-4">
+        <TerminalText>DATE</TerminalText>
+        <TerminalInput
+          value={formData.date.toLocaleDateString()}
+          onChangeText={() => {}}
+        />
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>NOTES</TerminalText>
+        <TerminalInput
+          value={formData.notes}
+          onChangeText={(text) =>
+            setFormData((prev) => ({ ...prev, notes: text }))
+          }
+          placeholder="Optional notes"
+          multiline
+        />
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>FIREARMS USED</TerminalText>
+        {firearms.map((firearm) => (
+          <View key={firearm.id} className="mb-2">
             <TouchableOpacity
-              onPress={handleImagePick}
-              className="border border-terminal-border p-3 mb-2"
+              onPress={() => toggleFirearmSelection(firearm.id)}
+              className="mb-2"
             >
-              <TerminalText>ADD PHOTO</TerminalText>
+              <TerminalText>
+                {firearm.modelName} ({firearm.caliber})
+              </TerminalText>
             </TouchableOpacity>
-            <View className="flex-row flex-wrap">
-              {formData.photos.map((photo, index) => (
-                <View key={index} className="relative">
-                  <Image
-                    source={{ uri: photo }}
-                    className="w-20 h-20 m-1 border border-terminal-border"
-                  />
-                  <TouchableOpacity
-                    onPress={() => handleDeletePhoto(index)}
-                    className="absolute top-0 right-0 border border-terminal-error bg-terminal-bg w-6 h-6 items-center justify-center"
-                  >
-                    <TerminalText className="text-terminal-error">
-                      ×
-                    </TerminalText>
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
-          </View>
 
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={saving}
-            className={`border border-terminal-border p-4 ${
-              saving ? "opacity-50" : ""
-            }`}
-          >
-            {saving ? (
-              <ActivityIndicator color="#00ff00" />
-            ) : (
-              <TerminalText>SAVE CHANGES</TerminalText>
+            {formData.firearmsUsed.includes(firearm.id) && (
+              <View className="ml-4">
+                <TerminalText className="text-terminal-dim mb-1">
+                  ROUNDS FIRED
+                </TerminalText>
+                <TerminalInput
+                  value={String(formData.roundsPerFirearm[firearm.id] || 0)}
+                  onChangeText={(text) =>
+                    updateRoundsForFirearm(firearm.id, text)
+                  }
+                  placeholder="Enter number of rounds"
+                  keyboardType="numeric"
+                />
+              </View>
             )}
-          </TouchableOpacity>
-        </Terminal>
+          </View>
+        ))}
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>PHOTOS</TerminalText>
+        <TouchableOpacity
+          onPress={handleImagePick}
+          className="border border-terminal-border p-3 mb-2"
+        >
+          <TerminalText>ADD PHOTO</TerminalText>
+        </TouchableOpacity>
+        <ScrollView horizontal className="flex-row">
+          {formData.photos.map((photo, index) => (
+            <View key={index} className="relative">
+              <Image source={{ uri: photo }} className="w-40 h-40 m-1" />
+              <TouchableOpacity
+                onPress={() => handleDeletePhoto(index)}
+                className="absolute top-0 right-0 bg-terminal-error p-1"
+              >
+                <TerminalText className="text-xs">X</TerminalText>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+
+      {error && (
+        <View className="mb-4">
+          <TerminalText className="text-terminal-error">{error}</TerminalText>
+        </View>
+      )}
+
+      <View className="flex-row justify-between">
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          className="border border-terminal-border px-4 py-2"
+        >
+          <TerminalText>CANCEL</TerminalText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleSubmit}
+          disabled={saving}
+          className="border border-terminal-border px-4 py-2"
+        >
+          <TerminalText>{saving ? "SAVING..." : "SAVE CHANGES"}</TerminalText>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );

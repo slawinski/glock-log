@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   Image,
@@ -15,7 +13,8 @@ import { RootStackParamList } from "../../App";
 import * as ImagePicker from "react-native-image-picker";
 import { FirearmInput } from "../types/firearm";
 import { api } from "../services/api";
-import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
+import { TerminalText, TerminalInput } from "../components/Terminal";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -24,14 +23,17 @@ type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
 
 export default function AddFirearmScreen() {
   const navigation = useNavigation<AddFirearmScreenNavigationProp>();
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FirearmInput>({
     modelName: "",
     caliber: "",
     datePurchased: new Date(),
     amountPaid: 0,
     photos: [],
+    roundsFired: 0,
   });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleImagePick = () => {
     ImagePicker.launchImageLibrary(
@@ -52,7 +54,7 @@ export default function AddFirearmScreen() {
 
   const handleSubmit = async () => {
     try {
-      setLoading(true);
+      setSaving(true);
 
       // Validate required fields
       if (!formData.modelName || !formData.caliber) {
@@ -60,121 +62,145 @@ export default function AddFirearmScreen() {
         return;
       }
 
-      // Convert string values to appropriate types
-      const firearmData = {
-        ...formData,
-        datePurchased: formData.datePurchased
-          ? new Date(formData.datePurchased)
-          : new Date(),
-        amountPaid: formData.amountPaid
-          ? parseFloat(formData.amountPaid.toString())
-          : 0,
-      };
-
-      await api.createFirearm(firearmData);
+      await api.createFirearm(formData);
       navigation.goBack();
     } catch (error) {
-      console.error("Error saving firearm:", error);
-      Alert.alert("Error", "Failed to save firearm. Please try again.");
+      console.error("Error creating firearm:", error);
+      Alert.alert("Error", "Failed to create firearm. Please try again.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
+  const handleDeletePhoto = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index),
+    }));
+  };
+
+  if (error) {
+    return (
+      <View className="flex-1 justify-center items-center bg-terminal-bg">
+        <TerminalText className="text-terminal-error text-lg">
+          {error}
+        </TerminalText>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView className="flex-1 bg-terminal-bg">
-      <View className="p-4">
-        <Terminal title="NEW ENTRY FORM">
-          <View className="mb-4">
-            <TerminalText className="text-lg mb-2">
-              MODEL INFORMATION
-            </TerminalText>
-            <TextInput
-              className="bg-terminal-bg border border-terminal-border p-2 mb-2 text-terminal-text font-terminal"
-              placeholder="Model Name"
-              placeholderTextColor="#003300"
-              value={formData.modelName}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, modelName: text }))
-              }
-            />
-            <TextInput
-              className="bg-terminal-bg border border-terminal-border p-2 text-terminal-text font-terminal"
-              placeholder="Caliber"
-              placeholderTextColor="#003300"
-              value={formData.caliber}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, caliber: text }))
-              }
-            />
-          </View>
+    <ScrollView className="flex-1 bg-terminal-bg p-4">
+      <TerminalText className="text-2xl mb-6">NEW FIREARM</TerminalText>
 
-          <View className="mb-4">
-            <TerminalText className="text-lg mb-2">
-              PURCHASE DETAILS
-            </TerminalText>
-            <TextInput
-              className="bg-terminal-bg border border-terminal-border p-2 mb-2 text-terminal-text font-terminal"
-              placeholder="Amount Paid ($)"
-              placeholderTextColor="#003300"
-              keyboardType="numeric"
-              value={
-                formData.amountPaid > 0 ? formData.amountPaid.toString() : ""
-              }
-              onChangeText={(text) =>
+      <View className="mb-4">
+        <TerminalText>MODEL NAME</TerminalText>
+        <TerminalInput
+          value={formData.modelName}
+          onChangeText={(text) =>
+            setFormData((prev) => ({ ...prev, modelName: text }))
+          }
+          placeholder="e.g., Glock 19"
+        />
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>CALIBER</TerminalText>
+        <TerminalInput
+          value={formData.caliber}
+          onChangeText={(text) =>
+            setFormData((prev) => ({ ...prev, caliber: text }))
+          }
+          placeholder="e.g., 9mm"
+        />
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>DATE PURCHASED</TerminalText>
+        <TouchableOpacity
+          onPress={() => setShowDatePicker(true)}
+          className="border border-terminal-border p-2"
+        >
+          <TerminalText>
+            {formData.datePurchased.toLocaleDateString()}
+          </TerminalText>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={formData.datePurchased}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) {
                 setFormData((prev) => ({
                   ...prev,
-                  amountPaid: parseFloat(text) || 0,
-                }))
+                  datePurchased: selectedDate,
+                }));
               }
-            />
-            <TextInput
-              className="bg-terminal-bg border border-terminal-border p-2 text-terminal-text font-terminal"
-              placeholder="Date Purchased (YYYY-MM-DD)"
-              placeholderTextColor="#003300"
-              value={formData.datePurchased.toISOString().split("T")[0]}
-              onChangeText={(text) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  datePurchased: new Date(text),
-                }))
-              }
-            />
-          </View>
+            }}
+          />
+        )}
+      </View>
 
-          <View className="mb-4">
-            <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
-            <TouchableOpacity
-              onPress={handleImagePick}
-              className="border border-terminal-border p-3 mb-2"
-            >
-              <TerminalText>ADD PHOTO</TerminalText>
-            </TouchableOpacity>
-            <View className="flex-row flex-wrap">
-              {formData.photos.map((photo, index) => (
-                <Image
-                  key={index}
-                  source={{ uri: photo }}
-                  className="w-20 h-20 m-1 border border-terminal-border"
-                />
-              ))}
+      <View className="mb-4">
+        <TerminalText>AMOUNT PAID</TerminalText>
+        <TerminalInput
+          value={formData.amountPaid.toString()}
+          onChangeText={(text) =>
+            setFormData((prev) => ({
+              ...prev,
+              amountPaid: parseFloat(text) || 0,
+            }))
+          }
+          placeholder="Enter amount paid"
+          keyboardType="numeric"
+        />
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>PHOTOS</TerminalText>
+        <TouchableOpacity
+          onPress={handleImagePick}
+          className="border border-terminal-border p-3 mb-2"
+        >
+          <TerminalText>ADD PHOTO</TerminalText>
+        </TouchableOpacity>
+        <ScrollView horizontal className="flex-row">
+          {formData.photos.map((photo, index) => (
+            <View key={index} className="relative">
+              <Image source={{ uri: photo }} className="w-40 h-40 m-1" />
+              <TouchableOpacity
+                onPress={() => handleDeletePhoto(index)}
+                className="absolute top-0 right-0 bg-terminal-error p-1"
+              >
+                <TerminalText className="text-xs">X</TerminalText>
+              </TouchableOpacity>
             </View>
-          </View>
+          ))}
+        </ScrollView>
+      </View>
 
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={loading}
-            className={`border border-terminal-border p-4 ${
-              loading ? "opacity-50" : ""
-            }`}
-          >
-            {loading ? (
-              <ActivityIndicator color="#00ff00" />
-            ) : (
-              <TerminalText>SAVE ENTRY</TerminalText>
-            )}
-          </TouchableOpacity>
-        </Terminal>
+      {error && (
+        <View className="mb-4">
+          <TerminalText className="text-terminal-error">{error}</TerminalText>
+        </View>
+      )}
+
+      <View className="flex-row justify-between">
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          className="border border-terminal-border px-4 py-2"
+        >
+          <TerminalText>CANCEL</TerminalText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleSubmit}
+          disabled={saving}
+          className="border border-terminal-border px-4 py-2"
+        >
+          <TerminalText>{saving ? "SAVING..." : "SAVE FIREARM"}</TerminalText>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );

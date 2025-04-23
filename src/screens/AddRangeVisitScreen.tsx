@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   Image,
@@ -16,7 +14,8 @@ import * as ImagePicker from "react-native-image-picker";
 import { RangeVisitInput } from "../types/rangeVisit";
 import { Firearm } from "../types/firearm";
 import { api } from "../services/api";
-import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
+import { TerminalText, TerminalInput } from "../components/Terminal";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 type AddRangeVisitScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -25,8 +24,6 @@ type AddRangeVisitScreenNavigationProp = NativeStackNavigationProp<
 
 export default function AddRangeVisitScreen() {
   const navigation = useNavigation<AddRangeVisitScreenNavigationProp>();
-  const [loading, setLoading] = useState(false);
-  const [firearms, setFirearms] = useState<Firearm[]>([]);
   const [formData, setFormData] = useState<RangeVisitInput>({
     date: new Date(),
     location: "",
@@ -35,6 +32,11 @@ export default function AddRangeVisitScreen() {
     roundsPerFirearm: {},
     photos: [],
   });
+  const [firearms, setFirearms] = useState<Firearm[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     fetchFirearms();
@@ -42,11 +44,14 @@ export default function AddRangeVisitScreen() {
 
   const fetchFirearms = async () => {
     try {
+      setLoading(true);
       const data = await api.getFirearms();
       setFirearms(data);
     } catch (error) {
       console.error("Error fetching firearms:", error);
       Alert.alert("Error", "Failed to load firearms");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,195 +74,207 @@ export default function AddRangeVisitScreen() {
 
   const handleSubmit = async () => {
     try {
-      setLoading(true);
+      setSaving(true);
 
       // Validate required fields
       if (!formData.location || formData.firearmsUsed.length === 0) {
-        Alert.alert(
-          "Missing Information",
-          `Please fill in all required fields:
-          
-          • Location: ${formData.location ? "✓" : "✗"} (Where did you shoot?)
-          • Firearms: ${
-            formData.firearmsUsed.length > 0 ? "✓" : "✗"
-          } (Select at least one firearm)
-          
-          Tap on the fields above to add the missing information.`,
-          [{ text: "OK" }]
-        );
+        Alert.alert("Error", "Location and at least one firearm are required");
         return;
       }
 
-      // Validate rounds per firearm
+      // Validate rounds fired for each selected firearm
       for (const firearmId of formData.firearmsUsed) {
-        if (
-          !formData.roundsPerFirearm[firearmId] ||
-          formData.roundsPerFirearm[firearmId] <= 0
-        ) {
+        if (!formData.roundsPerFirearm[firearmId]) {
+          const firearm = firearms.find((f) => f.id === firearmId);
           Alert.alert(
-            "Missing Information",
-            `Please specify the number of rounds fired for each selected firearm.`,
-            [{ text: "OK" }]
+            "Error",
+            `Please enter rounds fired for ${
+              firearm?.modelName || "selected firearm"
+            }`
           );
           return;
         }
       }
 
-      const response = await api.createRangeVisit(formData);
+      await api.createRangeVisit(formData);
       navigation.goBack();
     } catch (error) {
-      console.error("Error saving range visit:", error);
-      Alert.alert(
-        "Error",
-        `Failed to save range visit:
-        ${error instanceof Error ? error.message : "Unknown error"}
-        
-        Please check:
-        1. Location is filled
-        2. At least one firearm is selected
-        3. Rounds are specified for each firearm
-        4. Server is running
-        5. Network connection is stable`
-      );
+      console.error("Error creating range visit:", error);
+      Alert.alert("Error", "Failed to create range visit. Please try again.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const toggleFirearmSelection = (firearmId: string) => {
-    setFormData((prev) => {
-      const newFirearmsUsed = prev.firearmsUsed.includes(firearmId)
-        ? prev.firearmsUsed.filter((id) => id !== firearmId)
-        : [...prev.firearmsUsed, firearmId];
-
-      // Remove rounds data for deselected firearms
-      const newRoundsPerFirearm = { ...prev.roundsPerFirearm };
-      if (!newFirearmsUsed.includes(firearmId)) {
-        delete newRoundsPerFirearm[firearmId];
-      }
-
-      return {
-        ...prev,
-        firearmsUsed: newFirearmsUsed,
-        roundsPerFirearm: newRoundsPerFirearm,
-      };
-    });
-  };
-
-  const updateRoundsForFirearm = (firearmId: string, rounds: string) => {
+  const handleDeletePhoto = (index: number) => {
     setFormData((prev) => ({
       ...prev,
-      roundsPerFirearm: {
-        ...prev.roundsPerFirearm,
-        [firearmId]: parseInt(rounds) || 0,
-      },
+      photos: prev.photos.filter((_, i) => i !== index),
     }));
   };
 
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-terminal-bg">
+        <ActivityIndicator size="large" color="#00ff00" />
+        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 justify-center items-center bg-terminal-bg">
+        <TerminalText className="text-terminal-error text-lg">
+          {error}
+        </TerminalText>
+      </View>
+    );
+  }
+
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
-      <Terminal title="ADD RANGE VISIT">
-        <View className="mb-4">
-          <TerminalText className="text-lg mb-2">LOCATION</TerminalText>
-          <TerminalInput
-            value={formData.location}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, location: text }))
-            }
-            placeholder="e.g., Local Range"
-          />
-        </View>
+      <TerminalText className="text-2xl mb-6">NEW RANGE VISIT</TerminalText>
 
-        <View className="mb-4">
-          <TerminalText className="text-lg mb-2">DATE</TerminalText>
-          <TerminalInput
-            value={formData.date.toLocaleDateString()}
-            onChangeText={() => {}}
-          />
-        </View>
+      <View className="mb-4">
+        <TerminalText>LOCATION</TerminalText>
+        <TerminalInput
+          value={formData.location}
+          onChangeText={(text) =>
+            setFormData((prev) => ({ ...prev, location: text }))
+          }
+          placeholder="e.g., Local Range"
+        />
+      </View>
 
-        <View className="mb-4">
-          <TerminalText className="text-lg mb-2">NOTES</TerminalText>
-          <TextInput
-            className="bg-terminal-bg border border-terminal-border p-2 text-terminal-text font-terminal"
-            placeholder="Notes (optional)"
-            placeholderTextColor="#003300"
-            value={formData.notes}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, notes: text }))
-            }
-            multiline
+      <View className="mb-4">
+        <TerminalText>DATE</TerminalText>
+        <TouchableOpacity
+          onPress={() => setShowDatePicker(true)}
+          className="border border-terminal-border p-2"
+        >
+          <TerminalText>{formData.date.toLocaleDateString()}</TerminalText>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={formData.date}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) {
+                setFormData((prev) => ({
+                  ...prev,
+                  date: selectedDate,
+                }));
+              }
+            }}
           />
-        </View>
+        )}
+      </View>
 
-        <View className="mb-4">
-          <TerminalText className="text-lg mb-2">FIREARMS USED</TerminalText>
-          {firearms.map((firearm) => (
-            <View
-              key={firearm.id}
-              className={`border border-terminal-border p-2 mb-2 ${
-                formData.firearmsUsed.includes(firearm.id)
-                  ? "bg-terminal-selection"
-                  : ""
-              }`}
+      <View className="mb-4">
+        <TerminalText>NOTES</TerminalText>
+        <TerminalInput
+          value={formData.notes}
+          onChangeText={(text) =>
+            setFormData((prev) => ({ ...prev, notes: text }))
+          }
+          placeholder="Add any notes about the visit"
+          multiline
+          numberOfLines={4}
+        />
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>FIREARMS USED</TerminalText>
+        {firearms.map((firearm) => (
+          <View key={firearm.id} className="mb-2">
+            <TouchableOpacity
+              onPress={() => {
+                const isSelected = formData.firearmsUsed.includes(firearm.id);
+                setFormData((prev) => ({
+                  ...prev,
+                  firearmsUsed: isSelected
+                    ? prev.firearmsUsed.filter((id) => id !== firearm.id)
+                    : [...prev.firearmsUsed, firearm.id],
+                }));
+              }}
+              className="border border-terminal-border p-2 mb-1"
             >
-              <TouchableOpacity
-                onPress={() => toggleFirearmSelection(firearm.id)}
-                className="mb-2"
-              >
-                <TerminalText>
-                  {firearm.modelName} ({firearm.caliber})
-                </TerminalText>
-              </TouchableOpacity>
+              <TerminalText>
+                {firearm.modelName} ({firearm.caliber})
+              </TerminalText>
+            </TouchableOpacity>
+            {formData.firearmsUsed.includes(firearm.id) && (
+              <View className="ml-4">
+                <TerminalText>ROUNDS FIRED</TerminalText>
+                <TerminalInput
+                  value={
+                    formData.roundsPerFirearm[firearm.id]?.toString() || ""
+                  }
+                  onChangeText={(text) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      roundsPerFirearm: {
+                        ...prev.roundsPerFirearm,
+                        [firearm.id]: parseInt(text) || 0,
+                      },
+                    }))
+                  }
+                  placeholder="Enter number of rounds"
+                  keyboardType="numeric"
+                />
+              </View>
+            )}
+          </View>
+        ))}
+      </View>
 
-              {formData.firearmsUsed.includes(firearm.id) && (
-                <View className="mt-2">
-                  <TerminalText className="text-terminal-dim mb-1">
-                    ROUNDS FIRED
-                  </TerminalText>
-                  <TerminalInput
-                    value={
-                      formData.roundsPerFirearm[firearm.id]?.toString() || ""
-                    }
-                    onChangeText={(text) =>
-                      updateRoundsForFirearm(firearm.id, text)
-                    }
-                    placeholder="Enter number of rounds"
-                    keyboardType="numeric"
-                  />
-                </View>
-              )}
+      <View className="mb-4">
+        <TerminalText>PHOTOS</TerminalText>
+        <TouchableOpacity
+          onPress={handleImagePick}
+          className="border border-terminal-border p-3 mb-2"
+        >
+          <TerminalText>ADD PHOTO</TerminalText>
+        </TouchableOpacity>
+        <ScrollView horizontal className="flex-row">
+          {formData.photos.map((photo, index) => (
+            <View key={index} className="relative">
+              <Image source={{ uri: photo }} className="w-40 h-40 m-1" />
+              <TouchableOpacity
+                onPress={() => handleDeletePhoto(index)}
+                className="absolute top-0 right-0 bg-terminal-error p-1"
+              >
+                <TerminalText className="text-xs">X</TerminalText>
+              </TouchableOpacity>
             </View>
           ))}
-        </View>
+        </ScrollView>
+      </View>
 
+      {error && (
         <View className="mb-4">
-          <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
-          <TouchableOpacity
-            onPress={handleImagePick}
-            className="border border-terminal-border p-3 mb-2"
-          >
-            <TerminalText>ADD PHOTO</TerminalText>
-          </TouchableOpacity>
-          <View className="flex-row flex-wrap">
-            {formData.photos.map((photo, index) => (
-              <Image
-                key={index}
-                source={{ uri: photo }}
-                className="w-20 h-20 m-1 border border-terminal-border"
-              />
-            ))}
-          </View>
+          <TerminalText className="text-terminal-error">{error}</TerminalText>
         </View>
+      )}
 
+      <View className="flex-row justify-between">
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          className="border border-terminal-border px-4 py-2"
+        >
+          <TerminalText>CANCEL</TerminalText>
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={handleSubmit}
-          className="border border-terminal-border p-3 mb-4"
-          disabled={loading}
+          disabled={saving}
+          className="border border-terminal-border px-4 py-2"
         >
-          <TerminalText>{loading ? "SAVING..." : "SAVE VISIT"}</TerminalText>
+          <TerminalText>{saving ? "SAVING..." : "SAVE VISIT"}</TerminalText>
         </TouchableOpacity>
-      </Terminal>
+      </View>
     </ScrollView>
   );
 }
