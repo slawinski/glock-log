@@ -49,15 +49,19 @@ const mockFirearms: Firearm[] = [
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [firearms, setFirearms] = useState<Firearm[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [useMockData, setUseMockData] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   // Fetch firearms when the screen is focused
   useFocusEffect(
     React.useCallback(() => {
-      fetchFirearms();
-    }, [])
+      if (initialLoad) {
+        setInitialLoad(false);
+        fetchFirearms();
+      }
+    }, [initialLoad])
   );
 
   const fetchFirearms = async () => {
@@ -70,7 +74,6 @@ export default function HomeScreen() {
       console.log("Received firearms data:", data);
 
       if (data.length === 0) {
-        // If API returns empty array, show empty state
         setFirearms([]);
       } else {
         setFirearms(data);
