@@ -104,26 +104,34 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
-  const renderVisitItem = ({ item }: { item: RangeVisit }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("RangeVisitDetails", { id: item.id })}
-      className="bg-terminal-bg border border-terminal-border p-4 mb-2"
-    >
-      <View className="flex-row justify-between items-center">
-        <View>
-          <TerminalText className="text-lg">{item.location}</TerminalText>
-          <TerminalText className="text-terminal-dim">
-            {new Date(item.date).toLocaleDateString()}
-          </TerminalText>
+  const renderVisitItem = ({ item }: { item: RangeVisit }) => {
+    const totalRounds = Object.values(item.roundsPerFirearm).reduce(
+      (sum, rounds) => sum + rounds,
+      0
+    );
+    return (
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate("RangeVisitDetails", { id: item.id })
+        }
+        className="bg-terminal-bg border border-terminal-border p-4 mb-2"
+      >
+        <View className="flex-row justify-between items-center">
+          <View>
+            <TerminalText className="text-lg">{item.location}</TerminalText>
+            <TerminalText className="text-terminal-dim">
+              {new Date(item.date).toLocaleDateString()}
+            </TerminalText>
+          </View>
+          <View className="items-end">
+            <TerminalText className="text-terminal-dim">
+              {totalRounds} rounds
+            </TerminalText>
+          </View>
         </View>
-        <View className="items-end">
-          <TerminalText className="text-terminal-dim">
-            {item.roundsFired} rounds
-          </TerminalText>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   const renderAmmunitionItem = ({ item }: { item: Ammunition }) => (
     <TouchableOpacity
