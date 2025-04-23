@@ -33,36 +33,30 @@ export default function EditFirearmScreen() {
     datePurchased: new Date(),
     amountPaid: 0,
     photos: [],
-    roundsFired: 0,
-    totalRoundsInInventory: 0,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchFirearm();
-  }, [route.params.id]);
+    if (route.params?.id) {
+      fetchFirearm();
+    }
+  }, [route.params?.id]);
 
   const fetchFirearm = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const firearm = await api.getFirearm(route.params.id);
+      const data = await api.getFirearm(route.params!.id);
       setFormData({
-        modelName: firearm.modelName,
-        caliber: firearm.caliber,
-        datePurchased: firearm.datePurchased,
-        amountPaid: firearm.amountPaid,
-        photos: firearm.photos,
-        roundsFired: firearm.roundsFired,
-        totalRoundsInInventory: firearm.totalRoundsInInventory,
+        modelName: data.modelName,
+        caliber: data.caliber,
+        datePurchased: new Date(data.datePurchased),
+        amountPaid: data.amountPaid,
+        photos: data.photos,
       });
     } catch (error) {
       console.error("Error fetching firearm:", error);
-      setError("Failed to load firearm details");
-    } finally {
-      setLoading(false);
+      Alert.alert("Error", "Failed to load firearm data");
     }
   };
 
@@ -163,10 +157,12 @@ export default function EditFirearmScreen() {
             </TerminalText>
             <TextInput
               className="bg-terminal-bg border border-terminal-border p-2 mb-2 text-terminal-text font-terminal"
-              placeholder="Amount Paid"
+              placeholder="Amount Paid ($)"
               placeholderTextColor="#003300"
               keyboardType="numeric"
-              value={formData.amountPaid.toString()}
+              value={
+                formData.amountPaid > 0 ? formData.amountPaid.toString() : ""
+              }
               onChangeText={(text) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -183,36 +179,6 @@ export default function EditFirearmScreen() {
                 setFormData((prev) => ({
                   ...prev,
                   datePurchased: new Date(text),
-                }))
-              }
-            />
-          </View>
-
-          <View className="mb-4">
-            <TerminalText className="text-lg mb-2">AMMUNITION</TerminalText>
-            <TextInput
-              className="bg-terminal-bg border border-terminal-border p-2 mb-2 text-terminal-text font-terminal"
-              placeholder="Rounds Fired"
-              placeholderTextColor="#003300"
-              keyboardType="numeric"
-              value={formData.roundsFired.toString()}
-              onChangeText={(text) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  roundsFired: parseInt(text) || 0,
-                }))
-              }
-            />
-            <TextInput
-              className="bg-terminal-bg border border-terminal-border p-2 text-terminal-text font-terminal"
-              placeholder="Total Rounds in Inventory"
-              placeholderTextColor="#003300"
-              keyboardType="numeric"
-              value={formData.totalRoundsInInventory.toString()}
-              onChangeText={(text) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  totalRoundsInInventory: parseInt(text) || 0,
                 }))
               }
             />

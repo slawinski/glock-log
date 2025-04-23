@@ -107,102 +107,61 @@ export const api = {
   },
 
   // Create a new firearm
-  createFirearm: async (firearm: FirearmInput): Promise<Firearm> => {
-    try {
-      // Create FormData to handle file uploads
-      const formData = new FormData();
-
-      // Add text fields
-      formData.append("modelName", firearm.modelName);
-      formData.append("caliber", firearm.caliber);
-      formData.append("datePurchased", firearm.datePurchased.toISOString());
-      formData.append("amountPaid", firearm.amountPaid.toString());
-      formData.append("roundsFired", firearm.roundsFired.toString());
-      formData.append(
-        "totalRoundsInInventory",
-        firearm.totalRoundsInInventory.toString()
-      );
-
-      // Add photos
+  createFirearm: async (firearm: FirearmInput) => {
+    const formData = new FormData();
+    formData.append("modelName", firearm.modelName);
+    formData.append("caliber", firearm.caliber);
+    formData.append("datePurchased", firearm.datePurchased.toISOString());
+    formData.append("amountPaid", firearm.amountPaid.toString());
+    if (firearm.photos) {
       firearm.photos.forEach((photo, index) => {
-        // Convert local URI to file object
-        const photoFile = {
+        formData.append("photos", {
           uri: photo,
           type: "image/jpeg",
-          name: `photo-${index}.jpg`,
-        };
-        formData.append("photos", photoFile as any);
+          name: `photo${index}.jpg`,
+        } as any);
       });
-
-      const response = await fetch(`${API_URL}/firearms`, {
-        method: "POST",
-        body: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create firearm");
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error creating firearm:", error);
-      throw error;
     }
+
+    const response = await fetch(`${API_URL}/firearms`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create firearm");
+    }
+
+    return response.json();
   },
 
   // Update a firearm
-  updateFirearm: async (
-    id: string,
-    firearm: FirearmInput
-  ): Promise<Firearm> => {
-    try {
-      // Create FormData to handle file uploads
-      const formData = new FormData();
-
-      // Add text fields
-      formData.append("modelName", firearm.modelName);
-      formData.append("caliber", firearm.caliber);
-      formData.append("datePurchased", firearm.datePurchased.toISOString());
-      formData.append("amountPaid", firearm.amountPaid.toString());
-      formData.append("roundsFired", firearm.roundsFired.toString());
-      formData.append(
-        "totalRoundsInInventory",
-        firearm.totalRoundsInInventory.toString()
-      );
-
-      // Add photos
+  updateFirearm: async (id: string, firearm: FirearmInput) => {
+    const formData = new FormData();
+    formData.append("modelName", firearm.modelName);
+    formData.append("caliber", firearm.caliber);
+    formData.append("datePurchased", firearm.datePurchased.toISOString());
+    formData.append("amountPaid", firearm.amountPaid.toString());
+    if (firearm.photos) {
       firearm.photos.forEach((photo, index) => {
-        // Only add new photos (those that start with file://)
-        if (photo.startsWith("file://")) {
-          const photoFile = {
-            uri: photo,
-            type: "image/jpeg",
-            name: `photo-${index}.jpg`,
-          };
-          formData.append("photos", photoFile as any);
-        }
+        formData.append("photos", {
+          uri: photo,
+          type: "image/jpeg",
+          name: `photo${index}.jpg`,
+        } as any);
       });
-
-      const response = await fetch(`${API_URL}/firearms/${id}`, {
-        method: "PUT",
-        body: formData,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update firearm");
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error updating firearm:", error);
-      throw error;
     }
+
+    const response = await fetch(`${API_URL}/firearms/${id}`, {
+      method: "PUT",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update firearm");
+    }
+
+    return response.json();
   },
 
   // Delete a firearm

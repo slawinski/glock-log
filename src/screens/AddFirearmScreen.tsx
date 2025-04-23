@@ -31,8 +31,6 @@ export default function AddFirearmScreen() {
     datePurchased: new Date(),
     amountPaid: 0,
     photos: [],
-    roundsFired: 0,
-    totalRoundsInInventory: 0,
   });
 
   const handleImagePick = () => {
@@ -70,12 +68,6 @@ export default function AddFirearmScreen() {
           : new Date(),
         amountPaid: formData.amountPaid
           ? parseFloat(formData.amountPaid.toString())
-          : 0,
-        roundsFired: formData.roundsFired
-          ? parseInt(formData.roundsFired.toString())
-          : 0,
-        totalRoundsInInventory: formData.totalRoundsInInventory
-          ? parseInt(formData.totalRoundsInInventory.toString())
           : 0,
       };
 
@@ -145,42 +137,6 @@ export default function AddFirearmScreen() {
                 setFormData((prev) => ({
                   ...prev,
                   datePurchased: new Date(text),
-                }))
-              }
-            />
-          </View>
-
-          <View className="mb-4">
-            <TerminalText className="text-lg mb-2">AMMUNITION</TerminalText>
-            <TextInput
-              className="bg-terminal-bg border border-terminal-border p-2 mb-2 text-terminal-text font-terminal"
-              placeholder="Rounds Fired"
-              placeholderTextColor="#003300"
-              keyboardType="numeric"
-              value={
-                formData.roundsFired > 0 ? formData.roundsFired.toString() : ""
-              }
-              onChangeText={(text) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  roundsFired: parseInt(text) || 0,
-                }))
-              }
-            />
-            <TextInput
-              className="bg-terminal-bg border border-terminal-border p-2 text-terminal-text font-terminal"
-              placeholder="Total Rounds in Inventory"
-              placeholderTextColor="#003300"
-              keyboardType="numeric"
-              value={
-                formData.totalRoundsInInventory > 0
-                  ? formData.totalRoundsInInventory.toString()
-                  : ""
-              }
-              onChangeText={(text) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  totalRoundsInInventory: parseInt(text) || 0,
                 }))
               }
             />

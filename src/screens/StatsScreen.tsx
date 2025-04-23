@@ -7,7 +7,6 @@ import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
 const mockStats: FirearmStats = {
   totalFirearms: 5,
   totalValue: 2999.95,
-  totalRounds: 2500,
   mostUsedCaliber: "9mm",
 };
 
@@ -37,13 +36,6 @@ export default function StatsScreen() {
               <TerminalText>${stats.totalValue.toFixed(2)}</TerminalText>
             </View>
 
-            <View className="flex-row justify-between mb-2">
-              <TerminalText className="text-terminal-dim">
-                TOTAL ROUNDS:
-              </TerminalText>
-              <TerminalText>{stats.totalRounds}</TerminalText>
-            </View>
-
             <View className="flex-row justify-between">
               <TerminalText className="text-terminal-dim">
                 MOST USED CALIBER:
@@ -62,19 +54,6 @@ export default function StatsScreen() {
             <TerminalText className="text-terminal-dim text-center">
               AVERAGE VALUE PER FIREARM: $
               {(stats.totalValue / stats.totalFirearms).toFixed(2)}
-            </TerminalText>
-          </View>
-
-          <View>
-            <TerminalText className="text-lg mb-2">
-              AMMUNITION OVERVIEW
-            </TerminalText>
-            <View className="h-40 border border-terminal-border mb-2">
-              {/* TODO: Add chart visualization */}
-            </View>
-            <TerminalText className="text-terminal-dim text-center">
-              AVERAGE ROUNDS PER FIREARM:{" "}
-              {Math.round(stats.totalRounds / stats.totalFirearms)}
             </TerminalText>
           </View>
         </Terminal>

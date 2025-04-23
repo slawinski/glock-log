@@ -26,8 +26,6 @@ const mockFirearms: Firearm[] = [
     caliber: "9mm",
     datePurchased: new Date("2023-01-15"),
     amountPaid: 599.99,
-    roundsFired: 500,
-    totalRoundsInInventory: 1000,
     photos: [],
     createdAt: new Date("2023-01-15"),
     updatedAt: new Date("2023-01-15"),
@@ -38,8 +36,6 @@ const mockFirearms: Firearm[] = [
     caliber: "9mm",
     datePurchased: new Date("2023-03-20"),
     amountPaid: 549.99,
-    roundsFired: 750,
-    totalRoundsInInventory: 1500,
     photos: [],
     createdAt: new Date("2023-03-20"),
     updatedAt: new Date("2023-03-20"),
@@ -107,10 +103,7 @@ export default function HomeScreen() {
         </View>
         <View className="items-end">
           <TerminalText className="text-terminal-dim">
-            Rounds: {item.totalRoundsInInventory}
-          </TerminalText>
-          <TerminalText className="text-terminal-dim">
-            Fired: {item.roundsFired}
+            ${item.amountPaid.toFixed(2)}
           </TerminalText>
         </View>
       </View>

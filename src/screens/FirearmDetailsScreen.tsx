@@ -113,34 +113,24 @@ export default function FirearmDetailsScreen() {
               {firearm.caliber}
             </TerminalText>
 
-            <View className="flex-row justify-between mb-2">
-              <TerminalText className="text-terminal-dim">
-                DATE PURCHASED:
+            <View className="mb-4">
+              <TerminalText className="text-lg mb-2">
+                PURCHASE DETAILS
               </TerminalText>
-              <TerminalText>
-                {format(firearm.datePurchased, "MMM dd, yyyy")}
-              </TerminalText>
-            </View>
-
-            <View className="flex-row justify-between mb-2">
-              <TerminalText className="text-terminal-dim">
-                AMOUNT PAID:
-              </TerminalText>
-              <TerminalText>${firearm.amountPaid.toFixed(2)}</TerminalText>
-            </View>
-
-            <View className="flex-row justify-between mb-2">
-              <TerminalText className="text-terminal-dim">
-                ROUNDS FIRED:
-              </TerminalText>
-              <TerminalText>{firearm.roundsFired}</TerminalText>
-            </View>
-
-            <View className="flex-row justify-between">
-              <TerminalText className="text-terminal-dim">
-                ROUNDS IN INVENTORY:
-              </TerminalText>
-              <TerminalText>{firearm.totalRoundsInInventory}</TerminalText>
+              <View className="flex-row justify-between mb-2">
+                <TerminalText className="text-terminal-dim">
+                  Amount Paid:
+                </TerminalText>
+                <TerminalText>${firearm.amountPaid.toFixed(2)}</TerminalText>
+              </View>
+              <View className="flex-row justify-between">
+                <TerminalText className="text-terminal-dim">
+                  Date Purchased:
+                </TerminalText>
+                <TerminalText>
+                  {new Date(firearm.datePurchased).toLocaleDateString()}
+                </TerminalText>
+              </View>
             </View>
           </View>
 

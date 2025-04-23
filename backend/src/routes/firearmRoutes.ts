@@ -62,14 +62,7 @@ router.get("/:id", async (req, res) => {
 // Create a new firearm
 router.post("/", upload.array("photos", 5), async (req, res) => {
   try {
-    const {
-      modelName,
-      caliber,
-      datePurchased,
-      amountPaid,
-      roundsFired,
-      totalRoundsInInventory,
-    } = req.body;
+    const { modelName, caliber, datePurchased, amountPaid } = req.body;
     const photos = (req.files as Express.Multer.File[]).map(
       (file) => `/uploads/${file.filename}`
     );
@@ -81,8 +74,6 @@ router.post("/", upload.array("photos", 5), async (req, res) => {
         datePurchased: new Date(datePurchased),
         amountPaid: parseFloat(amountPaid),
         photos,
-        roundsFired: parseInt(roundsFired),
-        totalRoundsInInventory: parseInt(totalRoundsInInventory),
       },
     });
     res.status(201).json(firearm);
@@ -94,14 +85,7 @@ router.post("/", upload.array("photos", 5), async (req, res) => {
 // Update a firearm
 router.put("/:id", upload.array("photos", 5), async (req, res) => {
   try {
-    const {
-      modelName,
-      caliber,
-      datePurchased,
-      amountPaid,
-      roundsFired,
-      totalRoundsInInventory,
-    } = req.body;
+    const { modelName, caliber, datePurchased, amountPaid } = req.body;
     const newPhotos = (req.files as Express.Multer.File[]).map(
       (file) => `/uploads/${file.filename}`
     );
@@ -122,8 +106,6 @@ router.put("/:id", upload.array("photos", 5), async (req, res) => {
         datePurchased: new Date(datePurchased),
         amountPaid: parseFloat(amountPaid),
         photos: [...existingFirearm.photos, ...newPhotos],
-        roundsFired: parseInt(roundsFired),
-        totalRoundsInInventory: parseInt(totalRoundsInInventory),
       },
     });
     res.json(firearm);
@@ -153,10 +135,6 @@ router.get("/stats/overview", async (req, res) => {
       totalFirearms: firearms.length,
       totalValue: firearms.reduce(
         (sum, firearm) => sum + firearm.amountPaid,
-        0
-      ),
-      totalRounds: firearms.reduce(
-        (sum, firearm) => sum + firearm.totalRoundsInInventory,
         0
       ),
       mostUsedCaliber: firearms.reduce((acc, firearm) => {

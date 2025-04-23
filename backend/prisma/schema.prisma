@@ -17,8 +17,6 @@ model Firearm {
   datePurchased        DateTime
   amountPaid           Float
   photos               String[] // Array of photo URLs
-  roundsFired          Int
-  totalRoundsInInventory Int
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
