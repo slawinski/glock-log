@@ -55,22 +55,22 @@ export default function App() {
           <Stack.Screen
             name="Home"
             component={HomeScreen}
-            options={{ title: "> TERMINAL ACCESS" }}
+            options={{ title: "> GlOCK LOG" }}
           />
           <Stack.Screen
             name="AddFirearm"
             component={AddFirearmScreen}
-            options={{ title: "> NEW ENTRY" }}
+            options={{ title: "> NEW FIREARM" }}
           />
           <Stack.Screen
             name="FirearmDetails"
             component={FirearmDetailsScreen}
-            options={{ title: "> DATABASE QUERY" }}
+            options={{ title: "> FIREARM DETAILS" }}
           />
           <Stack.Screen
             name="EditFirearm"
             component={EditFirearmScreen}
-            options={{ title: "> EDIT ENTRY" }}
+            options={{ title: "> EDIT FIREARM" }}
           />
           <Stack.Screen
             name="Stats"
