@@ -13,8 +13,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
 import { format } from "date-fns";
-import { api } from "../services/api";
-import { Firearm } from "../types/firearm";
+import { Firearm } from "../services/storage";
+import { storage } from "../services/storage";
 import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
@@ -41,8 +41,13 @@ export default function FirearmDetailsScreen() {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getFirearm(route.params.id);
-      setFirearm(data);
+      const firearms = await storage.getFirearms();
+      const foundFirearm = firearms.find((f) => f.id === route.params.id);
+      if (foundFirearm) {
+        setFirearm(foundFirearm);
+      } else {
+        setError("Firearm not found");
+      }
     } catch (error) {
       console.error("Error fetching firearm:", error);
       setError("Failed to load firearm details");
@@ -67,7 +72,7 @@ export default function FirearmDetailsScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              await api.deleteFirearm(firearm.id);
+              await storage.deleteFirearm(firearm.id);
               navigation.goBack();
             } catch (error) {
               console.error("Error deleting firearm:", error);
@@ -120,22 +125,15 @@ export default function FirearmDetailsScreen() {
       <View className="mb-4">
         <TerminalText>DATE PURCHASED</TerminalText>
         <TerminalText className="text-terminal-dim">
-          {new Date(firearm.datePurchased).toLocaleDateString()}
+          {new Date(firearm.purchaseDate).toLocaleDateString()}
         </TerminalText>
       </View>
 
-      <View className="mb-4">
-        <TerminalText>AMOUNT PAID</TerminalText>
-        <TerminalText className="text-terminal-dim">
-          ${firearm.amountPaid.toFixed(2)}
-        </TerminalText>
-      </View>
-
-      {firearm.photos.length > 0 && (
+      {firearm.notes && (
         <View className="mb-4">
           <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
           <ScrollView horizontal className="flex-row">
-            {firearm.photos.map((photo, index) => (
+            {firearm.notes.split("\n").map((photo, index) => (
               <Image
                 key={index}
                 source={{ uri: photo }}
@@ -152,6 +150,12 @@ export default function FirearmDetailsScreen() {
           className="border border-terminal-border px-4 py-2"
         >
           <TerminalText>EDIT</TerminalText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleDelete}
+          className="border border-terminal-border px-4 py-2"
+        >
+          <TerminalText>DELETE</TerminalText>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => navigation.goBack()}

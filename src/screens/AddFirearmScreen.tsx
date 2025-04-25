@@ -11,8 +11,8 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
 import * as ImagePicker from "react-native-image-picker";
-import { FirearmInput } from "../types/firearm";
-import { api } from "../services/api";
+import { Firearm } from "../services/storage";
+import { storage } from "../services/storage";
 import { TerminalText, TerminalInput } from "../components/Terminal";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
@@ -23,10 +23,10 @@ type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
 
 export default function AddFirearmScreen() {
   const navigation = useNavigation<AddFirearmScreenNavigationProp>();
-  const [formData, setFormData] = useState<FirearmInput>({
+  const [formData, setFormData] = useState<Omit<Firearm, "id">>({
     modelName: "",
     caliber: "",
-    datePurchased: new Date(),
+    datePurchased: new Date().toISOString(),
     amountPaid: 0,
     photos: [],
     roundsFired: 0,
@@ -62,7 +62,12 @@ export default function AddFirearmScreen() {
         return;
       }
 
-      await api.createFirearm(formData);
+      const newFirearm: Firearm = {
+        ...formData,
+        id: `firearm-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      };
+
+      await storage.saveFirearm(newFirearm);
       navigation.goBack();
     } catch (error) {
       console.error("Error creating firearm:", error);
@@ -91,8 +96,6 @@ export default function AddFirearmScreen() {
 
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
-      <TerminalText className="text-2xl mb-6">NEW FIREARM</TerminalText>
-
       <View className="mb-4">
         <TerminalText>MODEL NAME</TerminalText>
         <TerminalInput
@@ -116,18 +119,31 @@ export default function AddFirearmScreen() {
       </View>
 
       <View className="mb-4">
+        <TerminalText>AMOUNT PAID</TerminalText>
+        <TerminalInput
+          value={formData.amountPaid.toString()}
+          onChangeText={(text) => {
+            const amount = parseFloat(text) || 0;
+            setFormData((prev) => ({ ...prev, amountPaid: amount }));
+          }}
+          placeholder="Enter amount paid"
+          keyboardType="numeric"
+        />
+      </View>
+
+      <View className="mb-4">
         <TerminalText>DATE PURCHASED</TerminalText>
         <TouchableOpacity
           onPress={() => setShowDatePicker(true)}
           className="border border-terminal-border p-2"
         >
           <TerminalText>
-            {formData.datePurchased.toLocaleDateString()}
+            {new Date(formData.datePurchased).toLocaleDateString()}
           </TerminalText>
         </TouchableOpacity>
         {showDatePicker && (
           <DateTimePicker
-            value={formData.datePurchased}
+            value={new Date(formData.datePurchased)}
             mode="date"
             display="default"
             onChange={(event, selectedDate) => {
@@ -135,27 +151,12 @@ export default function AddFirearmScreen() {
               if (selectedDate) {
                 setFormData((prev) => ({
                   ...prev,
-                  datePurchased: selectedDate,
+                  datePurchased: selectedDate.toISOString(),
                 }));
               }
             }}
           />
         )}
-      </View>
-
-      <View className="mb-4">
-        <TerminalText>AMOUNT PAID</TerminalText>
-        <TerminalInput
-          value={formData.amountPaid.toString()}
-          onChangeText={(text) =>
-            setFormData((prev) => ({
-              ...prev,
-              amountPaid: parseFloat(text) || 0,
-            }))
-          }
-          placeholder="Enter amount paid"
-          keyboardType="numeric"
-        />
       </View>
 
       <View className="mb-4">

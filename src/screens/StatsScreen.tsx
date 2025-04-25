@@ -8,15 +8,12 @@ import {
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { TerminalText } from "../components/Terminal";
-import { api } from "../services/api";
-import { Firearm } from "../types/firearm";
-import { Ammunition } from "../types/ammunition";
-import { RangeVisit } from "../types/rangeVisit";
+import { Firearm, RangeVisit, Ammunition } from "../services/storage";
+import { storage } from "../services/storage";
 
 type TabType = "visits" | "firearms" | "ammunition";
 
 export default function StatsScreen() {
-  const [stats, setStats] = useState<any>(null);
   const [firearms, setFirearms] = useState<Firearm[]>([]);
   const [ammunition, setAmmunition] = useState<Ammunition[]>([]);
   const [rangeVisits, setRangeVisits] = useState<RangeVisit[]>([]);
@@ -41,14 +38,11 @@ export default function StatsScreen() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [statsData, firearmsData, ammunitionData, visitsData] =
-        await Promise.all([
-          api.getRangeVisitStats(),
-          api.getFirearms(),
-          api.getAmmunition(),
-          api.getRangeVisits(),
-        ]);
-      setStats(statsData);
+      const [firearmsData, ammunitionData, visitsData] = await Promise.all([
+        storage.getFirearms(),
+        storage.getAmmunition(),
+        storage.getRangeVisits(),
+      ]);
       setFirearms(firearmsData);
       setAmmunition(ammunitionData);
       setRangeVisits(visitsData);
@@ -203,7 +197,29 @@ export default function StatsScreen() {
       Object.entries(visitsByMonth).sort(([, a], [, b]) => b - a)[0]?.[0] ||
       "None";
 
+    const totalRoundsFired = rangeVisits.reduce((sum, visit) => {
+      return (
+        sum + Object.values(visit.roundsPerFirearm).reduce((a, b) => a + b, 0)
+      );
+    }, 0);
+
+    const locationCounts = rangeVisits.reduce((acc, visit) => {
+      if (visit.location) {
+        acc[visit.location] = (acc[visit.location] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    const mostVisitedLocation =
+      Object.entries(locationCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ||
+      "None";
+
     return {
+      totalVisits: rangeVisits.length,
+      totalRoundsFired,
+      mostVisitedLocation,
+      averageRoundsPerVisit:
+        rangeVisits.length > 0 ? totalRoundsFired / rangeVisits.length : 0,
       busiestMonth,
     };
   };
@@ -268,7 +284,7 @@ export default function StatsScreen() {
         <View className="mb-4">
           <TerminalText className="text-lg mb-2">TOTAL VISITS</TerminalText>
           <TerminalText className="text-terminal-dim">
-            {stats.totalVisits}
+            {visitStats.totalVisits}
           </TerminalText>
         </View>
 
@@ -277,16 +293,7 @@ export default function StatsScreen() {
             TOTAL ROUNDS FIRED
           </TerminalText>
           <TerminalText className="text-terminal-dim">
-            {stats.totalRoundsFired}
-          </TerminalText>
-        </View>
-
-        <View className="mb-4">
-          <TerminalText className="text-lg mb-2">
-            AVERAGE ROUNDS PER VISIT
-          </TerminalText>
-          <TerminalText className="text-terminal-dim">
-            {Math.round(stats.averageRoundsPerVisit)}
+            {visitStats.totalRoundsFired}
           </TerminalText>
         </View>
 
@@ -295,7 +302,16 @@ export default function StatsScreen() {
             MOST VISITED LOCATION
           </TerminalText>
           <TerminalText className="text-terminal-dim">
-            {stats.mostVisitedLocation || "No visits recorded"}
+            {visitStats.mostVisitedLocation}
+          </TerminalText>
+        </View>
+
+        <View className="mb-4">
+          <TerminalText className="text-lg mb-2">
+            AVERAGE ROUNDS PER VISIT
+          </TerminalText>
+          <TerminalText className="text-terminal-dim">
+            {visitStats.averageRoundsPerVisit.toFixed(1)}
           </TerminalText>
         </View>
 
@@ -311,8 +327,7 @@ export default function StatsScreen() {
 
   const renderFirearmsTab = () => {
     const firearmStats = calculateFirearmStats();
-    const roundsTimeline = calculateFirearmRoundsTimeline();
-    const isAllSelected = visibleFirearms.size === firearms.length;
+    const timelineData = calculateFirearmRoundsTimeline();
 
     return (
       <ScrollView className="flex-1">
@@ -324,9 +339,7 @@ export default function StatsScreen() {
         </View>
 
         <View className="mb-4">
-          <TerminalText className="text-lg mb-2">
-            TOTAL COLLECTION VALUE
-          </TerminalText>
+          <TerminalText className="text-lg mb-2">TOTAL VALUE</TerminalText>
           <TerminalText className="text-terminal-dim">
             ${firearmStats.totalValue.toFixed(2)}
           </TerminalText>
@@ -346,110 +359,77 @@ export default function StatsScreen() {
             MOST USED FIREARM
           </TerminalText>
           <TerminalText className="text-terminal-dim">
-            {firearmStats.mostUsedFirearm
-              ? `${firearmStats.mostUsedFirearm.modelName} (${firearmStats.mostUsedFirearm.roundsFired} rounds)`
-              : "None"}
+            {firearmStats.mostUsedFirearm?.modelName} (
+            {firearmStats.mostUsedFirearm?.roundsFired} rounds)
           </TerminalText>
         </View>
 
-        <View className="mb-4">
-          <TerminalText className="text-lg mb-2">
-            ROUNDS FIRED OVER TIME
-          </TerminalText>
-
-          <View className="flex-row flex-wrap gap-2 mb-4">
-            <TouchableOpacity
-              onPress={() => selectFirearm(null)}
-              className={`px-3 py-1 border ${
-                isAllSelected
-                  ? "border-terminal-text bg-terminal-text/10"
-                  : "border-terminal-border"
-              }`}
-            >
-              <TerminalText>ALL</TerminalText>
-            </TouchableOpacity>
-            {firearms.map((firearm) => (
-              <TouchableOpacity
-                key={firearm.id}
-                onPress={() => selectFirearm(firearm.id)}
-                className={`px-3 py-1 border ${
-                  visibleFirearms.has(firearm.id) && !isAllSelected
-                    ? "border-terminal-text bg-terminal-text/10"
-                    : "border-terminal-border"
-                }`}
-              >
-                <TerminalText>{firearm.modelName}</TerminalText>
-              </TouchableOpacity>
-            ))}
+        {timelineData.labels.length > 0 && (
+          <View className="mb-4">
+            <TerminalText className="text-lg mb-2">
+              ROUNDS FIRED TIMELINE
+            </TerminalText>
+            <LineChart
+              data={timelineData}
+              width={Dimensions.get("window").width - 32}
+              height={220}
+              chartConfig={{
+                backgroundColor: "#0a0a0a",
+                backgroundGradientFrom: "#0a0a0a",
+                backgroundGradientTo: "#0a0a0a",
+                decimalPlaces: 0,
+                color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
+                style: {
+                  borderRadius: 16,
+                },
+                propsForDots: {
+                  r: "6",
+                  strokeWidth: "2",
+                  stroke: "#00ff00",
+                },
+              }}
+              bezier
+              style={{
+                marginVertical: 8,
+                borderRadius: 16,
+              }}
+            />
+            <View className="mt-2">
+              {timelineData.legend.map((legend, index) => (
+                <TerminalText key={index} className="text-terminal-dim">
+                  {legend}
+                </TerminalText>
+              ))}
+            </View>
           </View>
-
-          <LineChart
-            data={roundsTimeline}
-            width={Dimensions.get("window").width}
-            height={220}
-            chartConfig={{
-              backgroundColor: "#1a1a1a",
-              backgroundGradientFrom: "#1a1a1a",
-              backgroundGradientTo: "#1a1a1a",
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
-              style: {
-                borderRadius: 0,
-              },
-              propsForLabels: {
-                fontSize: 10,
-                fill: "#00ff00",
-              },
-            }}
-            style={{
-              marginVertical: 8,
-              borderRadius: 0,
-              backgroundColor: "#1a1a1a",
-              padding: 8,
-            }}
-            withDots={true}
-            withInnerLines={true}
-            withOuterLines={true}
-            withVerticalLines={false}
-            withHorizontalLines={true}
-            withVerticalLabels={true}
-            withHorizontalLabels={true}
-            segments={4}
-          />
-        </View>
+        )}
       </ScrollView>
     );
   };
 
   const renderAmmunitionTab = () => {
-    const ammunitionStats = calculateAmmunitionStats();
+    const ammoStats = calculateAmmunitionStats();
     return (
       <ScrollView className="flex-1">
         <View className="mb-4">
-          <TerminalText className="text-lg mb-2">
-            TOTAL ROUNDS IN STOCK
-          </TerminalText>
+          <TerminalText className="text-lg mb-2">TOTAL ROUNDS</TerminalText>
           <TerminalText className="text-terminal-dim">
-            {ammunitionStats.totalRounds}
+            {ammoStats.totalRounds}
           </TerminalText>
         </View>
 
         <View className="mb-4">
-          <TerminalText className="text-lg mb-2">
-            TOTAL SPENT ON AMMUNITION
-          </TerminalText>
+          <TerminalText className="text-lg mb-2">TOTAL SPENT</TerminalText>
           <TerminalText className="text-terminal-dim">
-            ${ammunitionStats.totalSpent.toFixed(2)}
+            ${ammoStats.totalSpent.toFixed(2)}
           </TerminalText>
         </View>
 
         <View className="mb-4">
-          <TerminalText className="text-lg mb-2">
-            AVERAGE COST PER ROUND
-          </TerminalText>
+          <TerminalText className="text-lg mb-2">COST PER ROUND</TerminalText>
           <TerminalText className="text-terminal-dim">
-            ${ammunitionStats.costPerRound.toFixed(2)}
+            ${ammoStats.costPerRound.toFixed(2)}
           </TerminalText>
         </View>
 
@@ -458,7 +438,7 @@ export default function StatsScreen() {
             MOST STOCKED CALIBER
           </TerminalText>
           <TerminalText className="text-terminal-dim">
-            {ammunitionStats.mostStockedCaliber}
+            {ammoStats.mostStockedCaliber}
           </TerminalText>
         </View>
       </ScrollView>
@@ -474,24 +454,28 @@ export default function StatsScreen() {
     );
   }
 
-  if (error || !stats) {
+  if (error) {
     return (
       <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <TerminalText className="text-terminal-error text-lg">
-          {error || "Failed to load statistics"}
+        <TerminalText className="text-terminal-error text-lg mb-4">
+          {error}
         </TerminalText>
+        <TouchableOpacity
+          onPress={fetchData}
+          className="border border-terminal-border px-4 py-2"
+        >
+          <TerminalText>RETRY</TerminalText>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-terminal-bg">
+    <View className="flex-1 bg-terminal-bg p-4">
       {renderTabBar()}
-      <View className="flex-1 p-4">
-        {activeTab === "visits" && renderVisitsTab()}
-        {activeTab === "firearms" && renderFirearmsTab()}
-        {activeTab === "ammunition" && renderAmmunitionTab()}
-      </View>
+      {activeTab === "visits" && renderVisitsTab()}
+      {activeTab === "firearms" && renderFirearmsTab()}
+      {activeTab === "ammunition" && renderAmmunitionTab()}
     </View>
   );
 }

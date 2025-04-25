@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
-import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
-import { api } from "../services/api";
-import { Ammunition } from "../types/ammunition";
+import { TerminalText, TerminalInput } from "../components/Terminal";
+import { Ammunition } from "../services/storage";
+import { storage } from "../services/storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 type EditAmmunitionScreenNavigationProp = NativeStackNavigationProp<
@@ -22,96 +28,108 @@ type EditAmmunitionScreenRouteProp = RouteProp<
 export default function EditAmmunitionScreen() {
   const navigation = useNavigation<EditAmmunitionScreenNavigationProp>();
   const route = useRoute<EditAmmunitionScreenRouteProp>();
-  const [ammunition, setAmmunition] = useState<Ammunition | null>(null);
+  const [formData, setFormData] = useState<Omit<Ammunition, "id">>({
+    caliber: "",
+    brand: "",
+    grain: 0,
+    quantity: 0,
+    amountPaid: 0,
+    purchaseDate: new Date().toISOString(),
+    notes: undefined,
+  });
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
-    fetchAmmunition();
-  }, []);
+    if (route.params?.id) {
+      fetchAmmunition();
+    }
+  }, [route.params?.id]);
 
   const fetchAmmunition = async () => {
     try {
       setLoading(true);
-      setError(null);
-      const data = await api.getAmmunition();
-      const foundAmmunition = data.find((item) => item.id === route.params.id);
-      if (foundAmmunition) {
-        setAmmunition(foundAmmunition);
+      const ammunitionList = await storage.getAmmunition();
+      const ammunition = ammunitionList.find((a) => a.id === route.params!.id);
+      if (ammunition) {
+        const { id, ...ammunitionData } = ammunition;
+        setFormData({
+          ...ammunitionData,
+          notes: ammunitionData.notes || "",
+        });
       } else {
         setError("Ammunition not found");
       }
     } catch (error) {
       console.error("Error fetching ammunition:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to fetch ammunition"
-      );
+      Alert.alert("Error", "Failed to load ammunition data");
     } finally {
       setLoading(false);
     }
   };
 
   const handleSubmit = async () => {
-    if (!ammunition) return;
-
     try {
-      setLoading(true);
-      setError(null);
+      setSaving(true);
 
-      await api.updateAmmunition(ammunition.id, {
-        caliber: ammunition.caliber,
-        brand: ammunition.brand,
-        grain: ammunition.grain,
-        quantity: ammunition.quantity,
-        datePurchased: ammunition.datePurchased,
-        amountPaid: ammunition.amountPaid,
-        notes: ammunition.notes,
-      });
+      // Validate required fields
+      if (
+        !formData.caliber ||
+        !formData.brand ||
+        !formData.grain ||
+        !formData.quantity ||
+        !formData.amountPaid
+      ) {
+        Alert.alert("Error", "All fields are required");
+        return;
+      }
 
+      const updatedAmmunition: Ammunition = {
+        ...formData,
+        id: route.params.id,
+      };
+
+      await storage.saveAmmunition(updatedAmmunition);
       navigation.goBack();
     } catch (error) {
       console.error("Error updating ammunition:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to update ammunition"
-      );
+      Alert.alert("Error", "Failed to update ammunition. Please try again.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  if (loading && !ammunition) {
+  if (loading) {
     return (
-      <View className="flex-1 bg-terminal-bg p-4 justify-center items-center">
-        <TerminalText>LOADING...</TerminalText>
+      <View className="flex-1 justify-center items-center bg-terminal-bg">
+        <ActivityIndicator size="large" color="#00ff00" />
+        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
       </View>
     );
   }
 
-  if (error || !ammunition) {
+  if (error) {
     return (
-      <View className="flex-1 bg-terminal-bg p-4 justify-center items-center">
-        <TerminalText className="text-terminal-error mb-4">
-          {error || "Ammunition not found"}
+      <View className="flex-1 justify-center items-center bg-terminal-bg">
+        <TerminalText className="text-terminal-error text-lg">
+          {error}
         </TerminalText>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>GO BACK</TerminalText>
-        </TouchableOpacity>
       </View>
     );
   }
 
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
+      <TerminalText className="text-2xl mb-6">EDIT AMMUNITION</TerminalText>
+
       <View className="mb-4">
         <TerminalText>CALIBER</TerminalText>
         <TerminalInput
-          value={ammunition.caliber}
+          value={formData.caliber}
           onChangeText={(text) =>
-            setAmmunition({ ...ammunition, caliber: text })
+            setFormData((prev) => ({ ...prev, caliber: text }))
           }
           placeholder="e.g., 9mm"
         />
@@ -120,8 +138,10 @@ export default function EditAmmunitionScreen() {
       <View className="mb-4">
         <TerminalText>BRAND</TerminalText>
         <TerminalInput
-          value={ammunition.brand}
-          onChangeText={(text) => setAmmunition({ ...ammunition, brand: text })}
+          value={formData.brand}
+          onChangeText={(text) =>
+            setFormData((prev) => ({ ...prev, brand: text }))
+          }
           placeholder="e.g., Federal"
         />
       </View>
@@ -129,9 +149,9 @@ export default function EditAmmunitionScreen() {
       <View className="mb-4">
         <TerminalText>GRAIN</TerminalText>
         <TerminalInput
-          value={ammunition.grain.toString()}
+          value={String(formData.grain)}
           onChangeText={(text) =>
-            setAmmunition({ ...ammunition, grain: parseInt(text) || 0 })
+            setFormData((prev) => ({ ...prev, grain: parseInt(text) || 0 }))
           }
           placeholder="e.g., 115"
           keyboardType="numeric"
@@ -141,11 +161,26 @@ export default function EditAmmunitionScreen() {
       <View className="mb-4">
         <TerminalText>QUANTITY</TerminalText>
         <TerminalInput
-          value={ammunition.quantity.toString()}
+          value={String(formData.quantity)}
           onChangeText={(text) =>
-            setAmmunition({ ...ammunition, quantity: parseInt(text) || 0 })
+            setFormData((prev) => ({ ...prev, quantity: parseInt(text) || 0 }))
           }
           placeholder="e.g., 1000"
+          keyboardType="numeric"
+        />
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>AMOUNT PAID</TerminalText>
+        <TerminalInput
+          value={String(formData.amountPaid)}
+          onChangeText={(text) =>
+            setFormData((prev) => ({
+              ...prev,
+              amountPaid: parseFloat(text) || 0,
+            }))
+          }
+          placeholder="e.g., 299.99"
           keyboardType="numeric"
         />
       </View>
@@ -157,21 +192,21 @@ export default function EditAmmunitionScreen() {
           className="border border-terminal-border p-2"
         >
           <TerminalText>
-            {new Date(ammunition.datePurchased).toLocaleDateString()}
+            {new Date(formData.purchaseDate).toLocaleDateString()}
           </TerminalText>
         </TouchableOpacity>
         {showDatePicker && (
           <DateTimePicker
-            value={new Date(ammunition.datePurchased)}
+            value={new Date(formData.purchaseDate)}
             mode="date"
             display="default"
             onChange={(event, selectedDate) => {
               setShowDatePicker(false);
               if (selectedDate) {
-                setAmmunition({
-                  ...ammunition,
-                  datePurchased: selectedDate.toISOString(),
-                });
+                setFormData((prev) => ({
+                  ...prev,
+                  purchaseDate: selectedDate.toISOString(),
+                }));
               }
             }}
           />
@@ -179,22 +214,12 @@ export default function EditAmmunitionScreen() {
       </View>
 
       <View className="mb-4">
-        <TerminalText>AMOUNT PAID</TerminalText>
-        <TerminalInput
-          value={ammunition.amountPaid.toString()}
-          onChangeText={(text) =>
-            setAmmunition({ ...ammunition, amountPaid: parseFloat(text) || 0 })
-          }
-          placeholder="e.g., 299.99"
-          keyboardType="numeric"
-        />
-      </View>
-
-      <View className="mb-4">
         <TerminalText>NOTES</TerminalText>
         <TerminalInput
-          value={ammunition.notes || ""}
-          onChangeText={(text) => setAmmunition({ ...ammunition, notes: text })}
+          value={formData.notes || ""}
+          onChangeText={(text) =>
+            setFormData((prev) => ({ ...prev, notes: text }))
+          }
           placeholder="Optional notes"
           multiline
         />
@@ -215,10 +240,10 @@ export default function EditAmmunitionScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={handleSubmit}
-          disabled={loading}
+          disabled={saving}
           className="border border-terminal-border px-4 py-2"
         >
-          <TerminalText>{loading ? "SAVING..." : "SAVE CHANGES"}</TerminalText>
+          <TerminalText>{saving ? "SAVING..." : "SAVE CHANGES"}</TerminalText>
         </TouchableOpacity>
       </View>
     </ScrollView>

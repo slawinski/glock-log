@@ -12,9 +12,8 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
-import { RangeVisit } from "../types/rangeVisit";
-import { Firearm } from "../types/firearm";
-import { api } from "../services/api";
+import { RangeVisit, Firearm } from "../services/storage";
+import { storage } from "../services/storage";
 import { TerminalText } from "../components/Terminal";
 
 type RangeVisitDetailsScreenNavigationProp = NativeStackNavigationProp<
@@ -42,14 +41,22 @@ export default function RangeVisitDetailsScreen() {
   const fetchVisit = async () => {
     try {
       setLoading(true);
-      const data = await api.getRangeVisit(route.params!.id);
-      setVisit(data);
+      const visits = await storage.getRangeVisits();
+      const foundVisit = visits.find((v) => v.id === route.params!.id);
+      if (!foundVisit) {
+        setError("Range visit not found");
+        return;
+      }
+      setVisit(foundVisit);
 
       // Fetch details for each firearm used
       const firearmDetails: Record<string, Firearm> = {};
-      for (const firearmId of data.firearmsUsed) {
-        const firearm = await api.getFirearm(firearmId);
-        firearmDetails[firearmId] = firearm;
+      const allFirearms = await storage.getFirearms();
+      for (const firearmId of Object.keys(foundVisit.roundsPerFirearm)) {
+        const firearm = allFirearms.find((f) => f.id === firearmId);
+        if (firearm) {
+          firearmDetails[firearmId] = firearm;
+        }
       }
       setFirearms(firearmDetails);
     } catch (error) {
@@ -71,7 +78,7 @@ export default function RangeVisitDetailsScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              await api.deleteRangeVisit(route.params.id);
+              await storage.deleteRangeVisit(route.params.id);
               navigation.goBack();
             } catch (error) {
               console.error("Error deleting range visit:", error);
@@ -122,26 +129,26 @@ export default function RangeVisitDetailsScreen() {
 
       <View className="mb-4">
         <TerminalText className="text-lg mb-2">FIREARMS USED</TerminalText>
-        {visit.firearmsUsed.map((firearmId) => {
-          const firearm = firearms[firearmId];
-          const roundsFired = visit.roundsPerFirearm[firearmId] || 0;
-          return (
-            <View key={firearmId} className="mb-2">
-              <TerminalText>
-                {firearm?.modelName} ({firearm?.caliber})
-              </TerminalText>
-              <TerminalText className="text-terminal-dim">
-                Rounds Fired: {roundsFired}
-              </TerminalText>
-            </View>
-          );
-        })}
+        {Object.entries(visit.roundsPerFirearm).map(
+          ([firearmId, roundsFired]) => {
+            const firearm = firearms[firearmId];
+            return (
+              <View key={firearmId} className="mb-2">
+                <TerminalText>
+                  {firearm?.modelName} ({firearm?.caliber})
+                </TerminalText>
+                <TerminalText className="text-terminal-dim">
+                  Rounds Fired: {roundsFired}
+                </TerminalText>
+              </View>
+            );
+          }
+        )}
         <View className="mt-4">
           <TerminalText className="text-lg">
             TOTAL ROUNDS FIRED:{" "}
-            {visit.firearmsUsed.reduce(
-              (total, firearmId) =>
-                total + (visit.roundsPerFirearm[firearmId] || 0),
+            {Object.values(visit.roundsPerFirearm).reduce(
+              (total, rounds) => total + rounds,
               0
             )}
           </TerminalText>
@@ -157,11 +164,11 @@ export default function RangeVisitDetailsScreen() {
         </View>
       )}
 
-      {visit.photos.length > 0 && (
+      {visit.notes && (
         <View className="mb-4">
           <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
           <ScrollView horizontal className="flex-row">
-            {visit.photos.map((photo, index) => (
+            {visit.notes.split("\n").map((photo, index) => (
               <Image
                 key={index}
                 source={{ uri: photo }}

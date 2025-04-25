@@ -10,10 +10,8 @@ import {
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
-import { Firearm } from "../types/firearm";
-import { RangeVisit } from "../types/rangeVisit";
-import { Ammunition } from "../types/ammunition";
-import { api } from "../services/api";
+import { Firearm, RangeVisit, Ammunition } from "../services/storage";
+import { storage } from "../services/storage";
 import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -53,9 +51,9 @@ export default function HomeScreen() {
       console.log("Fetching data...");
 
       const [firearmsData, visitsData, ammunitionData] = await Promise.all([
-        api.getFirearms(),
-        api.getRangeVisits(),
-        api.getAmmunition(),
+        storage.getFirearms(),
+        storage.getRangeVisits(),
+        storage.getAmmunition(),
       ]);
 
       console.log("Received firearms data:", firearmsData);

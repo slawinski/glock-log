@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
-import { Terminal, TerminalText } from "../components/Terminal";
-import { api } from "../services/api";
-import { Ammunition } from "../types/ammunition";
+import { TerminalText } from "../components/Terminal";
+import { Ammunition } from "../services/storage";
+import { storage } from "../services/storage";
 
 type AmmunitionDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -27,14 +27,15 @@ export default function AmmunitionDetailsScreen() {
 
   useEffect(() => {
     fetchAmmunition();
-  }, []);
+  }, [route.params?.id]);
 
   const fetchAmmunition = async () => {
     try {
       setLoading(true);
-      setError(null);
-      const data = await api.getAmmunition();
-      const foundAmmunition = data.find((item) => item.id === route.params.id);
+      const ammunitionList = await storage.getAmmunition();
+      const foundAmmunition = ammunitionList.find(
+        (a) => a.id === route.params!.id
+      );
       if (foundAmmunition) {
         setAmmunition(foundAmmunition);
       } else {
@@ -42,34 +43,58 @@ export default function AmmunitionDetailsScreen() {
       }
     } catch (error) {
       console.error("Error fetching ammunition:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to fetch ammunition"
-      );
+      setError("Failed to load ammunition details");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDelete = async () => {
+    if (!ammunition) return;
+
+    Alert.alert(
+      "Delete Ammunition",
+      "Are you sure you want to delete this ammunition? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await storage.deleteAmmunition(ammunition.id);
+              navigation.goBack();
+            } catch (error) {
+              console.error("Error deleting ammunition:", error);
+              Alert.alert(
+                "Error",
+                "Failed to delete ammunition. Please try again."
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
-      <View className="flex-1 bg-terminal-bg p-4 justify-center items-center">
-        <TerminalText>LOADING...</TerminalText>
+      <View className="flex-1 justify-center items-center bg-terminal-bg">
+        <ActivityIndicator size="large" color="#00ff00" />
+        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
       </View>
     );
   }
 
   if (error || !ammunition) {
     return (
-      <View className="flex-1 bg-terminal-bg p-4 justify-center items-center">
-        <TerminalText className="text-terminal-error mb-4">
-          {error || "Ammunition not found"}
+      <View className="flex-1 justify-center items-center bg-terminal-bg">
+        <TerminalText className="text-terminal-error text-lg">
+          {error || "ENTRY NOT FOUND"}
         </TerminalText>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>GO BACK</TerminalText>
-        </TouchableOpacity>
       </View>
     );
   }
@@ -91,16 +116,16 @@ export default function AmmunitionDetailsScreen() {
       </View>
 
       <View className="mb-4">
-        <TerminalText>DATE PURCHASED</TerminalText>
+        <TerminalText>AMOUNT PAID</TerminalText>
         <TerminalText className="text-terminal-dim">
-          {new Date(ammunition.datePurchased).toLocaleDateString()}
+          ${ammunition.amountPaid.toFixed(2)}
         </TerminalText>
       </View>
 
       <View className="mb-4">
-        <TerminalText>AMOUNT PAID</TerminalText>
+        <TerminalText>DATE PURCHASED</TerminalText>
         <TerminalText className="text-terminal-dim">
-          ${ammunition.amountPaid.toFixed(2)}
+          {new Date(ammunition.purchaseDate).toLocaleDateString()}
         </TerminalText>
       </View>
 
@@ -121,6 +146,12 @@ export default function AmmunitionDetailsScreen() {
           className="border border-terminal-border px-4 py-2"
         >
           <TerminalText>EDIT</TerminalText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleDelete}
+          className="border border-terminal-border px-4 py-2"
+        >
+          <TerminalText>DELETE</TerminalText>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
