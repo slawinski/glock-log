@@ -11,12 +11,11 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
 import * as ImagePicker from "react-native-image-picker";
-import { Firearm } from "../services/storage";
 import { storage } from "../services/storage";
 import { TerminalText, TerminalInput } from "../components/Terminal";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import FirearmImage from "../components/FirearmImage";
-import { firearmSchema } from "../validation/schemas";
+import { firearmInputSchema, FirearmInput } from "../validation/inputSchemas";
 
 type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -25,13 +24,13 @@ type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
 
 export default function AddFirearmScreen() {
   const navigation = useNavigation<AddFirearmScreenNavigationProp>();
-  const [formData, setFormData] = useState<Omit<Firearm, "id">>({
+  const [formData, setFormData] = useState<FirearmInput>({
     modelName: "",
     caliber: "",
     datePurchased: new Date().toISOString(),
     amountPaid: 0,
     photos: [],
-    roundsFired: 0,
+    notes: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +47,7 @@ export default function AddFirearmScreen() {
         if (response.assets && response.assets[0].uri) {
           setFormData((prev) => ({
             ...prev,
-            photos: [...prev.photos, response.assets![0].uri!],
+            photos: [...(prev.photos || []), response.assets![0].uri!],
           }));
         }
       }
@@ -60,19 +59,14 @@ export default function AddFirearmScreen() {
       setSaving(true);
 
       // Validate form data using Zod
-      const validationResult = firearmSchema.safeParse(formData);
+      const validationResult = firearmInputSchema.safeParse(formData);
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0].message;
         Alert.alert("Validation error", errorMessage);
         return;
       }
 
-      const newFirearm: Firearm = {
-        ...formData,
-        id: `firearm-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      };
-
-      await storage.saveFirearm(newFirearm);
+      await storage.saveFirearm(formData);
       navigation.goBack();
     } catch (error) {
       console.error("Error creating firearm:", error);
@@ -85,7 +79,7 @@ export default function AddFirearmScreen() {
   const handleDeletePhoto = (index: number) => {
     setFormData((prev) => ({
       ...prev,
-      photos: prev.photos.filter((_, i) => i !== index),
+      photos: (prev.photos || []).filter((_, i: number) => i !== index),
     }));
   };
 
@@ -102,7 +96,7 @@ export default function AddFirearmScreen() {
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
       <View className="items-center mb-6">
-        <FirearmImage photoUri={formData.photos[0]} size={200} />
+        <FirearmImage size={200} />
         <TouchableOpacity
           onPress={handleImagePick}
           className="mt-4 border border-terminal-border px-4 py-2"

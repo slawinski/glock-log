@@ -1,258 +1,197 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { z } from "zod";
+import {
+  firearmStorageSchema,
+  ammunitionStorageSchema,
+  rangeVisitStorageSchema,
+  FirearmStorage,
+  AmmunitionStorage,
+  RangeVisitStorage,
+} from "../validation/storageSchemas";
+import {
+  FirearmInput,
+  RangeVisitInput,
+  AmmunitionInput,
+} from "../validation/inputSchemas";
 
-export interface Firearm {
-  id: string;
-  modelName: string;
-  caliber: string;
-  datePurchased: string;
-  amountPaid: number;
-  photos: string[];
-  roundsFired: number;
-  notes?: string;
-}
+const STORAGE_KEYS = {
+  FIREARMS: "@glock-log:firearms",
+  AMMUNITION: "@glock-log:ammunition",
+  RANGE_VISITS: "@glock-log:range-visits",
+};
 
-export interface RangeVisit {
-  id: string;
-  date: string;
-  location: string;
-  roundsPerFirearm: { [key: string]: number };
-  ammunitionUsed: { [key: string]: number }; // caliber -> quantity used
-  notes: string;
-}
-
-export interface Ammunition {
-  id: string;
-  caliber: string;
-  brand: string;
-  grain: number;
-  quantity: number;
-  amountPaid: number;
-  datePurchased: string;
-  notes?: string;
-}
-
-class StorageService {
-  private static instance: StorageService;
-  private firearmsKey = "@firearms";
-  private rangeVisitsKey = "@rangeVisits";
-  private ammunitionKey = "@ammunition";
-
-  private constructor() {}
-
-  static getInstance(): StorageService {
-    if (!StorageService.instance) {
-      StorageService.instance = new StorageService();
-    }
-    return StorageService.instance;
+// Helper function to validate and parse data
+async function validateAndParse<T>(
+  data: string,
+  schema: z.ZodSchema<T>
+): Promise<T> {
+  try {
+    const parsed = JSON.parse(data);
+    return schema.parse(parsed);
+  } catch (error) {
+    console.error("Validation error:", error);
+    throw new Error("Data validation failed");
   }
+}
 
+// Helper function to validate data before saving
+function validateBeforeSave<T>(data: T, schema: z.ZodSchema<T>): T {
+  try {
+    return schema.parse(data);
+  } catch (error) {
+    console.error("Validation error:", error);
+    throw new Error("Data validation failed");
+  }
+}
+
+// Helper function to generate a unique ID
+function generateId(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+export const storage = {
   // Firearms
-  async getFirearms(): Promise<Firearm[]> {
+  async saveFirearm(firearm: FirearmInput): Promise<void> {
     try {
-      const data = await AsyncStorage.getItem(this.firearmsKey);
-      return data ? JSON.parse(data) : [];
-    } catch (error) {
-      console.error("Error getting firearms:", error);
-      return [];
-    }
-  }
+      const storageData: FirearmStorage = {
+        ...firearm,
+        id: generateId("firearm"),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        roundsFired: 0,
+      };
 
-  async saveFirearm(firearm: Firearm): Promise<void> {
-    try {
+      const validatedFirearm = validateBeforeSave(
+        storageData,
+        firearmStorageSchema
+      );
       const firearms = await this.getFirearms();
-      const index = firearms.findIndex((f) => f.id === firearm.id);
+      const index = firearms.findIndex((f) => f.id === validatedFirearm.id);
 
-      if (index >= 0) {
-        firearms[index] = firearm;
+      if (index === -1) {
+        firearms.push(validatedFirearm);
       } else {
-        firearms.push(firearm);
+        firearms[index] = validatedFirearm;
       }
 
-      await AsyncStorage.setItem(this.firearmsKey, JSON.stringify(firearms));
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.FIREARMS,
+        JSON.stringify(firearms)
+      );
     } catch (error) {
       console.error("Error saving firearm:", error);
+      throw error;
     }
-  }
+  },
 
-  async deleteFirearm(id: string): Promise<void> {
+  async getFirearms(): Promise<FirearmStorage[]> {
     try {
-      const firearms = await this.getFirearms();
-      const filteredFirearms = firearms.filter((f) => f.id !== id);
-      await AsyncStorage.setItem(
-        this.firearmsKey,
-        JSON.stringify(filteredFirearms)
-      );
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.FIREARMS);
+      if (!data) return [];
+      return validateAndParse(data, z.array(firearmStorageSchema));
     } catch (error) {
-      console.error("Error deleting firearm:", error);
+      console.error("Error getting firearms:", error);
+      throw error;
     }
-  }
-
-  // Range Visits
-  async getRangeVisits(): Promise<RangeVisit[]> {
-    try {
-      const data = await AsyncStorage.getItem(this.rangeVisitsKey);
-      return data ? JSON.parse(data) : [];
-    } catch (error) {
-      console.error("Error getting range visits:", error);
-      return [];
-    }
-  }
-
-  async saveRangeVisit(visit: RangeVisit): Promise<void> {
-    try {
-      const visits = await this.getRangeVisits();
-      const index = visits.findIndex((v) => v.id === visit.id);
-
-      if (index >= 0) {
-        visits[index] = visit;
-      } else {
-        visits.push(visit);
-      }
-
-      // Update ammunition inventory and firearm rounds
-      for (const [firearmId, rounds] of Object.entries(
-        visit.roundsPerFirearm
-      )) {
-        // Get the firearm to find its caliber
-        const firearms = await this.getFirearms();
-        const firearm = firearms.find((f) => f.id === firearmId);
-
-        if (firearm) {
-          // Update firearm rounds
-          await this.updateFirearmRounds(firearmId, rounds);
-
-          // Get ammunition of matching caliber
-          const matchingAmmo = await this.getAmmunitionByCaliber(
-            firearm.caliber
-          );
-
-          // Update ammunition inventory
-          let roundsToDeduct = rounds;
-          for (const ammo of matchingAmmo) {
-            if (roundsToDeduct <= 0) break;
-
-            const roundsToUse = Math.min(roundsToDeduct, ammo.quantity);
-            await this.updateAmmunitionQuantity(
-              ammo.id,
-              ammo.quantity - roundsToUse
-            );
-            roundsToDeduct -= roundsToUse;
-
-            // Track ammunition usage
-            if (!visit.ammunitionUsed[ammo.id]) {
-              visit.ammunitionUsed[ammo.id] = 0;
-            }
-            visit.ammunitionUsed[ammo.id] += roundsToUse;
-          }
-        }
-      }
-
-      await AsyncStorage.setItem(this.rangeVisitsKey, JSON.stringify(visits));
-    } catch (error) {
-      console.error("Error saving range visit:", error);
-    }
-  }
-
-  async deleteRangeVisit(id: string): Promise<void> {
-    try {
-      const visits = await this.getRangeVisits();
-      const filteredVisits = visits.filter((v) => v.id !== id);
-      await AsyncStorage.setItem(
-        this.rangeVisitsKey,
-        JSON.stringify(filteredVisits)
-      );
-    } catch (error) {
-      console.error("Error deleting range visit:", error);
-    }
-  }
+  },
 
   // Ammunition
-  async getAmmunition(): Promise<Ammunition[]> {
+  async saveAmmunition(ammunition: AmmunitionInput): Promise<void> {
     try {
-      const data = await AsyncStorage.getItem(this.ammunitionKey);
-      return data ? JSON.parse(data) : [];
-    } catch (error) {
-      console.error("Error getting ammunition:", error);
-      return [];
-    }
-  }
+      const storageData: AmmunitionStorage = {
+        ...ammunition,
+        id: generateId("ammo"),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-  async saveAmmunition(ammo: Ammunition): Promise<void> {
-    try {
-      const ammunition = await this.getAmmunition();
-      const index = ammunition.findIndex((a) => a.id === ammo.id);
+      const validatedAmmunition = validateBeforeSave(
+        storageData,
+        ammunitionStorageSchema
+      );
+      const ammunitionList = await this.getAmmunition();
+      const index = ammunitionList.findIndex(
+        (a) => a.id === validatedAmmunition.id
+      );
 
-      if (index >= 0) {
-        ammunition[index] = ammo;
+      if (index === -1) {
+        ammunitionList.push(validatedAmmunition);
       } else {
-        ammunition.push(ammo);
+        ammunitionList[index] = validatedAmmunition;
       }
 
       await AsyncStorage.setItem(
-        this.ammunitionKey,
-        JSON.stringify(ammunition)
+        STORAGE_KEYS.AMMUNITION,
+        JSON.stringify(ammunitionList)
       );
     } catch (error) {
       console.error("Error saving ammunition:", error);
+      throw error;
     }
-  }
+  },
 
-  async deleteAmmunition(id: string): Promise<void> {
+  async getAmmunition(): Promise<AmmunitionStorage[]> {
     try {
-      const ammunition = await this.getAmmunition();
-      const filteredAmmunition = ammunition.filter((a) => a.id !== id);
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.AMMUNITION);
+      if (!data) return [];
+      return validateAndParse(data, z.array(ammunitionStorageSchema));
+    } catch (error) {
+      console.error("Error getting ammunition:", error);
+      throw error;
+    }
+  },
+
+  // Range Visits
+  async saveRangeVisit(visit: RangeVisitInput): Promise<void> {
+    try {
+      // Convert roundsPerFirearm from strings to numbers
+      const roundsPerFirearmData = Object.entries(
+        visit.roundsPerFirearm
+      ).reduce((acc: { [key: string]: number }, [firearmId, rounds]) => {
+        acc[firearmId] = parseInt(rounds, 10) || 0;
+        return acc;
+      }, {});
+
+      const storageData: RangeVisitStorage = {
+        ...visit,
+        roundsPerFirearm: roundsPerFirearmData,
+        ammunitionUsed: visit.ammunitionUsed || {},
+        id: generateId("visit"),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const validatedVisit = validateBeforeSave(
+        storageData,
+        rangeVisitStorageSchema
+      );
+      const visits = await this.getRangeVisits();
+      const index = visits.findIndex((v) => v.id === validatedVisit.id);
+
+      if (index === -1) {
+        visits.push(validatedVisit);
+      } else {
+        visits[index] = validatedVisit;
+      }
+
       await AsyncStorage.setItem(
-        this.ammunitionKey,
-        JSON.stringify(filteredAmmunition)
+        STORAGE_KEYS.RANGE_VISITS,
+        JSON.stringify(visits)
       );
     } catch (error) {
-      console.error("Error deleting ammunition:", error);
+      console.error("Error saving range visit:", error);
+      throw error;
     }
-  }
+  },
 
-  // Helper function to get ammunition by caliber
-  async getAmmunitionByCaliber(caliber: string): Promise<Ammunition[]> {
+  async getRangeVisits(): Promise<RangeVisitStorage[]> {
     try {
-      const ammunition = await this.getAmmunition();
-      return ammunition.filter((a) => a.caliber === caliber);
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.RANGE_VISITS);
+      if (!data) return [];
+      return validateAndParse(data, z.array(rangeVisitStorageSchema));
     } catch (error) {
-      console.error("Error getting ammunition by caliber:", error);
-      return [];
+      console.error("Error getting range visits:", error);
+      throw error;
     }
-  }
-
-  // Helper function to update ammunition quantity
-  async updateAmmunitionQuantity(id: string, quantity: number): Promise<void> {
-    try {
-      const ammunition = await this.getAmmunition();
-      const index = ammunition.findIndex((a) => a.id === id);
-
-      if (index >= 0) {
-        ammunition[index].quantity = Math.max(0, quantity); // Prevent negative quantities
-        await AsyncStorage.setItem(
-          this.ammunitionKey,
-          JSON.stringify(ammunition)
-        );
-      }
-    } catch (error) {
-      console.error("Error updating ammunition quantity:", error);
-    }
-  }
-
-  // Helper function to update firearm rounds fired
-  async updateFirearmRounds(id: string, rounds: number): Promise<void> {
-    try {
-      const firearms = await this.getFirearms();
-      const index = firearms.findIndex((f) => f.id === id);
-
-      if (index >= 0) {
-        firearms[index].roundsFired += rounds;
-        await AsyncStorage.setItem(this.firearmsKey, JSON.stringify(firearms));
-      }
-    } catch (error) {
-      console.error("Error updating firearm rounds:", error);
-    }
-  }
-}
-
-export const storage = StorageService.getInstance();
+  },
+};

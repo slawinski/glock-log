@@ -4,10 +4,12 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
 import { TerminalText, TerminalInput } from "../components/Terminal";
-import { Ammunition } from "../services/storage";
 import { storage } from "../services/storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { ammunitionSchema } from "../validation/schemas";
+import {
+  ammunitionInputSchema,
+  AmmunitionInput,
+} from "../validation/inputSchemas";
 
 type AddAmmunitionScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -16,7 +18,7 @@ type AddAmmunitionScreenNavigationProp = NativeStackNavigationProp<
 
 export default function AddAmmunitionScreen() {
   const navigation = useNavigation<AddAmmunitionScreenNavigationProp>();
-  const [formData, setFormData] = useState<Omit<Ammunition, "id">>({
+  const [formData, setFormData] = useState<AmmunitionInput>({
     caliber: "",
     brand: "",
     grain: 0,
@@ -24,6 +26,7 @@ export default function AddAmmunitionScreen() {
     datePurchased: new Date().toISOString(),
     amountPaid: 0,
     notes: "",
+    photos: [],
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,19 +38,14 @@ export default function AddAmmunitionScreen() {
       setError(null);
 
       // Validate form data using Zod
-      const validationResult = ammunitionSchema.safeParse(formData);
+      const validationResult = ammunitionInputSchema.safeParse(formData);
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0].message;
         Alert.alert("Validation error", errorMessage);
         return;
       }
 
-      const newAmmunition: Ammunition = {
-        ...formData,
-        id: `ammo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      };
-
-      await storage.saveAmmunition(newAmmunition);
+      await storage.saveAmmunition(formData);
       navigation.goBack();
     } catch (error) {
       console.error("Error creating ammunition:", error);

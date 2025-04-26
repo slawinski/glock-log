@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const firearmSchema = z.object({
+// Input schemas for frontend validation
+export const firearmInputSchema = z.object({
   modelName: z.string().min(1, "Model name is required"),
   caliber: z.string().min(1, "Caliber is required"),
   datePurchased: z.string().datetime(),
@@ -11,7 +12,7 @@ export const firearmSchema = z.object({
   notes: z.string().optional(),
 });
 
-export const ammunitionSchema = z.object({
+export const ammunitionInputSchema = z.object({
   caliber: z.string().min(1, "Caliber is required"),
   brand: z.string().min(1, "Brand is required"),
   grain: z.number().min(1, "Grain must be greater than 0"),
@@ -24,27 +25,22 @@ export const ammunitionSchema = z.object({
   photos: z.array(z.string()).optional(),
 });
 
-export const rangeVisitSchema = z.object({
+export const rangeVisitInputSchema = z.object({
   date: z.string().datetime(),
   location: z.string().min(1, "Location is required"),
   notes: z.string().optional(),
   firearmsUsed: z
     .array(z.string())
     .min(1, "At least one firearm must be selected"),
-  roundsPerFirearm: z
-    .record(z.string(), z.string().min(1, "Rounds fired is required"))
-    .refine(
-      (data) => {
-        // Check that all values are non-empty and greater than 0
-        return Object.entries(data).every(([_, value]) => {
-          const num = parseInt(value, 10);
-          return !isNaN(num) && num > 0;
-        });
-      },
-      {
-        message: "Please enter a valid number of rounds fired for each firearm",
-        path: ["roundsPerFirearm"],
-      }
-    ),
+  roundsPerFirearm: z.record(
+    z.string(),
+    z.string().min(1, "Rounds fired is required")
+  ),
+  ammunitionUsed: z.record(z.string(), z.number()).optional(),
   photos: z.array(z.string()).optional(),
 });
+
+// Type inference for TypeScript
+export type FirearmInput = z.infer<typeof firearmInputSchema>;
+export type AmmunitionInput = z.infer<typeof ammunitionInputSchema>;
+export type RangeVisitInput = z.infer<typeof rangeVisitInputSchema>;

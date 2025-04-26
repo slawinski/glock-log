@@ -11,10 +11,13 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
 import { TerminalText, TerminalInput } from "../components/Terminal";
-import { Ammunition } from "../services/storage";
 import { storage } from "../services/storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { ammunitionSchema } from "../validation/schemas";
+import {
+  ammunitionInputSchema,
+  AmmunitionInput,
+} from "../validation/inputSchemas";
+import { AmmunitionStorage } from "../validation/storageSchemas";
 
 type EditAmmunitionScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -29,14 +32,15 @@ type EditAmmunitionScreenRouteProp = RouteProp<
 export default function EditAmmunitionScreen() {
   const navigation = useNavigation<EditAmmunitionScreenNavigationProp>();
   const route = useRoute<EditAmmunitionScreenRouteProp>();
-  const [formData, setFormData] = useState<Omit<Ammunition, "id">>({
+  const [formData, setFormData] = useState<AmmunitionInput>({
     caliber: "",
     brand: "",
     grain: 0,
     quantity: 0,
     amountPaid: 0,
     datePurchased: new Date().toISOString(),
-    notes: undefined,
+    notes: "",
+    photos: [],
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,10 +59,12 @@ export default function EditAmmunitionScreen() {
       const ammunitionList = await storage.getAmmunition();
       const ammunition = ammunitionList.find((a) => a.id === route.params!.id);
       if (ammunition) {
-        const { id, ...ammunitionData } = ammunition;
+        // Convert storage data to input data
+        const { id, createdAt, updatedAt, ...ammunitionData } = ammunition;
         setFormData({
           ...ammunitionData,
           notes: ammunitionData.notes || "",
+          photos: ammunitionData.photos || [],
         });
       } else {
         setError("Ammunition not found");
@@ -76,19 +82,14 @@ export default function EditAmmunitionScreen() {
       setSaving(true);
 
       // Validate form data using Zod
-      const validationResult = ammunitionSchema.safeParse(formData);
+      const validationResult = ammunitionInputSchema.safeParse(formData);
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0].message;
         Alert.alert("Validation error", errorMessage);
         return;
       }
 
-      const updatedAmmunition: Ammunition = {
-        ...formData,
-        id: route.params.id,
-      };
-
-      await storage.saveAmmunition(updatedAmmunition);
+      await storage.saveAmmunition(formData);
       navigation.goBack();
     } catch (error) {
       console.error("Error updating ammunition:", error);

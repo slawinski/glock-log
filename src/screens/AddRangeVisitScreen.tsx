@@ -4,11 +4,13 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
 import * as ImagePicker from "react-native-image-picker";
-import { RangeVisit, Firearm } from "../services/storage";
 import { storage } from "../services/storage";
 import { TerminalText, TerminalInput } from "../components/Terminal";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { rangeVisitSchema } from "../validation/schemas";
+import {
+  rangeVisitInputSchema,
+  RangeVisitInput,
+} from "../validation/inputSchemas";
 
 type AddRangeVisitScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -17,17 +19,20 @@ type AddRangeVisitScreenNavigationProp = NativeStackNavigationProp<
 
 export default function AddRangeVisitScreen() {
   const navigation = useNavigation<AddRangeVisitScreenNavigationProp>();
-  const [firearms, setFirearms] = useState<Firearm[]>([]);
-  const [selectedFirearms, setSelectedFirearms] = useState<Firearm[]>([]);
+  const [firearms, setFirearms] = useState<{ id: string; modelName: string }[]>(
+    []
+  );
+  const [selectedFirearms, setSelectedFirearms] = useState<string[]>([]);
   const [roundsPerFirearm, setRoundsPerFirearm] = useState<{
     [key: string]: string;
   }>({});
-  const [formData, setFormData] = useState<
-    Omit<RangeVisit, "id" | "roundsPerFirearm">
-  >({
+  const [formData, setFormData] = useState<RangeVisitInput>({
     date: new Date().toISOString(),
     location: "",
     notes: "",
+    photos: [],
+    firearmsUsed: [],
+    roundsPerFirearm: {},
     ammunitionUsed: {},
   });
   const [saving, setSaving] = useState(false);
@@ -38,7 +43,9 @@ export default function AddRangeVisitScreen() {
     const loadFirearms = async () => {
       try {
         const loadedFirearms = await storage.getFirearms();
-        setFirearms(loadedFirearms);
+        setFirearms(
+          loadedFirearms.map((f) => ({ id: f.id, modelName: f.modelName }))
+        );
       } catch (error) {
         console.error("Error loading firearms:", error);
         setError("Failed to load firearms");
@@ -57,9 +64,7 @@ export default function AddRangeVisitScreen() {
         if (response.assets && response.assets[0].uri) {
           setFormData((prev) => ({
             ...prev,
-            notes: prev.notes
-              ? `${prev.notes}\n${response.assets![0].uri!}`
-              : response.assets![0].uri!,
+            photos: [...(prev.photos || []), response.assets![0].uri!],
           }));
         }
       }
@@ -70,36 +75,23 @@ export default function AddRangeVisitScreen() {
     try {
       setSaving(true);
 
-      // Validate form data using Zod
-      const validationResult = rangeVisitSchema.safeParse({
+      // Prepare the data for validation
+      const visitData: RangeVisitInput = {
         ...formData,
-        firearmsUsed: selectedFirearms.map((f) => f.id),
+        firearmsUsed: selectedFirearms,
         roundsPerFirearm: roundsPerFirearm,
-      });
+        ammunitionUsed: {},
+      };
 
+      // Validate form data using Zod
+      const validationResult = rangeVisitInputSchema.safeParse(visitData);
       if (!validationResult.success) {
-        // Get the first error message from the validation result
-        const firstError = validationResult.error.errors[0];
-        Alert.alert("Validation Error", firstError.message);
+        const errorMessage = validationResult.error.errors[0].message;
+        Alert.alert("Validation error", errorMessage);
         return;
       }
 
-      // Convert rounds to numbers after validation
-      const roundsPerFirearmData = selectedFirearms.reduce(
-        (acc: { [key: string]: number }, firearm) => {
-          acc[firearm.id] = parseInt(roundsPerFirearm[firearm.id], 10);
-          return acc;
-        },
-        {}
-      );
-
-      const newVisit: RangeVisit = {
-        ...formData,
-        id: `visit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        roundsPerFirearm: roundsPerFirearmData,
-      };
-
-      await storage.saveRangeVisit(newVisit);
+      await storage.saveRangeVisit(visitData);
       navigation.goBack();
     } catch (error) {
       console.error("Error creating range visit:", error);
@@ -110,14 +102,10 @@ export default function AddRangeVisitScreen() {
   };
 
   const handleDeletePhoto = (index: number) => {
-    if (formData.notes) {
-      const photos = formData.notes.split("\n");
-      photos.splice(index, 1);
-      setFormData((prev) => ({
-        ...prev,
-        notes: photos.join("\n"),
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      photos: (prev.photos || []).filter((_, i: number) => i !== index),
+    }));
   };
 
   if (error) {
@@ -177,9 +165,9 @@ export default function AddRangeVisitScreen() {
           <View key={firearm.id} className="mb-2">
             <TouchableOpacity
               onPress={() => {
-                if (selectedFirearms.some((f) => f.id === firearm.id)) {
+                if (selectedFirearms.includes(firearm.id)) {
                   setSelectedFirearms((prev) =>
-                    prev.filter((f) => f.id !== firearm.id)
+                    prev.filter((id) => id !== firearm.id)
                   );
                   setRoundsPerFirearm((prev) => {
                     const newRounds = { ...prev };
@@ -187,18 +175,18 @@ export default function AddRangeVisitScreen() {
                     return newRounds;
                   });
                 } else {
-                  setSelectedFirearms((prev) => [...prev, firearm]);
+                  setSelectedFirearms((prev) => [...prev, firearm.id]);
                 }
               }}
               className={`border p-2 ${
-                selectedFirearms.some((f) => f.id === firearm.id)
+                selectedFirearms.includes(firearm.id)
                   ? "border-terminal-accent"
                   : "border-terminal-border"
               }`}
             >
               <TerminalText>{firearm.modelName}</TerminalText>
             </TouchableOpacity>
-            {selectedFirearms.some((f) => f.id === firearm.id) && (
+            {selectedFirearms.includes(firearm.id) && (
               <TerminalInput
                 value={roundsPerFirearm[firearm.id] || ""}
                 onChangeText={(text) =>
@@ -224,14 +212,13 @@ export default function AddRangeVisitScreen() {
           <TerminalText>ADD PHOTO</TerminalText>
         </TouchableOpacity>
         <ScrollView horizontal className="flex-row">
-          {formData.notes?.split("\n").map((photo, index) => (
+          {formData.photos?.map((photo, index) => (
             <View key={index} className="relative">
               <Image source={{ uri: photo }} className="w-40 h-40 m-1" />
               <TouchableOpacity
                 onPress={() => handleDeletePhoto(index)}
                 className="absolute top-0 right-0 bg-terminal-error p-1"
               >
-                {/* TODO: this x is visible when no photos added */}
                 <TerminalText className="text-xs">X</TerminalText>
               </TouchableOpacity>
             </View>

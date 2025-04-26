@@ -12,11 +12,14 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
 import * as ImagePicker from "react-native-image-picker";
-import { RangeVisit, Firearm } from "../services/storage";
 import { storage } from "../services/storage";
 import { TerminalText, TerminalInput } from "../components/Terminal";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { rangeVisitSchema } from "../validation/schemas";
+import {
+  rangeVisitInputSchema,
+  RangeVisitInput,
+} from "../validation/inputSchemas";
+import { RangeVisitStorage } from "../validation/storageSchemas";
 
 type EditRangeVisitScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -31,14 +34,18 @@ type EditRangeVisitScreenRouteProp = RouteProp<
 export default function EditRangeVisitScreen() {
   const navigation = useNavigation<EditRangeVisitScreenNavigationProp>();
   const route = useRoute<EditRangeVisitScreenRouteProp>();
-  const [formData, setFormData] = useState<Omit<RangeVisit, "id">>({
+  const [formData, setFormData] = useState<Required<RangeVisitInput>>({
     date: new Date().toISOString(),
     location: "",
     notes: "",
+    photos: [],
+    firearmsUsed: [],
     roundsPerFirearm: {},
     ammunitionUsed: {},
   });
-  const [firearms, setFirearms] = useState<Firearm[]>([]);
+  const [firearms, setFirearms] = useState<
+    { id: string; modelName: string; caliber: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,8 +64,20 @@ export default function EditRangeVisitScreen() {
       const visits = await storage.getRangeVisits();
       const visit = visits.find((v) => v.id === route.params!.id);
       if (visit) {
-        const { id, ...visitData } = visit;
-        setFormData(visitData);
+        // Convert storage data to input data
+        const { id, createdAt, updatedAt, ...visitData } = visit;
+        setFormData({
+          ...visitData,
+          roundsPerFirearm: Object.entries(visitData.roundsPerFirearm).reduce(
+            (acc, [firearmId, rounds]) => {
+              acc[firearmId] = rounds.toString();
+              return acc;
+            },
+            {} as Record<string, string>
+          ),
+          photos: visitData.photos ?? [],
+          firearmsUsed: visitData.firearmsUsed,
+        });
       } else {
         setError("Range visit not found");
       }
@@ -73,7 +92,13 @@ export default function EditRangeVisitScreen() {
   const fetchFirearms = async () => {
     try {
       const data = await storage.getFirearms();
-      setFirearms(data);
+      setFirearms(
+        data.map((f) => ({
+          id: f.id,
+          modelName: f.modelName,
+          caliber: f.caliber,
+        }))
+      );
     } catch (error) {
       console.error("Error fetching firearms:", error);
     }
@@ -89,9 +114,7 @@ export default function EditRangeVisitScreen() {
         if (response.assets && response.assets[0].uri) {
           setFormData((prev) => ({
             ...prev,
-            notes: prev.notes
-              ? `${prev.notes}\n${response.assets![0].uri!}`
-              : response.assets![0].uri!,
+            photos: [...prev.photos, response.assets![0].uri!],
           }));
         }
       }
@@ -102,35 +125,15 @@ export default function EditRangeVisitScreen() {
     try {
       setSaving(true);
 
-      // TODO: this is pointless, less store numbers as numbers
-      // Convert rounds to strings for validation
-      const roundsPerFirearmStrings = Object.entries(
-        formData.roundsPerFirearm
-      ).reduce((acc, [firearmId, rounds]) => {
-        acc[firearmId] = rounds.toString();
-        return acc;
-      }, {} as Record<string, string>);
-
       // Validate form data using Zod
-      const validationResult = rangeVisitSchema.safeParse({
-        ...formData,
-        firearmsUsed: Object.keys(formData.roundsPerFirearm),
-        roundsPerFirearm: roundsPerFirearmStrings,
-      });
-
+      const validationResult = rangeVisitInputSchema.safeParse(formData);
       if (!validationResult.success) {
-        // Get the first error message from the validation result
-        const firstError = validationResult.error.errors[0];
-        Alert.alert("Validation Error", firstError.message);
+        const errorMessage = validationResult.error.errors[0].message;
+        Alert.alert("Validation error", errorMessage);
         return;
       }
 
-      const updatedVisit: RangeVisit = {
-        ...formData,
-        id: route.params.id,
-      };
-
-      await storage.saveRangeVisit(updatedVisit);
+      await storage.saveRangeVisit(formData);
       navigation.goBack();
     } catch (error) {
       console.error("Error updating range visit:", error);
@@ -148,12 +151,15 @@ export default function EditRangeVisitScreen() {
       if (isSelected) {
         delete newRoundsPerFirearm[firearmId];
       } else {
-        newRoundsPerFirearm[firearmId] = 0;
+        newRoundsPerFirearm[firearmId] = "0";
       }
 
       return {
         ...prev,
         roundsPerFirearm: newRoundsPerFirearm,
+        firearmsUsed: isSelected
+          ? prev.firearmsUsed.filter((id) => id !== firearmId)
+          : [...prev.firearmsUsed, firearmId],
       };
     });
   };
@@ -163,20 +169,16 @@ export default function EditRangeVisitScreen() {
       ...prev,
       roundsPerFirearm: {
         ...prev.roundsPerFirearm,
-        [firearmId]: parseInt(rounds) || 0,
+        [firearmId]: rounds,
       },
     }));
   };
 
   const handleDeletePhoto = (index: number) => {
-    if (formData.notes) {
-      const photos = formData.notes.split("\n");
-      photos.splice(index, 1);
-      setFormData((prev) => ({
-        ...prev,
-        notes: photos.join("\n"),
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index),
+    }));
   };
 
   if (loading) {
@@ -270,7 +272,7 @@ export default function EditRangeVisitScreen() {
                   ROUNDS FIRED
                 </TerminalText>
                 <TerminalInput
-                  value={String(formData.roundsPerFirearm[firearm.id] || 0)}
+                  value={formData.roundsPerFirearm[firearm.id] || "0"}
                   onChangeText={(text) =>
                     updateRoundsForFirearm(firearm.id, text)
                   }
@@ -292,7 +294,7 @@ export default function EditRangeVisitScreen() {
           <TerminalText>ADD PHOTO</TerminalText>
         </TouchableOpacity>
         <ScrollView horizontal className="flex-row">
-          {formData.notes?.split("\n").map((photo, index) => (
+          {formData.photos.map((photo: string, index: number) => (
             <View key={index} className="relative">
               <Image source={{ uri: photo }} className="w-40 h-40 m-1" />
               <TouchableOpacity
