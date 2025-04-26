@@ -16,6 +16,7 @@ import { Firearm } from "../services/storage";
 import { storage } from "../services/storage";
 import { TerminalText, TerminalInput } from "../components/Terminal";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { firearmSchema } from "../validation/schemas";
 
 type EditFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -88,9 +89,11 @@ export default function EditFirearmScreen() {
     try {
       setSaving(true);
 
-      // Validate required fields
-      if (!formData.modelName || !formData.caliber) {
-        Alert.alert("Error", "Model name and caliber are required");
+      // Validate form data using Zod
+      const validationResult = firearmSchema.safeParse(formData);
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors[0].message;
+        Alert.alert("Validation error", errorMessage);
         return;
       }
 
@@ -141,8 +144,6 @@ export default function EditFirearmScreen() {
 
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
-      <TerminalText className="text-2xl mb-6">EDIT FIREARM</TerminalText>
-
       <View className="mb-4">
         <TerminalText>MODEL NAME</TerminalText>
         <TerminalInput

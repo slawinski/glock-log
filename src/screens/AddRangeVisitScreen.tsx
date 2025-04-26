@@ -8,6 +8,7 @@ import { RangeVisit, Firearm } from "../services/storage";
 import { storage } from "../services/storage";
 import { TerminalText, TerminalInput } from "../components/Terminal";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { rangeVisitSchema } from "../validation/schemas";
 
 type AddRangeVisitScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -69,33 +70,33 @@ export default function AddRangeVisitScreen() {
     try {
       setSaving(true);
 
-      // Validate required fields
-      if (!formData.location || !formData.date) {
-        Alert.alert("Error", "Location and date are required");
+      // Validate form data using Zod
+      const validationResult = rangeVisitSchema.safeParse({
+        ...formData,
+        firearmsUsed: selectedFirearms.map((f) => f.id),
+        roundsPerFirearm: roundsPerFirearm,
+      });
+
+      if (!validationResult.success) {
+        // Get the first error message from the validation result
+        const firstError = validationResult.error.errors[0];
+        Alert.alert("Validation Error", firstError.message);
         return;
       }
 
-      // Validate rounds fired for each selected firearm
-      for (const firearm of selectedFirearms) {
-        if (!roundsPerFirearm[firearm.id]) {
-          Alert.alert(
-            "Error",
-            `Please enter rounds fired for ${firearm.modelName}`
-          );
-          return;
-        }
-      }
+      // Convert rounds to numbers after validation
+      const roundsPerFirearmData = selectedFirearms.reduce(
+        (acc: { [key: string]: number }, firearm) => {
+          acc[firearm.id] = parseInt(roundsPerFirearm[firearm.id], 10);
+          return acc;
+        },
+        {}
+      );
 
       const newVisit: RangeVisit = {
         ...formData,
         id: `visit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        roundsPerFirearm: selectedFirearms.reduce(
-          (acc: { [key: string]: number }, firearm) => {
-            acc[firearm.id] = parseInt(roundsPerFirearm[firearm.id] || "0", 10);
-            return acc;
-          },
-          {}
-        ),
+        roundsPerFirearm: roundsPerFirearmData,
       };
 
       await storage.saveRangeVisit(newVisit);
@@ -131,8 +132,6 @@ export default function AddRangeVisitScreen() {
 
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
-      <TerminalText className="text-2xl mb-6">NEW RANGE VISIT</TerminalText>
-
       <View className="mb-4">
         <TerminalText>LOCATION</TerminalText>
         <TerminalInput
@@ -232,6 +231,7 @@ export default function AddRangeVisitScreen() {
                 onPress={() => handleDeletePhoto(index)}
                 className="absolute top-0 right-0 bg-terminal-error p-1"
               >
+                {/* TODO: this x is visible when no photos added */}
                 <TerminalText className="text-xs">X</TerminalText>
               </TouchableOpacity>
             </View>

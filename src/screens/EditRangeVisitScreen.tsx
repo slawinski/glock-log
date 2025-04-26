@@ -16,6 +16,7 @@ import { RangeVisit, Firearm } from "../services/storage";
 import { storage } from "../services/storage";
 import { TerminalText, TerminalInput } from "../components/Terminal";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { rangeVisitSchema } from "../validation/schemas";
 
 type EditRangeVisitScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -35,6 +36,7 @@ export default function EditRangeVisitScreen() {
     location: "",
     notes: "",
     roundsPerFirearm: {},
+    ammunitionUsed: {},
   });
   const [firearms, setFirearms] = useState<Firearm[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,27 +102,27 @@ export default function EditRangeVisitScreen() {
     try {
       setSaving(true);
 
-      // Validate required fields
-      if (
-        !formData.location ||
-        Object.keys(formData.roundsPerFirearm).length === 0
-      ) {
-        Alert.alert("Error", "Location and at least one firearm are required");
-        return;
-      }
-
-      // Validate rounds per firearm
-      for (const [firearmId, rounds] of Object.entries(
+      // TODO: this is pointless, less store numbers as numbers
+      // Convert rounds to strings for validation
+      const roundsPerFirearmStrings = Object.entries(
         formData.roundsPerFirearm
-      )) {
-        if (!rounds || rounds <= 0) {
-          Alert.alert(
-            "Missing Information",
-            `Please specify the number of rounds fired for each selected firearm.`,
-            [{ text: "OK" }]
-          );
-          return;
-        }
+      ).reduce((acc, [firearmId, rounds]) => {
+        acc[firearmId] = rounds.toString();
+        return acc;
+      }, {} as Record<string, string>);
+
+      // Validate form data using Zod
+      const validationResult = rangeVisitSchema.safeParse({
+        ...formData,
+        firearmsUsed: Object.keys(formData.roundsPerFirearm),
+        roundsPerFirearm: roundsPerFirearmStrings,
+      });
+
+      if (!validationResult.success) {
+        // Get the first error message from the validation result
+        const firstError = validationResult.error.errors[0];
+        Alert.alert("Validation Error", firstError.message);
+        return;
       }
 
       const updatedVisit: RangeVisit = {
@@ -198,8 +200,6 @@ export default function EditRangeVisitScreen() {
 
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
-      <TerminalText className="text-2xl mb-6">EDIT RANGE VISIT</TerminalText>
-
       <View className="mb-4">
         <TerminalText>LOCATION</TerminalText>
         <TerminalInput

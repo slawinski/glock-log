@@ -7,6 +7,7 @@ import { TerminalText, TerminalInput } from "../components/Terminal";
 import { Ammunition } from "../services/storage";
 import { storage } from "../services/storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { ammunitionSchema } from "../validation/schemas";
 
 type AddAmmunitionScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -29,20 +30,17 @@ export default function AddAmmunitionScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleSubmit = async () => {
-    if (
-      !formData.caliber ||
-      !formData.brand ||
-      !formData.grain ||
-      !formData.quantity ||
-      !formData.amountPaid
-    ) {
-      Alert.alert("Error", "Please fill in all required fields");
-      return;
-    }
-
     try {
       setSaving(true);
       setError(null);
+
+      // Validate form data using Zod
+      const validationResult = ammunitionSchema.safeParse(formData);
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors[0].message;
+        Alert.alert("Validation error", errorMessage);
+        return;
+      }
 
       const newAmmunition: Ammunition = {
         ...formData,

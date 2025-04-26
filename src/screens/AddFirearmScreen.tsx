@@ -16,6 +16,7 @@ import { storage } from "../services/storage";
 import { TerminalText, TerminalInput } from "../components/Terminal";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import FirearmImage from "../components/FirearmImage";
+import { firearmSchema } from "../validation/schemas";
 
 type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -58,9 +59,11 @@ export default function AddFirearmScreen() {
     try {
       setSaving(true);
 
-      // Validate required fields
-      if (!formData.modelName || !formData.caliber) {
-        Alert.alert("Error", "Model name and caliber are required");
+      // Validate form data using Zod
+      const validationResult = firearmSchema.safeParse(formData);
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors[0].message;
+        Alert.alert("Validation error", errorMessage);
         return;
       }
 
@@ -169,29 +172,6 @@ export default function AddFirearmScreen() {
             }}
           />
         )}
-      </View>
-
-      <View className="mb-4">
-        <TerminalText>PHOTOS</TerminalText>
-        <TouchableOpacity
-          onPress={handleImagePick}
-          className="border border-terminal-border p-3 mb-2"
-        >
-          <TerminalText>ADD PHOTO</TerminalText>
-        </TouchableOpacity>
-        <ScrollView horizontal className="flex-row">
-          {formData.photos.map((photo, index) => (
-            <View key={index} className="relative">
-              <Image source={{ uri: photo }} className="w-40 h-40 m-1" />
-              <TouchableOpacity
-                onPress={() => handleDeletePhoto(index)}
-                className="absolute top-0 right-0 bg-terminal-error p-1"
-              >
-                <TerminalText className="text-xs">X</TerminalText>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
       </View>
 
       {error && (

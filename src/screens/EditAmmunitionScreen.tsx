@@ -14,6 +14,7 @@ import { TerminalText, TerminalInput } from "../components/Terminal";
 import { Ammunition } from "../services/storage";
 import { storage } from "../services/storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { ammunitionSchema } from "../validation/schemas";
 
 type EditAmmunitionScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -74,15 +75,11 @@ export default function EditAmmunitionScreen() {
     try {
       setSaving(true);
 
-      // Validate required fields
-      if (
-        !formData.caliber ||
-        !formData.brand ||
-        !formData.grain ||
-        !formData.quantity ||
-        !formData.amountPaid
-      ) {
-        Alert.alert("Error", "All fields are required");
+      // Validate form data using Zod
+      const validationResult = ammunitionSchema.safeParse(formData);
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors[0].message;
+        Alert.alert("Validation error", errorMessage);
         return;
       }
 
