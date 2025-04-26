@@ -144,17 +144,8 @@ export const storage = {
   // Range Visits
   async saveRangeVisit(visit: RangeVisitInput): Promise<void> {
     try {
-      // Convert roundsPerFirearm from strings to numbers
-      const roundsPerFirearmData = Object.entries(
-        visit.roundsPerFirearm
-      ).reduce((acc: { [key: string]: number }, [firearmId, rounds]) => {
-        acc[firearmId] = parseInt(rounds, 10) || 0;
-        return acc;
-      }, {});
-
       const storageData: RangeVisitStorage = {
         ...visit,
-        roundsPerFirearm: roundsPerFirearmData,
         ammunitionUsed: visit.ammunitionUsed || {},
         id: generateId("visit"),
         createdAt: new Date().toISOString(),

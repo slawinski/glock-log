@@ -70,13 +70,15 @@ export default function EditRangeVisitScreen() {
           ...visitData,
           roundsPerFirearm: Object.entries(visitData.roundsPerFirearm).reduce(
             (acc, [firearmId, rounds]) => {
-              acc[firearmId] = rounds.toString();
+              acc[firearmId] = rounds;
               return acc;
             },
-            {} as Record<string, string>
+            {} as Record<string, number>
           ),
           photos: visitData.photos ?? [],
           firearmsUsed: visitData.firearmsUsed,
+          notes: visitData.notes || "",
+          ammunitionUsed: visitData.ammunitionUsed || {},
         });
       } else {
         setError("Range visit not found");
@@ -151,7 +153,7 @@ export default function EditRangeVisitScreen() {
       if (isSelected) {
         delete newRoundsPerFirearm[firearmId];
       } else {
-        newRoundsPerFirearm[firearmId] = "0";
+        newRoundsPerFirearm[firearmId] = 0;
       }
 
       return {
@@ -165,13 +167,16 @@ export default function EditRangeVisitScreen() {
   };
 
   const updateRoundsForFirearm = (firearmId: string, rounds: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      roundsPerFirearm: {
-        ...prev.roundsPerFirearm,
-        [firearmId]: rounds,
-      },
-    }));
+    const numRounds = parseInt(rounds, 10);
+    if (!isNaN(numRounds)) {
+      setFormData((prev) => ({
+        ...prev,
+        roundsPerFirearm: {
+          ...prev.roundsPerFirearm,
+          [firearmId]: numRounds,
+        },
+      }));
+    }
   };
 
   const handleDeletePhoto = (index: number) => {
@@ -272,7 +277,7 @@ export default function EditRangeVisitScreen() {
                   ROUNDS FIRED
                 </TerminalText>
                 <TerminalInput
-                  value={formData.roundsPerFirearm[firearm.id] || "0"}
+                  value={formData.roundsPerFirearm[firearm.id] || 0}
                   onChangeText={(text) =>
                     updateRoundsForFirearm(firearm.id, text)
                   }

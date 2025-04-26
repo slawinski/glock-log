@@ -24,7 +24,7 @@ export default function AddRangeVisitScreen() {
   );
   const [selectedFirearms, setSelectedFirearms] = useState<string[]>([]);
   const [roundsPerFirearm, setRoundsPerFirearm] = useState<{
-    [key: string]: string;
+    [key: string]: number;
   }>({});
   const [formData, setFormData] = useState<RangeVisitInput>({
     date: new Date().toISOString(),
@@ -188,13 +188,16 @@ export default function AddRangeVisitScreen() {
             </TouchableOpacity>
             {selectedFirearms.includes(firearm.id) && (
               <TerminalInput
-                value={roundsPerFirearm[firearm.id] || ""}
-                onChangeText={(text) =>
-                  setRoundsPerFirearm((prev) => ({
-                    ...prev,
-                    [firearm.id]: text,
-                  }))
-                }
+                value={roundsPerFirearm[firearm.id] || 0}
+                onChangeText={(text) => {
+                  const num = parseInt(text);
+                  if (!isNaN(num)) {
+                    setRoundsPerFirearm((prev) => ({
+                      ...prev,
+                      [firearm.id]: num,
+                    }));
+                  }
+                }}
                 placeholder="Rounds fired"
                 keyboardType="numeric"
               />

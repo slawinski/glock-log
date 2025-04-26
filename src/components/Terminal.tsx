@@ -16,7 +16,7 @@ export const TerminalText: React.FC<TerminalTextProps> = ({
 );
 
 interface TerminalInputProps {
-  value: string;
+  value: string | number;
   onChangeText: (text: string) => void;
   placeholder?: string;
   keyboardType?: "default" | "numeric" | "email-address" | "phone-pad";
@@ -35,7 +35,7 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
   <View className="flex-row items-center">
     <Text className="text-terminal-text font-terminal mr-2">{">"}</Text>
     <TextInput
-      value={value}
+      value={value.toString()}
       onChangeText={onChangeText}
       placeholder={placeholder}
       placeholderTextColor="#666"
