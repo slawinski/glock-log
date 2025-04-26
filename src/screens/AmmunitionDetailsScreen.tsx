@@ -125,7 +125,7 @@ export default function AmmunitionDetailsScreen() {
       <View className="mb-4">
         <TerminalText>DATE PURCHASED</TerminalText>
         <TerminalText className="text-terminal-dim">
-          {new Date(ammunition.purchaseDate).toLocaleDateString()}
+          {new Date(ammunition.datePurchased).toLocaleDateString()}
         </TerminalText>
       </View>
 

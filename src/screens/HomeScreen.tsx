@@ -1,18 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  ScrollView,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
 import { Firearm, RangeVisit, Ammunition } from "../services/storage";
 import { storage } from "../services/storage";
-import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
+import { TerminalText } from "../components/Terminal";
 import FirearmImage from "../components/FirearmImage";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
@@ -34,7 +32,7 @@ export default function HomeScreen() {
 
   // Fetch data when the screen is focused
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       if (isInitialLoad) {
         fetchData(false); // Show spinner for initial load
       } else {

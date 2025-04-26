@@ -13,12 +13,14 @@ export default function FirearmImage({
   return (
     <View
       className={`justify-center items-center bg-black ${className}`}
+      // TODO: why not tailwind?
       style={{
         width: size,
         height: size,
       }}
     >
       <Image
+        // TODO: do image components in RN need require?
         source={require("../../assets/images/glock-placeholder.png")}
         style={{
           width: size * 0.9,

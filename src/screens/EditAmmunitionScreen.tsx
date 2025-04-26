@@ -34,7 +34,7 @@ export default function EditAmmunitionScreen() {
     grain: 0,
     quantity: 0,
     amountPaid: 0,
-    purchaseDate: new Date().toISOString(),
+    datePurchased: new Date().toISOString(),
     notes: undefined,
   });
   const [loading, setLoading] = useState(true);
@@ -192,12 +192,12 @@ export default function EditAmmunitionScreen() {
           className="border border-terminal-border p-2"
         >
           <TerminalText>
-            {new Date(formData.purchaseDate).toLocaleDateString()}
+            {new Date(formData.datePurchased).toLocaleDateString()}
           </TerminalText>
         </TouchableOpacity>
         {showDatePicker && (
           <DateTimePicker
-            value={new Date(formData.purchaseDate)}
+            value={new Date(formData.datePurchased)}
             mode="date"
             display="default"
             onChange={(event, selectedDate) => {
@@ -205,7 +205,7 @@ export default function EditAmmunitionScreen() {
               if (selectedDate) {
                 setFormData((prev) => ({
                   ...prev,
-                  purchaseDate: selectedDate.toISOString(),
+                  datePurchased: selectedDate.toISOString(),
                 }));
               }
             }}

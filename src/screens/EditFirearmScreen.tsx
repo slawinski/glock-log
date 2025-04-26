@@ -27,12 +27,11 @@ export default function EditFirearmScreen() {
   const navigation = useNavigation<EditFirearmScreenNavigationProp>();
   const route = useRoute<EditFirearmScreenRouteProp>();
   const [formData, setFormData] = useState<Omit<Firearm, "id">>({
-    make: "",
-    model: "",
     modelName: "",
-    serialNumber: "",
     caliber: "",
-    purchaseDate: new Date().toISOString(),
+    datePurchased: new Date().toISOString(),
+    amountPaid: 0,
+    photos: [],
     roundsFired: 0,
     notes: "",
   });
@@ -173,12 +172,12 @@ export default function EditFirearmScreen() {
           className="border border-terminal-border p-2"
         >
           <TerminalText>
-            {new Date(formData.purchaseDate).toLocaleDateString()}
+            {new Date(formData.datePurchased).toLocaleDateString()}
           </TerminalText>
         </TouchableOpacity>
         {showDatePicker && (
           <DateTimePicker
-            value={new Date(formData.purchaseDate)}
+            value={new Date(formData.datePurchased)}
             mode="date"
             display="default"
             onChange={(event, selectedDate) => {
@@ -186,7 +185,7 @@ export default function EditFirearmScreen() {
               if (selectedDate) {
                 setFormData((prev) => ({
                   ...prev,
-                  purchaseDate: selectedDate.toISOString(),
+                  datePurchased: selectedDate.toISOString(),
                 }));
               }
             }}

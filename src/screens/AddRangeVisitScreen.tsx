@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, TouchableOpacity, ScrollView, Image, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";

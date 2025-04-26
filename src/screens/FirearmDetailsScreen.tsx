@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   ScrollView,
   Image,
   TouchableOpacity,
@@ -12,10 +11,9 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
-import { format } from "date-fns";
 import { Firearm } from "../services/storage";
 import { storage } from "../services/storage";
-import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
+import { TerminalText } from "../components/Terminal";
 import FirearmImage from "../components/FirearmImage";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<

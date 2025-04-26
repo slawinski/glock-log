@@ -36,6 +36,7 @@ export default function AddFirearmScreen() {
   const [error, setError] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  // TODO: adding files doesn't work
   const handleImagePick = () => {
     ImagePicker.launchImageLibrary(
       {
