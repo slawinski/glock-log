@@ -55,7 +55,7 @@ export default function App() {
           <Stack.Screen
             name="Home"
             component={HomeScreen}
-            options={{ title: "> GlOCK LOG" }}
+            options={{ title: "> GLOCK LOG" }}
           />
           <Stack.Screen
             name="AddFirearm"

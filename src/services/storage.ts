@@ -8,6 +8,7 @@ export interface Firearm {
   amountPaid: number;
   photos: string[];
   roundsFired: number;
+  notes?: string;
 }
 
 export interface RangeVisit {

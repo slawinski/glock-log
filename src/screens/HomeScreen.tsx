@@ -13,6 +13,7 @@ import { RootStackParamList } from "../../App";
 import { Firearm, RangeVisit, Ammunition } from "../services/storage";
 import { storage } from "../services/storage";
 import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
+import FirearmImage from "../components/FirearmImage";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -87,11 +88,18 @@ export default function HomeScreen() {
       className="bg-terminal-bg border border-terminal-border p-4 mb-2"
     >
       <View className="flex-row justify-between items-center">
-        <View>
-          <TerminalText className="text-lg">{item.modelName}</TerminalText>
-          <TerminalText className="text-terminal-dim">
-            {item.caliber}
-          </TerminalText>
+        <View className="flex-row items-center">
+          <FirearmImage
+            photoUri={item.photos?.[0]}
+            size={60}
+            className="mr-4"
+          />
+          <View>
+            <TerminalText className="text-lg">{item.modelName}</TerminalText>
+            <TerminalText className="text-terminal-dim">
+              {item.caliber}
+            </TerminalText>
+          </View>
         </View>
         <View className="items-end">
           <TerminalText className="text-terminal-dim">

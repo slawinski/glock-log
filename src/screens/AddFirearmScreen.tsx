@@ -15,6 +15,7 @@ import { Firearm } from "../services/storage";
 import { storage } from "../services/storage";
 import { TerminalText, TerminalInput } from "../components/Terminal";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import FirearmImage from "../components/FirearmImage";
 
 type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -96,6 +97,16 @@ export default function AddFirearmScreen() {
 
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
+      <View className="items-center mb-6">
+        <FirearmImage photoUri={formData.photos[0]} size={200} />
+        <TouchableOpacity
+          onPress={handleImagePick}
+          className="mt-4 border border-terminal-border px-4 py-2"
+        >
+          <TerminalText>ADD PHOTO</TerminalText>
+        </TouchableOpacity>
+      </View>
+
       <View className="mb-4">
         <TerminalText>MODEL NAME</TerminalText>
         <TerminalInput

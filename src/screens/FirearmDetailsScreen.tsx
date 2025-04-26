@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { Firearm } from "../services/storage";
 import { storage } from "../services/storage";
 import { Terminal, TerminalText, TerminalInput } from "../components/Terminal";
+import FirearmImage from "../components/FirearmImage";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -107,63 +108,71 @@ export default function FirearmDetailsScreen() {
   }
 
   return (
-    <View className="flex-1 bg-terminal-bg p-4">
-      <View className="mb-4">
-        <TerminalText className="text-lg">{firearm.modelName}</TerminalText>
-        <TerminalText className="text-terminal-dim">
-          {firearm.caliber}
-        </TerminalText>
+    <ScrollView className="flex-1 bg-terminal-bg">
+      <View className="items-center p-4">
+        <FirearmImage size={300} className="mb-8" />
       </View>
 
-      <View className="mb-4">
-        <TerminalText>ROUNDS FIRED</TerminalText>
-        <TerminalText className="text-terminal-dim">
-          {firearm.roundsFired} rounds
-        </TerminalText>
-      </View>
-
-      <View className="mb-4">
-        <TerminalText>DATE PURCHASED</TerminalText>
-        <TerminalText className="text-terminal-dim">
-          {new Date(firearm.purchaseDate).toLocaleDateString()}
-        </TerminalText>
-      </View>
-
-      {firearm.notes && (
+      <View className="px-4">
         <View className="mb-4">
-          <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
-          <ScrollView horizontal className="flex-row">
-            {firearm.notes.split("\n").map((photo, index) => (
-              <Image
-                key={index}
-                source={{ uri: photo }}
-                className="w-32 h-32 m-1 border border-terminal-border"
-              />
-            ))}
-          </ScrollView>
+          <TerminalText className="text-lg">{firearm.modelName}</TerminalText>
+          <TerminalText className="text-terminal-dim">
+            {firearm.caliber}
+          </TerminalText>
         </View>
-      )}
 
-      <View className="flex-row justify-between mt-4">
-        <TouchableOpacity
-          onPress={() => navigation.navigate("EditFirearm", { id: firearm.id })}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>EDIT</TerminalText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleDelete}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>DELETE</TerminalText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>BACK</TerminalText>
-        </TouchableOpacity>
+        <View className="mb-4">
+          <TerminalText>ROUNDS FIRED</TerminalText>
+          <TerminalText className="text-terminal-dim">
+            {firearm.roundsFired} rounds
+          </TerminalText>
+        </View>
+
+        <View className="mb-4">
+          <TerminalText>DATE PURCHASED</TerminalText>
+          <TerminalText className="text-terminal-dim">
+            {new Date(firearm.purchaseDate).toLocaleDateString()}
+          </TerminalText>
+        </View>
+
+        {firearm.notes && (
+          <View className="mb-4">
+            <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
+            <ScrollView horizontal className="flex-row">
+              {firearm.notes.split("\n").map((photo, index) => (
+                <Image
+                  key={index}
+                  source={{ uri: photo }}
+                  className="w-32 h-32 m-1 border border-terminal-border"
+                />
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        <View className="flex-row justify-between mt-4">
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("EditFirearm", { id: firearm.id })
+            }
+            className="border border-terminal-border px-4 py-2"
+          >
+            <TerminalText>EDIT</TerminalText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleDelete}
+            className="border border-terminal-border px-4 py-2"
+          >
+            <TerminalText>DELETE</TerminalText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            className="border border-terminal-border px-4 py-2"
+          >
+            <TerminalText>BACK</TerminalText>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
