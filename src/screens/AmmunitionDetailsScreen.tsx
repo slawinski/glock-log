@@ -4,8 +4,8 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
-import { TerminalText } from "../components/Terminal";
-import { Ammunition } from "../services/storage";
+import { TerminalText } from "../components/TerminalText";
+import { AmmunitionStorage } from "../validation/storageSchemas";
 import { storage } from "../services/storage";
 
 type AmmunitionDetailsScreenNavigationProp = NativeStackNavigationProp<
@@ -21,7 +21,7 @@ type AmmunitionDetailsScreenRouteProp = RouteProp<
 export default function AmmunitionDetailsScreen() {
   const navigation = useNavigation<AmmunitionDetailsScreenNavigationProp>();
   const route = useRoute<AmmunitionDetailsScreenRouteProp>();
-  const [ammunition, setAmmunition] = useState<Ammunition | null>(null);
+  const [ammunition, setAmmunition] = useState<AmmunitionStorage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

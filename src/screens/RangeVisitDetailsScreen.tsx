@@ -11,9 +11,12 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
-import { RangeVisit, Firearm } from "../services/storage";
 import { storage } from "../services/storage";
-import { TerminalText } from "../components/Terminal";
+import { TerminalText } from "../components/TerminalText";
+import {
+  FirearmStorage,
+  RangeVisitStorage,
+} from "../validation/storageSchemas";
 
 type RangeVisitDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -28,8 +31,8 @@ type RangeVisitDetailsScreenRouteProp = RouteProp<
 export default function RangeVisitDetailsScreen() {
   const navigation = useNavigation<RangeVisitDetailsScreenNavigationProp>();
   const route = useRoute<RangeVisitDetailsScreenRouteProp>();
-  const [visit, setVisit] = useState<RangeVisit | null>(null);
-  const [firearms, setFirearms] = useState<Record<string, Firearm>>({});
+  const [visit, setVisit] = useState<RangeVisitStorage | null>(null);
+  const [firearms, setFirearms] = useState<Record<string, FirearmStorage>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +52,7 @@ export default function RangeVisitDetailsScreen() {
       setVisit(foundVisit);
 
       // Fetch details for each firearm used
-      const firearmDetails: Record<string, Firearm> = {};
+      const firearmDetails: Record<string, FirearmStorage> = {};
       const allFirearms = await storage.getFirearms();
       for (const firearmId of Object.keys(foundVisit.roundsPerFirearm)) {
         const firearm = allFirearms.find((f) => f.id === firearmId);

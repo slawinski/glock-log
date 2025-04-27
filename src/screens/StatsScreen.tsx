@@ -7,16 +7,20 @@ import {
   Dimensions,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import { TerminalText } from "../components/Terminal";
-import { Firearm, RangeVisit, Ammunition } from "../services/storage";
+import { TerminalText } from "../components/TerminalText";
+import {
+  FirearmStorage,
+  RangeVisitStorage,
+  AmmunitionStorage,
+} from "../validation/storageSchemas";
 import { storage } from "../services/storage";
 
 type TabType = "visits" | "firearms" | "ammunition";
 
 export default function StatsScreen() {
-  const [firearms, setFirearms] = useState<Firearm[]>([]);
-  const [ammunition, setAmmunition] = useState<Ammunition[]>([]);
-  const [rangeVisits, setRangeVisits] = useState<RangeVisit[]>([]);
+  const [firearms, setFirearms] = useState<FirearmStorage[]>([]);
+  const [ammunition, setAmmunition] = useState<AmmunitionStorage[]>([]);
+  const [rangeVisits, setRangeVisits] = useState<RangeVisitStorage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("visits");
@@ -64,8 +68,9 @@ export default function StatsScreen() {
       return acc;
     }, {} as Record<string, number>);
     const mostCommonCaliber =
-      Object.entries(caliberCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ||
-      "None";
+      Object.entries(caliberCounts).sort(
+        ([, a], [, b]) => (b as number) - (a as number)
+      )[0]?.[0] || "None";
     const mostUsedFirearm = firearms.sort(
       (a, b) => b.roundsFired - a.roundsFired
     )[0];
@@ -174,8 +179,9 @@ export default function StatsScreen() {
       return acc;
     }, {} as Record<string, number>);
     const mostStockedCaliber =
-      Object.entries(caliberCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ||
-      "None";
+      Object.entries(caliberCounts).sort(
+        ([, a], [, b]) => (b as number) - (a as number)
+      )[0]?.[0] || "None";
 
     return {
       totalRounds,
@@ -194,12 +200,17 @@ export default function StatsScreen() {
       return acc;
     }, {} as Record<string, number>);
     const busiestMonth =
-      Object.entries(visitsByMonth).sort(([, a], [, b]) => b - a)[0]?.[0] ||
-      "None";
+      Object.entries(visitsByMonth).sort(
+        ([, a], [, b]) => (b as number) - (a as number)
+      )[0]?.[0] || "None";
 
     const totalRoundsFired = rangeVisits.reduce((sum, visit) => {
       return (
-        sum + Object.values(visit.roundsPerFirearm).reduce((a, b) => a + b, 0)
+        sum +
+        Object.values(visit.roundsPerFirearm).reduce(
+          (a, b) => (a as number) + (b as number),
+          0
+        )
       );
     }, 0);
 
@@ -211,8 +222,9 @@ export default function StatsScreen() {
     }, {} as Record<string, number>);
 
     const mostVisitedLocation =
-      Object.entries(locationCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ||
-      "None";
+      Object.entries(locationCounts).sort(
+        ([, a], [, b]) => (b as number) - (a as number)
+      )[0]?.[0] || "None";
 
     return {
       totalVisits: rangeVisits.length,

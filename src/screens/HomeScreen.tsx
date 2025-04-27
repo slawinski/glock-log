@@ -8,7 +8,11 @@ import {
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
-import { Firearm, RangeVisit, Ammunition } from "../services/storage";
+import {
+  FirearmStorage,
+  RangeVisitStorage,
+  AmmunitionStorage,
+} from "../validation/storageSchemas";
 import { storage } from "../services/storage";
 import { TerminalText } from "../components/TerminalText";
 import FirearmImage from "../components/FirearmImage";
@@ -22,9 +26,9 @@ type TabType = "firearms" | "visits" | "ammunition";
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
-  const [firearms, setFirearms] = useState<Firearm[]>([]);
-  const [rangeVisits, setRangeVisits] = useState<RangeVisit[]>([]);
-  const [ammunition, setAmmunition] = useState<Ammunition[]>([]);
+  const [firearms, setFirearms] = useState<FirearmStorage[]>([]);
+  const [rangeVisits, setRangeVisits] = useState<RangeVisitStorage[]>([]);
+  const [ammunition, setAmmunition] = useState<AmmunitionStorage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -80,7 +84,7 @@ export default function HomeScreen() {
     fetchData(true);
   };
 
-  const renderFirearmItem = ({ item }: { item: Firearm }) => (
+  const renderFirearmItem = ({ item }: { item: FirearmStorage }) => (
     <TouchableOpacity
       onPress={() => navigation.navigate("FirearmDetails", { id: item.id })}
       className="bg-terminal-bg border border-terminal-border p-4 mb-2"
@@ -108,7 +112,7 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
-  const renderVisitItem = ({ item }: { item: RangeVisit }) => {
+  const renderVisitItem = ({ item }: { item: RangeVisitStorage }) => {
     const totalRounds = Object.values(item.roundsPerFirearm).reduce(
       (sum, rounds) => sum + rounds,
       0
@@ -137,7 +141,7 @@ export default function HomeScreen() {
     );
   };
 
-  const renderAmmunitionItem = ({ item }: { item: Ammunition }) => (
+  const renderAmmunitionItem = ({ item }: { item: AmmunitionStorage }) => (
     <TouchableOpacity
       onPress={() => navigation.navigate("AmmunitionDetails", { id: item.id })}
       className="bg-terminal-bg border border-terminal-border p-4 mb-2"

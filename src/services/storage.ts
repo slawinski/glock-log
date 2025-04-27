@@ -95,6 +95,20 @@ export const storage = {
     }
   },
 
+  async deleteFirearm(id: string): Promise<void> {
+    try {
+      const firearms = await this.getFirearms();
+      const filteredFirearms = firearms.filter((firearm) => firearm.id !== id);
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.FIREARMS,
+        JSON.stringify(filteredFirearms)
+      );
+    } catch (error) {
+      console.error("Error deleting firearm:", error);
+      throw error;
+    }
+  },
+
   // Ammunition
   async saveAmmunition(ammunition: AmmunitionInput): Promise<void> {
     try {
@@ -141,6 +155,20 @@ export const storage = {
     }
   },
 
+  async deleteAmmunition(id: string): Promise<void> {
+    try {
+      const ammunition = await this.getAmmunition();
+      const filteredAmmunition = ammunition.filter((ammo) => ammo.id !== id);
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.AMMUNITION,
+        JSON.stringify(filteredAmmunition)
+      );
+    } catch (error) {
+      console.error("Error deleting ammunition:", error);
+      throw error;
+    }
+  },
+
   // Range Visits
   async saveRangeVisit(visit: RangeVisitInput): Promise<void> {
     try {
@@ -182,6 +210,20 @@ export const storage = {
       return validateAndParse(data, z.array(rangeVisitStorageSchema));
     } catch (error) {
       console.error("Error getting range visits:", error);
+      throw error;
+    }
+  },
+
+  async deleteRangeVisit(id: string): Promise<void> {
+    try {
+      const visits = await this.getRangeVisits();
+      const filteredVisits = visits.filter((visit) => visit.id !== id);
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.RANGE_VISITS,
+        JSON.stringify(filteredVisits)
+      );
+    } catch (error) {
+      console.error("Error deleting range visit:", error);
       throw error;
     }
   },

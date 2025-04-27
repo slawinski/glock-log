@@ -11,10 +11,10 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
-import { Firearm } from "../services/storage";
 import { storage } from "../services/storage";
-import { TerminalText } from "../components/Terminal";
+import { TerminalText } from "../components/TerminalText";
 import FirearmImage from "../components/FirearmImage";
+import { FirearmStorage } from "../validation/storageSchemas";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -28,7 +28,7 @@ type FirearmDetailsScreenRouteProp = RouteProp<
 export default function FirearmDetailsScreen() {
   const navigation = useNavigation<FirearmDetailsScreenNavigationProp>();
   const route = useRoute<FirearmDetailsScreenRouteProp>();
-  const [firearm, setFirearm] = useState<Firearm | null>(null);
+  const [firearm, setFirearm] = useState<FirearmStorage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -129,7 +129,7 @@ export default function FirearmDetailsScreen() {
         <View className="mb-4">
           <TerminalText>DATE PURCHASED</TerminalText>
           <TerminalText className="text-terminal-dim">
-            {new Date(firearm.purchaseDate).toLocaleDateString()}
+            {new Date(firearm.datePurchased).toLocaleDateString()}
           </TerminalText>
         </View>
 
