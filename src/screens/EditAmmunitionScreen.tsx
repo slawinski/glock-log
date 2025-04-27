@@ -10,7 +10,8 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
-import { TerminalText, TerminalInput } from "../components/Terminal";
+import { TerminalText } from "../components/TerminalText";
+import { TerminalInput } from "../components/TerminalInput";
 import { storage } from "../services/storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {

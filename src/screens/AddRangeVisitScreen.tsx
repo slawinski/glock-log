@@ -5,7 +5,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
 import * as ImagePicker from "react-native-image-picker";
 import { storage } from "../services/storage";
-import { TerminalText, TerminalInput } from "../components/Terminal";
+import { TerminalText } from "../components/TerminalText";
+import { TerminalInput } from "../components/TerminalInput";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   rangeVisitInputSchema,

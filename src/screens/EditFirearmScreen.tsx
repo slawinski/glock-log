@@ -14,7 +14,8 @@ import { RootStackParamList } from "../../App";
 import * as ImagePicker from "react-native-image-picker";
 import { FirearmStorage } from "../validation/storageSchemas";
 import { storage } from "../services/storage";
-import { TerminalText, TerminalInput } from "../components/Terminal";
+import { TerminalText } from "../components/TerminalText";
+import { TerminalInput } from "../components/TerminalInput";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { firearmInputSchema, FirearmInput } from "../validation/inputSchemas";
 

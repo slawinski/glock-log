@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
 import { Firearm, RangeVisit, Ammunition } from "../services/storage";
 import { storage } from "../services/storage";
-import { TerminalText } from "../components/Terminal";
+import { TerminalText } from "../components/TerminalText";
 import FirearmImage from "../components/FirearmImage";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<

@@ -4,11 +4,15 @@ import { Image, View, ImageSourcePropType } from "react-native";
 interface FirearmImageProps {
   size?: number;
   className?: string;
+  photoUri?: string;
+  testID?: string;
 }
 
 export default function FirearmImage({
   size = 120,
   className = "",
+  photoUri,
+  testID,
 }: FirearmImageProps) {
   return (
     <View
@@ -18,15 +22,21 @@ export default function FirearmImage({
         width: size,
         height: size,
       }}
+      testID={testID}
     >
       <Image
         // TODO: do image components in RN need require?
-        source={require("../../assets/images/glock-placeholder.png")}
+        source={
+          photoUri
+            ? { uri: photoUri }
+            : require("../../assets/images/glock-placeholder.png")
+        }
         style={{
           width: size * 0.9,
           height: size * 0.9,
           resizeMode: "contain",
         }}
+        testID={`${testID}-image`}
       />
     </View>
   );

@@ -1,19 +1,5 @@
 import React from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
-
-interface TerminalTextProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-export const TerminalText: React.FC<TerminalTextProps> = ({
-  children,
-  className = "",
-}) => (
-  <Text className={`text-terminal-text font-terminal ${className}`}>
-    {children}
-  </Text>
-);
+import { View, Text, TextInput } from "react-native";
 
 interface TerminalInputProps {
   value: string | number;
@@ -22,6 +8,7 @@ interface TerminalInputProps {
   keyboardType?: "default" | "numeric" | "email-address" | "phone-pad";
   multiline?: boolean;
   className?: string;
+  testID?: string;
 }
 
 export const TerminalInput: React.FC<TerminalInputProps> = ({
@@ -31,6 +18,7 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
   keyboardType = "default",
   multiline = false,
   className = "",
+  testID,
 }) => (
   <View className="flex-row items-center">
     <Text className="text-terminal-text font-terminal mr-2">{">"}</Text>
@@ -43,6 +31,7 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
       multiline={multiline}
       className={`flex-1 text-terminal-text font-terminal bg-transparent ${className}`}
       style={{ minHeight: multiline ? 100 : undefined }}
+      testID={testID}
     />
   </View>
 );
