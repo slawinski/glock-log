@@ -32,10 +32,6 @@ export const rangeVisitInputSchema = z.object({
   firearmsUsed: z
     .array(z.string())
     .min(1, "At least one firearm must be selected"),
-  roundsPerFirearm: z.record(
-    z.string(),
-    z.number().min(1, "Rounds fired must be greater than 0")
-  ),
   ammunitionUsed: z
     .record(
       z.string(), // firearmId

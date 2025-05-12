@@ -16,6 +16,7 @@ import { TerminalText } from "../components/TerminalText";
 import {
   FirearmStorage,
   RangeVisitStorage,
+  AmmunitionStorage,
 } from "../validation/storageSchemas";
 
 type RangeVisitDetailsScreenNavigationProp = NativeStackNavigationProp<
@@ -33,6 +34,9 @@ export default function RangeVisitDetailsScreen() {
   const route = useRoute<RangeVisitDetailsScreenRouteProp>();
   const [visit, setVisit] = useState<RangeVisitStorage | null>(null);
   const [firearms, setFirearms] = useState<Record<string, FirearmStorage>>({});
+  const [ammunition, setAmmunition] = useState<
+    Record<string, AmmunitionStorage>
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,16 +55,33 @@ export default function RangeVisitDetailsScreen() {
       }
       setVisit(foundVisit);
 
-      // Fetch details for each firearm used
+      // Fetch details for each firearm and ammunition used
+      const [allFirearms, allAmmunition] = await Promise.all([
+        storage.getFirearms(),
+        storage.getAmmunition(),
+      ]);
+
       const firearmDetails: Record<string, FirearmStorage> = {};
-      const allFirearms = await storage.getFirearms();
-      for (const firearmId of Object.keys(foundVisit.roundsPerFirearm)) {
+      const ammunitionDetails: Record<string, AmmunitionStorage> = {};
+
+      for (const firearmId of foundVisit.firearmsUsed) {
         const firearm = allFirearms.find((f) => f.id === firearmId);
         if (firearm) {
           firearmDetails[firearmId] = firearm;
         }
       }
+
+      if (foundVisit.ammunitionUsed) {
+        for (const usage of Object.values(foundVisit.ammunitionUsed)) {
+          const ammo = allAmmunition.find((a) => a.id === usage.ammunitionId);
+          if (ammo) {
+            ammunitionDetails[usage.ammunitionId] = ammo;
+          }
+        }
+      }
+
       setFirearms(firearmDetails);
+      setAmmunition(ammunitionDetails);
     } catch (error) {
       console.error("Error fetching range visit:", error);
       setError("Failed to load range visit data");
@@ -111,6 +132,11 @@ export default function RangeVisitDetailsScreen() {
     );
   }
 
+  const totalRounds = Object.values(visit.ammunitionUsed || {}).reduce(
+    (sum, usage) => sum + usage.rounds,
+    0
+  );
+
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
       <TerminalText className="text-2xl mb-6">RANGE VISIT DETAILS</TerminalText>
@@ -131,28 +157,28 @@ export default function RangeVisitDetailsScreen() {
 
       <View className="mb-4">
         <TerminalText className="text-lg mb-2">FIREARMS USED</TerminalText>
-        {Object.entries(visit.roundsPerFirearm).map(
-          ([firearmId, roundsFired]) => {
-            const firearm = firearms[firearmId];
-            return (
-              <View key={firearmId} className="mb-2">
-                <TerminalText>
-                  {firearm?.modelName} ({firearm?.caliber})
-                </TerminalText>
+        {visit.firearmsUsed.map((firearmId) => {
+          const firearm = firearms[firearmId];
+          const usage = visit.ammunitionUsed?.[firearmId];
+          const ammo = usage ? ammunition[usage.ammunitionId] : null;
+
+          return (
+            <View key={firearmId} className="mb-2">
+              <TerminalText>
+                {firearm?.modelName} ({firearm?.caliber})
+              </TerminalText>
+              {usage && ammo && (
                 <TerminalText className="text-terminal-dim">
-                  Rounds Fired: {roundsFired}
+                  {usage.rounds} rounds of {ammo.brand} {ammo.caliber}{" "}
+                  {ammo.grain}gr
                 </TerminalText>
-              </View>
-            );
-          }
-        )}
+              )}
+            </View>
+          );
+        })}
         <View className="mt-4">
           <TerminalText className="text-lg">
-            TOTAL ROUNDS FIRED:{" "}
-            {Object.values(visit.roundsPerFirearm).reduce(
-              (total, rounds) => total + rounds,
-              0
-            )}
+            TOTAL ROUNDS FIRED: {totalRounds}
           </TerminalText>
         </View>
       </View>
@@ -166,11 +192,11 @@ export default function RangeVisitDetailsScreen() {
         </View>
       )}
 
-      {visit.notes && (
+      {visit.photos && visit.photos.length > 0 && (
         <View className="mb-4">
           <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
           <ScrollView horizontal className="flex-row">
-            {visit.notes.split("\n").map((photo, index) => (
+            {visit.photos.map((photo, index) => (
               <Image
                 key={index}
                 source={{ uri: photo }}

@@ -82,16 +82,6 @@ export default function StatsScreen() {
     };
   };
 
-  const selectFirearm = (firearmId: string | null) => {
-    if (firearmId === null) {
-      // Show all firearms
-      setVisibleFirearms(new Set(firearms.map((f) => f.id)));
-    } else {
-      // Show only the selected firearm
-      setVisibleFirearms(new Set([firearmId]));
-    }
-  };
-
   const calculateFirearmRoundsTimeline = () => {
     // Sort visits by date
     const sortedVisits = [...rangeVisits].sort(
@@ -119,7 +109,7 @@ export default function StatsScreen() {
       firearms.forEach((firearm) => {
         const currentTotals = runningTotals.get(firearm.id) || [];
         const lastTotal = currentTotals[currentTotals.length - 1] || 0;
-        const roundsInVisit = visit.roundsPerFirearm[firearm.id] || 0;
+        const roundsInVisit = visit.ammunitionUsed?.[firearm.id]?.rounds || 0;
         runningTotals.set(firearm.id, [
           ...currentTotals,
           lastTotal + roundsInVisit,
@@ -207,8 +197,8 @@ export default function StatsScreen() {
     const totalRoundsFired = rangeVisits.reduce((sum, visit) => {
       return (
         sum +
-        Object.values(visit.roundsPerFirearm).reduce(
-          (a, b) => (a as number) + (b as number),
+        Object.values(visit.ammunitionUsed || {}).reduce(
+          (a, b) => a + b.rounds,
           0
         )
       );

@@ -26,9 +26,6 @@ export default function AddRangeVisitScreen() {
   >([]);
   const [ammunition, setAmmunition] = useState<AmmunitionStorage[]>([]);
   const [selectedFirearms, setSelectedFirearms] = useState<string[]>([]);
-  const [roundsPerFirearm, setRoundsPerFirearm] = useState<{
-    [key: string]: number;
-  }>({});
   const [ammunitionUsed, setAmmunitionUsed] = useState<{
     [key: string]: { ammunitionId: string; rounds: number };
   }>({});
@@ -38,7 +35,6 @@ export default function AddRangeVisitScreen() {
     notes: "",
     photos: [],
     firearmsUsed: [],
-    roundsPerFirearm: {},
     ammunitionUsed: {},
   });
   const [saving, setSaving] = useState(false);
@@ -93,7 +89,6 @@ export default function AddRangeVisitScreen() {
       const visitData: RangeVisitInput = {
         ...formData,
         firearmsUsed: selectedFirearms,
-        roundsPerFirearm: roundsPerFirearm,
         ammunitionUsed: ammunitionUsed,
       };
 
@@ -201,11 +196,6 @@ export default function AddRangeVisitScreen() {
                   setSelectedFirearms((prev) =>
                     prev.filter((id) => id !== firearm.id)
                   );
-                  setRoundsPerFirearm((prev) => {
-                    const newRounds = { ...prev };
-                    delete newRounds[firearm.id];
-                    return newRounds;
-                  });
                   setAmmunitionUsed((prev) => {
                     const newAmmo = { ...prev };
                     delete newAmmo[firearm.id];
@@ -224,93 +214,76 @@ export default function AddRangeVisitScreen() {
               <TerminalText>{firearm.modelName}</TerminalText>
             </TouchableOpacity>
             {selectedFirearms.includes(firearm.id) && (
-              <>
-                <TerminalInput
-                  value={roundsPerFirearm[firearm.id]?.toString() || "0"}
-                  onChangeText={(text) => {
-                    const num = parseInt(text);
-                    if (!isNaN(num)) {
-                      setRoundsPerFirearm((prev) => ({
-                        ...prev,
-                        [firearm.id]: num,
-                      }));
-                    }
-                  }}
-                  placeholder="Rounds fired"
-                  keyboardType="numeric"
-                />
-                <View className="mt-2">
-                  <TerminalText className="text-terminal-dim">
-                    AMMUNITION USED
-                  </TerminalText>
-                  <View className="flex-row items-center">
-                    <View className="flex-1 mr-2">
-                      <TerminalInput
-                        value={
-                          ammunitionUsed[firearm.id]?.rounds.toString() || "0"
+              <View className="mt-2">
+                <TerminalText className="text-terminal-dim">
+                  AMMUNITION USED
+                </TerminalText>
+                <View className="flex-row items-center">
+                  <View className="flex-1 mr-2">
+                    <TerminalInput
+                      value={
+                        ammunitionUsed[firearm.id]?.rounds.toString() || "0"
+                      }
+                      onChangeText={(text) => {
+                        const num = parseInt(text);
+                        if (!isNaN(num)) {
+                          setAmmunitionUsed((prev) => ({
+                            ...prev,
+                            [firearm.id]: {
+                              ...prev[firearm.id],
+                              rounds: num,
+                            },
+                          }));
                         }
-                        onChangeText={(text) => {
-                          const num = parseInt(text);
-                          if (!isNaN(num)) {
-                            setAmmunitionUsed((prev) => ({
-                              ...prev,
-                              [firearm.id]: {
-                                ...prev[firearm.id],
-                                rounds: num,
-                              },
-                            }));
-                          }
-                        }}
-                        placeholder="Rounds used"
-                        keyboardType="numeric"
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <TouchableOpacity
-                        onPress={() => {
-                          const compatibleAmmo = ammunition.filter(
-                            (a) => a.caliber === firearm.caliber
-                          );
-                          if (compatibleAmmo.length === 0) {
-                            Alert.alert(
-                              "Error",
-                              "No compatible ammunition found"
-                            );
-                            return;
-                          }
+                      }}
+                      placeholder="Rounds used"
+                      keyboardType="numeric"
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <TouchableOpacity
+                      onPress={() => {
+                        const compatibleAmmo = ammunition.filter(
+                          (a) => a.caliber === firearm.caliber
+                        );
+                        if (compatibleAmmo.length === 0) {
                           Alert.alert(
-                            "Select Ammunition",
-                            "Choose ammunition type",
-                            compatibleAmmo.map((ammo) => ({
-                              text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
-                              onPress: () => {
-                                setAmmunitionUsed((prev) => ({
-                                  ...prev,
-                                  [firearm.id]: {
-                                    ammunitionId: ammo.id,
-                                    rounds: prev[firearm.id]?.rounds || 0,
-                                  },
-                                }));
-                              },
-                            }))
+                            "Error",
+                            "No compatible ammunition found"
                           );
-                        }}
-                        className="border border-terminal-border p-2"
-                      >
-                        <TerminalText>
-                          {ammunitionUsed[firearm.id]?.ammunitionId
-                            ? ammunition.find(
-                                (a) =>
-                                  a.id ===
-                                  ammunitionUsed[firearm.id].ammunitionId
-                              )?.brand
-                            : "SELECT AMMO"}
-                        </TerminalText>
-                      </TouchableOpacity>
-                    </View>
+                          return;
+                        }
+                        Alert.alert(
+                          "Select Ammunition",
+                          "Choose ammunition type",
+                          compatibleAmmo.map((ammo) => ({
+                            text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
+                            onPress: () => {
+                              setAmmunitionUsed((prev) => ({
+                                ...prev,
+                                [firearm.id]: {
+                                  ammunitionId: ammo.id,
+                                  rounds: prev[firearm.id]?.rounds || 0,
+                                },
+                              }));
+                            },
+                          }))
+                        );
+                      }}
+                      className="border border-terminal-border p-2"
+                    >
+                      <TerminalText>
+                        {ammunitionUsed[firearm.id]?.ammunitionId
+                          ? ammunition.find(
+                              (a) =>
+                                a.id === ammunitionUsed[firearm.id].ammunitionId
+                            )?.brand
+                          : "SELECT AMMO"}
+                      </TerminalText>
+                    </TouchableOpacity>
                   </View>
                 </View>
-              </>
+              </View>
             )}
           </View>
         ))}

@@ -113,8 +113,8 @@ export default function HomeScreen() {
   );
 
   const renderVisitItem = ({ item }: { item: RangeVisitStorage }) => {
-    const totalRounds = Object.values(item.roundsPerFirearm).reduce(
-      (sum, rounds) => sum + rounds,
+    const totalRounds = Object.values(item.ammunitionUsed || {}).reduce(
+      (sum, usage) => sum + usage.rounds,
       0
     );
     return (

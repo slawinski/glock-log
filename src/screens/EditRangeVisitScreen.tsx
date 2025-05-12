@@ -20,7 +20,7 @@ import {
   rangeVisitInputSchema,
   RangeVisitInput,
 } from "../validation/inputSchemas";
-import { RangeVisitStorage } from "../validation/storageSchemas";
+import { AmmunitionStorage } from "../validation/storageSchemas";
 
 type EditRangeVisitScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -41,12 +41,12 @@ export default function EditRangeVisitScreen() {
     notes: "",
     photos: [],
     firearmsUsed: [],
-    roundsPerFirearm: {},
     ammunitionUsed: {},
   });
   const [firearms, setFirearms] = useState<
     { id: string; modelName: string; caliber: string }[]
   >([]);
+  const [ammunition, setAmmunition] = useState<AmmunitionStorage[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +56,7 @@ export default function EditRangeVisitScreen() {
     if (route.params?.id) {
       fetchVisit();
     }
-    fetchFirearms();
+    fetchData();
   }, [route.params?.id]);
 
   const fetchVisit = async () => {
@@ -66,20 +66,14 @@ export default function EditRangeVisitScreen() {
       const visit = visits.find((v) => v.id === route.params!.id);
       if (visit) {
         // Convert storage data to input data
-        const { id, createdAt, updatedAt, ...visitData } = visit;
+        const { photos, firearmsUsed, notes, ammunitionUsed } = visit;
         setFormData({
-          ...visitData,
-          roundsPerFirearm: Object.entries(visitData.roundsPerFirearm).reduce(
-            (acc, [firearmId, rounds]) => {
-              acc[firearmId] = rounds;
-              return acc;
-            },
-            {} as Record<string, number>
-          ),
-          photos: visitData.photos ?? [],
-          firearmsUsed: visitData.firearmsUsed,
-          notes: visitData.notes || "",
-          ammunitionUsed: visitData.ammunitionUsed || {},
+          date: visit.date,
+          location: visit.location,
+          photos: photos ?? [],
+          firearmsUsed,
+          notes: notes || "",
+          ammunitionUsed: ammunitionUsed || {},
         });
       } else {
         setError("Range visit not found");
@@ -92,18 +86,22 @@ export default function EditRangeVisitScreen() {
     }
   };
 
-  const fetchFirearms = async () => {
+  const fetchData = async () => {
     try {
-      const data = await storage.getFirearms();
+      const [firearmsData, ammunitionData] = await Promise.all([
+        storage.getFirearms(),
+        storage.getAmmunition(),
+      ]);
       setFirearms(
-        data.map((f) => ({
+        firearmsData.map((f) => ({
           id: f.id,
           modelName: f.modelName,
           caliber: f.caliber,
         }))
       );
+      setAmmunition(ammunitionData);
     } catch (error) {
-      console.error("Error fetching firearms:", error);
+      console.error("Error fetching data:", error);
     }
   };
 
@@ -136,11 +134,31 @@ export default function EditRangeVisitScreen() {
         return;
       }
 
-      await storage.saveRangeVisit(formData);
+      // Validate ammunition quantities
+      for (const [firearmId, usage] of Object.entries(
+        formData.ammunitionUsed
+      )) {
+        const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
+        if (!ammo) {
+          throw new Error(`Ammunition not found for firearm ${firearmId}`);
+        }
+        if (ammo.quantity < usage.rounds) {
+          throw new Error(
+            `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
+          );
+        }
+      }
+
+      await storage.saveRangeVisitWithAmmunition(formData);
       navigation.goBack();
     } catch (error) {
       console.error("Error updating range visit:", error);
-      Alert.alert("Error", "Failed to update range visit. Please try again.");
+      Alert.alert(
+        "Error",
+        error instanceof Error
+          ? error.message
+          : "Failed to update range visit. Please try again."
+      );
     } finally {
       setSaving(false);
     }
@@ -148,36 +166,21 @@ export default function EditRangeVisitScreen() {
 
   const toggleFirearmSelection = (firearmId: string) => {
     setFormData((prev) => {
-      const isSelected = firearmId in prev.roundsPerFirearm;
-      const newRoundsPerFirearm = { ...prev.roundsPerFirearm };
+      const isSelected = prev.firearmsUsed.includes(firearmId);
+      const newAmmunitionUsed = { ...prev.ammunitionUsed };
 
       if (isSelected) {
-        delete newRoundsPerFirearm[firearmId];
-      } else {
-        newRoundsPerFirearm[firearmId] = 0;
+        delete newAmmunitionUsed[firearmId];
       }
 
       return {
         ...prev,
-        roundsPerFirearm: newRoundsPerFirearm,
+        ammunitionUsed: newAmmunitionUsed,
         firearmsUsed: isSelected
           ? prev.firearmsUsed.filter((id) => id !== firearmId)
           : [...prev.firearmsUsed, firearmId],
       };
     });
-  };
-
-  const updateRoundsForFirearm = (firearmId: string, rounds: string) => {
-    const numRounds = parseInt(rounds, 10);
-    if (!isNaN(numRounds)) {
-      setFormData((prev) => ({
-        ...prev,
-        roundsPerFirearm: {
-          ...prev.roundsPerFirearm,
-          [firearmId]: numRounds,
-        },
-      }));
-    }
   };
 
   const handleDeletePhoto = (index: number) => {
@@ -265,26 +268,95 @@ export default function EditRangeVisitScreen() {
           <View key={firearm.id} className="mb-2">
             <TouchableOpacity
               onPress={() => toggleFirearmSelection(firearm.id)}
-              className="mb-2"
+              className={`border p-2 ${
+                formData.firearmsUsed.includes(firearm.id)
+                  ? "border-terminal-accent"
+                  : "border-terminal-border"
+              }`}
             >
-              <TerminalText>
-                {firearm.modelName} ({firearm.caliber})
-              </TerminalText>
+              <TerminalText>{firearm.modelName}</TerminalText>
             </TouchableOpacity>
-
-            {firearm.id in formData.roundsPerFirearm && (
-              <View className="ml-4">
-                <TerminalText className="text-terminal-dim mb-1">
-                  ROUNDS FIRED
+            {formData.firearmsUsed.includes(firearm.id) && (
+              <View className="mt-2">
+                <TerminalText className="text-terminal-dim">
+                  AMMUNITION USED
                 </TerminalText>
-                <TerminalInput
-                  value={formData.roundsPerFirearm[firearm.id] || 0}
-                  onChangeText={(text) =>
-                    updateRoundsForFirearm(firearm.id, text)
-                  }
-                  placeholder="Enter number of rounds"
-                  keyboardType="numeric"
-                />
+                <View className="flex-row items-center">
+                  <View className="flex-1 mr-2">
+                    <TerminalInput
+                      value={
+                        formData.ammunitionUsed[
+                          firearm.id
+                        ]?.rounds.toString() || "0"
+                      }
+                      onChangeText={(text) => {
+                        const num = parseInt(text);
+                        if (!isNaN(num)) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            ammunitionUsed: {
+                              ...prev.ammunitionUsed,
+                              [firearm.id]: {
+                                ...prev.ammunitionUsed[firearm.id],
+                                rounds: num,
+                              },
+                            },
+                          }));
+                        }
+                      }}
+                      placeholder="Rounds used"
+                      keyboardType="numeric"
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <TouchableOpacity
+                      onPress={() => {
+                        const compatibleAmmo = ammunition.filter(
+                          (a) => a.caliber === firearm.caliber
+                        );
+                        if (compatibleAmmo.length === 0) {
+                          Alert.alert(
+                            "Error",
+                            "No compatible ammunition found"
+                          );
+                          return;
+                        }
+                        Alert.alert(
+                          "Select Ammunition",
+                          "Choose ammunition type",
+                          compatibleAmmo.map((ammo) => ({
+                            text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
+                            onPress: () => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                ammunitionUsed: {
+                                  ...prev.ammunitionUsed,
+                                  [firearm.id]: {
+                                    ammunitionId: ammo.id,
+                                    rounds:
+                                      prev.ammunitionUsed[firearm.id]?.rounds ||
+                                      0,
+                                  },
+                                },
+                              }));
+                            },
+                          }))
+                        );
+                      }}
+                      className="border border-terminal-border p-2"
+                    >
+                      <TerminalText>
+                        {formData.ammunitionUsed[firearm.id]?.ammunitionId
+                          ? ammunition.find(
+                              (a) =>
+                                a.id ===
+                                formData.ammunitionUsed[firearm.id].ammunitionId
+                            )?.brand
+                          : "SELECT AMMO"}
+                      </TerminalText>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
             )}
           </View>
@@ -300,7 +372,7 @@ export default function EditRangeVisitScreen() {
           <TerminalText>ADD PHOTO</TerminalText>
         </TouchableOpacity>
         <ScrollView horizontal className="flex-row">
-          {formData.photos.map((photo: string, index: number) => (
+          {formData.photos?.map((photo, index) => (
             <View key={index} className="relative">
               <Image source={{ uri: photo }} className="w-40 h-40 m-1" />
               <TouchableOpacity
@@ -314,12 +386,6 @@ export default function EditRangeVisitScreen() {
         </ScrollView>
       </View>
 
-      {error && (
-        <View className="mb-4">
-          <TerminalText className="text-terminal-error">{error}</TerminalText>
-        </View>
-      )}
-
       <View className="flex-row justify-between">
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -332,7 +398,7 @@ export default function EditRangeVisitScreen() {
           disabled={saving}
           className="border border-terminal-border px-4 py-2"
         >
-          <TerminalText>{saving ? "SAVING..." : "SAVE CHANGES"}</TerminalText>
+          <TerminalText>{saving ? "SAVING..." : "SAVE"}</TerminalText>
         </TouchableOpacity>
       </View>
     </ScrollView>
