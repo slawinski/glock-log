@@ -36,7 +36,15 @@ export const rangeVisitInputSchema = z.object({
     z.string(),
     z.number().min(1, "Rounds fired must be greater than 0")
   ),
-  ammunitionUsed: z.record(z.string(), z.number()).optional(),
+  ammunitionUsed: z
+    .record(
+      z.string(), // firearmId
+      z.object({
+        ammunitionId: z.string(),
+        rounds: z.number().min(1, "Rounds used must be greater than 0"),
+      })
+    )
+    .optional(),
   photos: z.array(z.string()).optional(),
 });
 

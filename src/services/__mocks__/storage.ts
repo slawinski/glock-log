@@ -1,3 +1,5 @@
+import { jest } from "@jest/globals";
+
 export const storage = {
   getFirearms: jest.fn(),
   deleteFirearm: jest.fn(),

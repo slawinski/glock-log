@@ -38,6 +38,7 @@ export default [
       "react/prop-types": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
       "react-native/no-inline-styles": "warn",
+      "react-native/no-raw-text": ["error", { skip: ["TerminalText"] }],
     },
     settings: {
       react: {

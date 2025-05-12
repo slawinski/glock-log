@@ -227,4 +227,84 @@ export const storage = {
       throw error;
     }
   },
+
+  // New methods for handling ammunition and range visits
+  async updateAmmunitionQuantity(
+    ammunitionId: string,
+    quantityChange: number
+  ): Promise<void> {
+    try {
+      const ammunitionList = await this.getAmmunition();
+      const ammunition = ammunitionList.find((a) => a.id === ammunitionId);
+
+      if (!ammunition) {
+        throw new Error("Ammunition not found");
+      }
+
+      const newQuantity = ammunition.quantity + quantityChange;
+      if (newQuantity < 0) {
+        throw new Error("Insufficient ammunition quantity");
+      }
+
+      ammunition.quantity = newQuantity;
+      ammunition.updatedAt = new Date().toISOString();
+
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.AMMUNITION,
+        JSON.stringify(ammunitionList)
+      );
+    } catch (error) {
+      console.error("Error updating ammunition quantity:", error);
+      throw error;
+    }
+  },
+
+  async updateFirearmRoundsFired(
+    firearmId: string,
+    roundsToAdd: number
+  ): Promise<void> {
+    try {
+      const firearms = await this.getFirearms();
+      const firearm = firearms.find((f) => f.id === firearmId);
+
+      if (!firearm) {
+        throw new Error("Firearm not found");
+      }
+
+      firearm.roundsFired += roundsToAdd;
+      firearm.updatedAt = new Date().toISOString();
+
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.FIREARMS,
+        JSON.stringify(firearms)
+      );
+    } catch (error) {
+      console.error("Error updating firearm rounds fired:", error);
+      throw error;
+    }
+  },
+
+  async saveRangeVisitWithAmmunition(visit: RangeVisitInput): Promise<void> {
+    try {
+      // First save the range visit
+      await this.saveRangeVisit(visit);
+
+      // Then update ammunition quantities and firearm rounds fired
+      if (visit.ammunitionUsed) {
+        for (const [firearmId, usage] of Object.entries(visit.ammunitionUsed)) {
+          // Update ammunition quantity
+          await this.updateAmmunitionQuantity(
+            usage.ammunitionId,
+            -usage.rounds
+          );
+
+          // Update firearm rounds fired
+          await this.updateFirearmRoundsFired(firearmId, usage.rounds);
+        }
+      }
+    } catch (error) {
+      console.error("Error saving range visit with ammunition:", error);
+      throw error;
+    }
+  },
 };

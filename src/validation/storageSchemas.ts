@@ -35,7 +35,15 @@ export const rangeVisitStorageSchema = z.object({
   notes: z.string().optional(),
   firearmsUsed: z.array(z.string()),
   roundsPerFirearm: z.record(z.string(), z.number()),
-  ammunitionUsed: z.record(z.string(), z.number()),
+  ammunitionUsed: z
+    .record(
+      z.string(), // firearmId
+      z.object({
+        ammunitionId: z.string(),
+        rounds: z.number(),
+      })
+    )
+    .optional(),
   photos: z.array(z.string()).optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
