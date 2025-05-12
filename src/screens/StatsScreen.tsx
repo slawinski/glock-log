@@ -23,7 +23,7 @@ export default function StatsScreen() {
   const [rangeVisits, setRangeVisits] = useState<RangeVisitStorage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>("visits");
+  const [activeTab, setActiveTab] = useState<TabType>("firearms");
   const [visibleFirearms, setVisibleFirearms] = useState<Set<string>>(
     new Set()
   );
@@ -38,6 +38,34 @@ export default function StatsScreen() {
       setVisibleFirearms(new Set(firearms.map((f) => f.id)));
     }
   }, [firearms]);
+
+  const toggleFirearm = (firearmId: string) => {
+    setVisibleFirearms((prev) => {
+      const newSet = new Set(prev);
+      // If trying to deselect the last visible firearm, select all instead
+      if (newSet.has(firearmId) && newSet.size === 1) {
+        return new Set(firearms.map((f) => f.id));
+      }
+      if (newSet.has(firearmId)) {
+        newSet.delete(firearmId);
+      } else {
+        newSet.add(firearmId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleAllFirearms = () => {
+    // If all firearms are selected, deselect all
+    if (visibleFirearms.size === firearms.length) {
+      setVisibleFirearms(new Set());
+    } else {
+      // Otherwise, select all firearms
+      setVisibleFirearms(new Set(firearms.map((f) => f.id)));
+    }
+  };
+
+  const isAllSelected = visibleFirearms.size === firearms.length;
 
   const fetchData = async () => {
     try {
@@ -229,22 +257,6 @@ export default function StatsScreen() {
   const renderTabBar = () => (
     <View className="flex-row justify-around mb-4 bg-terminal-bg border-b border-terminal-border">
       <TouchableOpacity
-        onPress={() => setActiveTab("visits")}
-        className={`flex-1 items-center py-3 ${
-          activeTab === "visits" ? "border-b-2 border-terminal-text" : ""
-        }`}
-      >
-        <TerminalText
-          className={`${
-            activeTab === "visits"
-              ? "text-terminal-text"
-              : "text-terminal-border"
-          }`}
-        >
-          VISITS
-        </TerminalText>
-      </TouchableOpacity>
-      <TouchableOpacity
         onPress={() => setActiveTab("firearms")}
         className={`flex-1 items-center py-3 ${
           activeTab === "firearms" ? "border-b-2 border-terminal-text" : ""
@@ -258,6 +270,22 @@ export default function StatsScreen() {
           }`}
         >
           FIREARMS
+        </TerminalText>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => setActiveTab("visits")}
+        className={`flex-1 items-center py-3 ${
+          activeTab === "visits" ? "border-b-2 border-terminal-text" : ""
+        }`}
+      >
+        <TerminalText
+          className={`${
+            activeTab === "visits"
+              ? "text-terminal-text"
+              : "text-terminal-border"
+          }`}
+        >
+          VISITS
         </TerminalText>
       </TouchableOpacity>
       <TouchableOpacity
@@ -372,7 +400,20 @@ export default function StatsScreen() {
               ROUNDS FIRED TIMELINE
             </TerminalText>
             <LineChart
-              data={timelineData}
+              data={{
+                labels: timelineData.labels,
+                datasets:
+                  timelineData.datasets.length > 0
+                    ? timelineData.datasets
+                    : [
+                        {
+                          data: new Array(timelineData.labels.length).fill(0),
+                          color: () => "rgba(0, 255, 0, 0)",
+                          strokeWidth: 0,
+                        },
+                      ],
+                legend: timelineData.legend,
+              }}
               width={Dimensions.get("window").width - 32}
               height={220}
               chartConfig={{
@@ -386,7 +427,7 @@ export default function StatsScreen() {
                   borderRadius: 16,
                 },
                 propsForDots: {
-                  r: "6",
+                  r: "3",
                   strokeWidth: "2",
                   stroke: "#00ff00",
                 },
@@ -398,10 +439,22 @@ export default function StatsScreen() {
               }}
             />
             <View className="mt-2">
-              {timelineData.legend.map((legend, index) => (
-                <TerminalText key={index} className="text-terminal-dim">
-                  {legend}
+              <TouchableOpacity onPress={toggleAllFirearms} className="mb-2">
+                <TerminalText className="text-terminal-dim">
+                  {isAllSelected ? "[✓] ALL" : "[ ] ALL"}
                 </TerminalText>
+              </TouchableOpacity>
+              {firearms.map((firearm) => (
+                <TouchableOpacity
+                  key={firearm.id}
+                  onPress={() => toggleFirearm(firearm.id)}
+                  className="mb-1"
+                >
+                  <TerminalText className="text-terminal-dim">
+                    {visibleFirearms.has(firearm.id) ? "[✓] " : "[ ] "}
+                    {firearm.modelName}
+                  </TerminalText>
+                </TouchableOpacity>
               ))}
             </View>
           </View>
