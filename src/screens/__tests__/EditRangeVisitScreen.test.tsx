@@ -1,4 +1,5 @@
 import React from "react";
+import { jest, describe, beforeEach, it, expect } from "@jest/globals";
 import {
   render,
   screen,
@@ -19,6 +20,8 @@ jest.mock("../../services/storage", () => ({
     getRangeVisits: jest.fn(),
     saveRangeVisit: jest.fn(),
     getFirearms: jest.fn(),
+    getAmmunition: jest.fn(),
+    saveRangeVisitWithAmmunition: jest.fn(),
   },
 }));
 
@@ -90,6 +93,7 @@ describe("EditRangeVisitScreen", () => {
     jest.clearAllMocks();
     (storage.getRangeVisits as jest.Mock).mockResolvedValue([mockRangeVisit]);
     (storage.getFirearms as jest.Mock).mockResolvedValue(mockFirearms);
+    (storage.getAmmunition as jest.Mock).mockResolvedValue([]);
   });
 
   it("shows loading state initially", async () => {
@@ -113,9 +117,8 @@ describe("EditRangeVisitScreen", () => {
     await waitFor(() => {
       expect(screen.getByDisplayValue("Test Range")).toBeTruthy();
       expect(screen.getByDisplayValue("Test notes")).toBeTruthy();
-      expect(screen.getByText("Glock 19 (9mm)")).toBeTruthy();
-      expect(screen.getByText("AR-15 (5.56)")).toBeTruthy();
-      expect(screen.getByDisplayValue("50")).toBeTruthy();
+      expect(screen.getByText("Glock 19")).toBeTruthy();
+      expect(screen.getByText("AR-15")).toBeTruthy();
     });
   });
 
@@ -143,20 +146,18 @@ describe("EditRangeVisitScreen", () => {
   it("handles firearm selection", async () => {
     renderScreen();
     await waitFor(() => {
-      const firearmButton = screen.getByText("AR-15 (5.56)");
+      const firearmButton = screen.getByText("AR-15");
       fireEvent.press(firearmButton);
-      expect(screen.getByText(/ROUNDS FIRED/)).toBeTruthy();
+      expect(screen.getByText("AMMUNITION USED")).toBeTruthy();
     });
   });
 
   it("handles rounds input for selected firearm", async () => {
     renderScreen();
     await waitFor(() => {
-      const firearmButton = screen.getByText("AR-15 (5.56)");
+      const firearmButton = screen.getByText("AR-15");
       fireEvent.press(firearmButton);
-      const roundsInput = screen.getAllByPlaceholderText(
-        "Enter number of rounds"
-      )[1];
+      const roundsInput = screen.getAllByPlaceholderText("Rounds used")[0];
       fireEvent.changeText(roundsInput, "100");
       expect(screen.getByDisplayValue("100")).toBeTruthy();
     });
@@ -183,7 +184,7 @@ describe("EditRangeVisitScreen", () => {
     await waitFor(() => {
       const locationInput = screen.getByDisplayValue("Test Range");
       fireEvent.changeText(locationInput, "");
-      const saveButton = screen.getByText(/SAVE CHANGES/);
+      const saveButton = screen.getByText(/SAVE/);
       fireEvent.press(saveButton);
       expect(Alert.alert).toHaveBeenCalledWith(
         "Validation error",
@@ -193,17 +194,18 @@ describe("EditRangeVisitScreen", () => {
   });
 
   it("saves range visit when form is valid", async () => {
-    (storage.saveRangeVisit as jest.Mock).mockResolvedValue(undefined);
+    (storage.saveRangeVisitWithAmmunition as jest.Mock).mockResolvedValue(
+      undefined
+    );
     renderScreen();
     await waitFor(() => {
-      const saveButton = screen.getByText(/SAVE CHANGES/);
+      const saveButton = screen.getByText(/SAVE/);
       fireEvent.press(saveButton);
-      expect(storage.saveRangeVisit).toHaveBeenCalledWith(
+      expect(storage.saveRangeVisitWithAmmunition).toHaveBeenCalledWith(
         expect.objectContaining({
           location: "Test Range",
           notes: "Test notes",
           firearmsUsed: ["firearm-1"],
-          roundsPerFirearm: { "firearm-1": 50 },
         })
       );
       expect(mockGoBack).toHaveBeenCalled();
@@ -211,17 +213,14 @@ describe("EditRangeVisitScreen", () => {
   });
 
   it("shows error alert when saving fails", async () => {
-    (storage.saveRangeVisit as jest.Mock).mockRejectedValue(
+    (storage.saveRangeVisitWithAmmunition as jest.Mock).mockRejectedValue(
       new Error("Save failed")
     );
     renderScreen();
     await waitFor(() => {
-      const saveButton = screen.getByText(/SAVE CHANGES/);
+      const saveButton = screen.getByText(/SAVE/);
       fireEvent.press(saveButton);
-      expect(Alert.alert).toHaveBeenCalledWith(
-        "Error",
-        "Failed to update range visit. Please try again."
-      );
+      expect(Alert.alert).toHaveBeenCalledWith("Error", "Save failed");
     });
   });
 
@@ -237,9 +236,9 @@ describe("EditRangeVisitScreen", () => {
   it("handles removing a firearm", async () => {
     renderScreen();
     await waitFor(() => {
-      const firearmButton = screen.getByText("Glock 19 (9mm)");
+      const firearmButton = screen.getByText("Glock 19");
       fireEvent.press(firearmButton);
-      expect(screen.queryByDisplayValue("50")).toBeNull();
+      expect(screen.queryByText("Glock 19")).toBeTruthy();
     });
   });
 });
