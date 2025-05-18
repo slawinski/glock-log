@@ -2,6 +2,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useEffect } from "react";
+import { runMigrations } from "./src/db/migrations/runMigration";
 
 // Import screens
 import HomeScreen from "./src/screens/HomeScreen";
@@ -33,6 +35,11 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
+  // TODO: Remove this once the migration is no longer needed
+  // useEffect(() => {
+  //   runMigrations().catch(console.error);
+  // }, []);
+
   return (
     <SafeAreaProvider>
       <NavigationContainer>
