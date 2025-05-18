@@ -134,9 +134,11 @@ describe("EditRangeVisitScreen", () => {
   it("handles date picker interaction", async () => {
     renderScreen();
     await waitFor(() => {
-      const dateButton = screen.getByText(
-        new Date(mockRangeVisit.date).toLocaleDateString()
+      const formattedDate = new Date(mockRangeVisit.date).toLocaleDateString(
+        undefined,
+        { year: "numeric", month: "short", day: "numeric" }
       );
+      const dateButton = screen.getByText(formattedDate);
       fireEvent.press(dateButton);
       const datePickerElement = screen.UNSAFE_getByType(DateTimePicker);
       expect(datePickerElement).toBeTruthy();

@@ -12,8 +12,8 @@ import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../App";
 import { TerminalText } from "../components/TerminalText";
 import { TerminalInput } from "../components/TerminalInput";
+import TerminalDatePicker from "../components/TerminalDatePicker";
 import { storage } from "../services/storage";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   ammunitionInputSchema,
   AmmunitionInput,
@@ -186,30 +186,18 @@ export default function EditAmmunitionScreen() {
 
       <View className="mb-4">
         <TerminalText>DATE PURCHASED</TerminalText>
-        <TouchableOpacity
-          onPress={() => setShowDatePicker(true)}
-          className="border border-terminal-border p-2"
-        >
-          <TerminalText>
-            {new Date(formData.datePurchased).toLocaleDateString()}
-          </TerminalText>
-        </TouchableOpacity>
-        {showDatePicker && (
-          <DateTimePicker
-            value={new Date(formData.datePurchased)}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => {
-              setShowDatePicker(false);
-              if (selectedDate) {
-                setFormData((prev) => ({
-                  ...prev,
-                  datePurchased: selectedDate.toISOString(),
-                }));
-              }
-            }}
-          />
-        )}
+        <TerminalDatePicker
+          value={new Date(formData.datePurchased)}
+          onChange={(date) =>
+            setFormData((prev) => ({
+              ...prev,
+              datePurchased: date.toISOString(),
+            }))
+          }
+          label="PURCHASE DATE"
+          maxDate={new Date()}
+          placeholder="Select purchase date"
+        />
       </View>
 
       <View className="mb-4">

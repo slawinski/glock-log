@@ -16,7 +16,7 @@ import { FirearmStorage } from "../validation/storageSchemas";
 import { storage } from "../services/storage";
 import { TerminalText } from "../components/TerminalText";
 import { TerminalInput } from "../components/TerminalInput";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import TerminalDatePicker from "../components/TerminalDatePicker";
 import { firearmInputSchema, FirearmInput } from "../validation/inputSchemas";
 
 type EditFirearmScreenNavigationProp = NativeStackNavigationProp<
@@ -175,30 +175,18 @@ export default function EditFirearmScreen() {
 
       <View className="mb-4">
         <TerminalText>DATE PURCHASED</TerminalText>
-        <TouchableOpacity
-          onPress={() => setShowDatePicker(true)}
-          className="border border-terminal-border p-2"
-        >
-          <TerminalText>
-            {new Date(formData.datePurchased).toLocaleDateString()}
-          </TerminalText>
-        </TouchableOpacity>
-        {showDatePicker && (
-          <DateTimePicker
-            value={new Date(formData.datePurchased)}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => {
-              setShowDatePicker(false);
-              if (selectedDate) {
-                setFormData((prev) => ({
-                  ...prev,
-                  datePurchased: selectedDate.toISOString(),
-                }));
-              }
-            }}
-          />
-        )}
+        <TerminalDatePicker
+          value={new Date(formData.datePurchased)}
+          onChange={(date) =>
+            setFormData((prev) => ({
+              ...prev,
+              datePurchased: date.toISOString(),
+            }))
+          }
+          label="PURCHASE DATE"
+          maxDate={new Date()}
+          placeholder="Select purchase date"
+        />
       </View>
 
       <View className="mb-4">

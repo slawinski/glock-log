@@ -15,7 +15,7 @@ import * as ImagePicker from "react-native-image-picker";
 import { storage } from "../services/storage";
 import { TerminalText } from "../components/TerminalText";
 import { TerminalInput } from "../components/TerminalInput";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import TerminalDatePicker from "../components/TerminalDatePicker";
 import {
   rangeVisitInputSchema,
   RangeVisitInput,
@@ -35,13 +35,12 @@ type EditRangeVisitScreenRouteProp = RouteProp<
 export default function EditRangeVisitScreen() {
   const navigation = useNavigation<EditRangeVisitScreenNavigationProp>();
   const route = useRoute<EditRangeVisitScreenRouteProp>();
-  const [formData, setFormData] = useState<Required<RangeVisitInput>>({
+  const [formData, setFormData] = useState<RangeVisitInput>({
     date: new Date().toISOString(),
     location: "",
     notes: "",
+    roundsFired: 0,
     photos: [],
-    firearmsUsed: [],
-    ammunitionUsed: {},
   });
   const [firearms, setFirearms] = useState<
     { id: string; modelName: string; caliber: string }[]
@@ -50,7 +49,6 @@ export default function EditRangeVisitScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     if (route.params?.id) {
@@ -224,30 +222,18 @@ export default function EditRangeVisitScreen() {
 
       <View className="mb-4">
         <TerminalText>DATE</TerminalText>
-        <TouchableOpacity
-          onPress={() => setShowDatePicker(true)}
-          className="border border-terminal-border p-2"
-        >
-          <TerminalText>
-            {new Date(formData.date).toLocaleDateString()}
-          </TerminalText>
-        </TouchableOpacity>
-        {showDatePicker && (
-          <DateTimePicker
-            value={new Date(formData.date)}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => {
-              setShowDatePicker(false);
-              if (selectedDate) {
-                setFormData((prev) => ({
-                  ...prev,
-                  date: selectedDate.toISOString(),
-                }));
-              }
-            }}
-          />
-        )}
+        <TerminalDatePicker
+          value={new Date(formData.date)}
+          onChange={(date) =>
+            setFormData((prev) => ({
+              ...prev,
+              date: date.toISOString(),
+            }))
+          }
+          label="VISIT DATE"
+          maxDate={new Date()}
+          placeholder="Select visit date"
+        />
       </View>
 
       <View className="mb-4">

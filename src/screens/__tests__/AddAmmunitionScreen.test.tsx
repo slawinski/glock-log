@@ -176,12 +176,15 @@ describe("AddAmmunitionScreen", () => {
     expect(mockGoBack).toHaveBeenCalled();
   });
 
-  it("handles date picker interaction", () => {
+  it("handles date picker interaction", async () => {
     renderScreen();
 
-    const datePurchasedButton = screen.getByText(
-      new Date().toLocaleDateString()
-    );
+    const formattedDate = new Date().toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    const datePurchasedButton = screen.getByText(formattedDate);
     fireEvent.press(datePurchasedButton);
 
     // DateTimePicker should be visible

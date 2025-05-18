@@ -120,7 +120,7 @@ describe("AddRangeVisitScreen", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/LOCATION/)).toBeTruthy();
-      expect(screen.getByText(/DATE/)).toBeTruthy();
+      expect(screen.getByText(/VISIT DATE/)).toBeTruthy();
       expect(screen.getByText(/FIREARMS USED/)).toBeTruthy();
       expect(screen.getByText(/PHOTOS/)).toBeTruthy();
       expect(screen.getByText(/CANCEL/)).toBeTruthy();
@@ -329,7 +329,12 @@ describe("AddRangeVisitScreen", () => {
   it("handles date picker interaction", async () => {
     renderScreen();
 
-    const dateButton = screen.getByText(new Date().toLocaleDateString());
+    const formattedToday = new Date().toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    const dateButton = screen.getByText(formattedToday);
     fireEvent.press(dateButton);
 
     // DateTimePicker should be visible
