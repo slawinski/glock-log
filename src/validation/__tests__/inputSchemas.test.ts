@@ -49,7 +49,7 @@ describe("Ammunition Input Schema", () => {
     const validAmmo = {
       caliber: "9mm",
       brand: "Federal",
-      grain: 115,
+      grain: "115",
       quantity: 50,
       datePurchased: new Date().toISOString(),
       amountPaid: 24.99,
@@ -65,7 +65,7 @@ describe("Ammunition Input Schema", () => {
     const invalidAmmo = {
       caliber: "", // Empty caliber
       brand: "", // Empty brand
-      grain: 0, // Zero grain
+      grain: "", // Empty grain
       quantity: 0, // Zero quantity
       datePurchased: "not-a-date",
       amountPaid: -1, // Negative amount
@@ -78,7 +78,7 @@ describe("Ammunition Input Schema", () => {
         expect.arrayContaining([
           expect.objectContaining({ message: "Caliber is required" }),
           expect.objectContaining({ message: "Brand is required" }),
-          expect.objectContaining({ message: "Grain must be greater than 0" }),
+          expect.objectContaining({ message: "Grain is required" }),
           expect.objectContaining({
             message: "Quantity must be greater than 0",
           }),

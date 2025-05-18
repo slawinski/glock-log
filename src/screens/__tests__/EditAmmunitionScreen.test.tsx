@@ -42,7 +42,7 @@ const mockAmmunition = {
   id: "test-id",
   caliber: "9mm",
   brand: "Federal",
-  grain: 115,
+  grain: "115",
   quantity: 1000,
   amountPaid: 299.99,
   datePurchased: "2024-01-01T00:00:00.000Z",
@@ -143,7 +143,7 @@ describe("EditAmmunitionScreen", () => {
         expect.objectContaining({
           caliber: "9mm",
           brand: "Federal",
-          grain: 115,
+          grain: "115",
           quantity: 1000,
           amountPaid: 299.99,
         })

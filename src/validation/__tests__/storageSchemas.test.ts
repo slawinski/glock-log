@@ -55,7 +55,7 @@ describe("Ammunition Storage Schema", () => {
       id: "123",
       caliber: "9mm",
       brand: "Federal",
-      grain: 115,
+      grain: "115",
       quantity: 50,
       datePurchased: new Date().toISOString(),
       amountPaid: 24.99,
@@ -74,7 +74,7 @@ describe("Ammunition Storage Schema", () => {
       id: "", // Empty ID
       caliber: "", // Empty caliber
       brand: "", // Empty brand
-      grain: -1, // Negative grain
+      grain: "", // Empty grain
       quantity: -1, // Negative quantity
       datePurchased: "not-a-date",
       amountPaid: -1, // Negative amount

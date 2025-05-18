@@ -15,7 +15,7 @@ export const firearmInputSchema = z.object({
 export const ammunitionInputSchema = z.object({
   caliber: z.string().min(1, "Caliber is required"),
   brand: z.string().min(1, "Brand is required"),
-  grain: z.number().min(1, "Grain must be greater than 0"),
+  grain: z.string().min(1, "Grain is required"),
   quantity: z.number().min(1, "Quantity must be greater than 0"),
   datePurchased: z.string().datetime(),
   amountPaid: z

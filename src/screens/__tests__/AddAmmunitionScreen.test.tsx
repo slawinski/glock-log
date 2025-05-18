@@ -129,7 +129,7 @@ describe("AddAmmunitionScreen", () => {
         expect.objectContaining({
           caliber: "9mm",
           brand: "Federal",
-          grain: 115,
+          grain: "115",
           quantity: 1000,
           amountPaid: 299.99,
         })

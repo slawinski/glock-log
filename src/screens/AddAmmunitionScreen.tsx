@@ -22,7 +22,7 @@ export default function AddAmmunitionScreen() {
   const [formData, setFormData] = useState<AmmunitionInput>({
     caliber: "",
     brand: "",
-    grain: 0,
+    grain: "",
     quantity: 0,
     datePurchased: new Date().toISOString(),
     amountPaid: 0,
@@ -83,11 +83,10 @@ export default function AddAmmunitionScreen() {
       <View className="mb-4">
         <TerminalText>GRAIN</TerminalText>
         <TerminalInput
-          value={formData.grain.toString()}
-          onChangeText={(text) => {
-            const grain = parseInt(text) || 0;
-            setFormData((prev) => ({ ...prev, grain }));
-          }}
+          value={formData.grain}
+          onChangeText={(text) =>
+            setFormData((prev) => ({ ...prev, grain: text }))
+          }
           placeholder="e.g., 115"
           keyboardType="numeric"
         />

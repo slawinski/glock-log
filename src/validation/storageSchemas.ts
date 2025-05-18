@@ -18,7 +18,7 @@ export const ammunitionStorageSchema = z.object({
   id: z.string(),
   caliber: z.string(),
   brand: z.string(),
-  grain: z.number(),
+  grain: z.string(),
   quantity: z.number(),
   datePurchased: z.string().datetime(),
   amountPaid: z.number(),
