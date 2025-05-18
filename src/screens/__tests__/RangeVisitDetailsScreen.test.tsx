@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import React from "react";
 import {
   render,
@@ -13,27 +14,34 @@ import { storage } from "../../services/storage";
 import {
   FirearmStorage,
   RangeVisitStorage,
+  AmmunitionStorage,
 } from "../../validation/storageSchemas";
-
-// Mock the storage service
-jest.mock("../../services/storage");
-
-// Mock Alert
-jest.spyOn(Alert, "alert");
+import { describe, it, expect, beforeEach } from "@jest/globals";
 
 // Mock navigation
 const mockNavigate = jest.fn();
 const mockGoBack = jest.fn();
-jest.mock("@react-navigation/native", () => {
-  const actualNav = jest.requireActual("@react-navigation/native");
-  return {
-    ...actualNav,
-    useNavigation: () => ({
-      navigate: mockNavigate,
-      goBack: mockGoBack,
-    }),
-  };
-});
+
+jest.mock("@react-navigation/native", () => ({
+  ...jest.requireActual("@react-navigation/native"),
+  useNavigation: () => ({
+    navigate: mockNavigate,
+    goBack: mockGoBack,
+  }),
+}));
+
+// Mock the storage service
+jest.mock("../../services/storage", () => ({
+  storage: {
+    getRangeVisits: jest.fn(),
+    getFirearms: jest.fn(),
+    getAmmunition: jest.fn(),
+    deleteRangeVisit: jest.fn(),
+  },
+}));
+
+// Mock Alert
+jest.spyOn(Alert, "alert");
 
 const mockFirearm: FirearmStorage = {
   id: "firearm-1",
@@ -47,16 +55,29 @@ const mockFirearm: FirearmStorage = {
   notes: "Test notes",
 };
 
+const mockAmmunition: AmmunitionStorage = {
+  id: "ammo-1",
+  caliber: "9mm",
+  brand: "Test Brand",
+  grain: 115,
+  quantity: 1000,
+  datePurchased: new Date().toISOString(),
+  amountPaid: 300,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  notes: "Test ammo notes",
+};
+
 const mockVisit: RangeVisitStorage = {
   id: "visit-1",
   location: "Test Range",
   date: new Date().toISOString(),
   firearmsUsed: ["firearm-1"],
-  roundsPerFirearm: {
-    "firearm-1": 100,
-  },
   ammunitionUsed: {
-    "9mm": 100,
+    "firearm-1": {
+      ammunitionId: "ammo-1",
+      rounds: 100,
+    },
   },
   notes: "Test visit notes",
   createdAt: new Date().toISOString(),
@@ -95,6 +116,7 @@ describe("RangeVisitDetailsScreen", () => {
   it("displays range visit details when loaded successfully", async () => {
     (storage.getRangeVisits as jest.Mock).mockResolvedValue([mockVisit]);
     (storage.getFirearms as jest.Mock).mockResolvedValue([mockFirearm]);
+    (storage.getAmmunition as jest.Mock).mockResolvedValue([mockAmmunition]);
     renderScreen();
 
     await waitFor(() => {
@@ -108,14 +130,16 @@ describe("RangeVisitDetailsScreen", () => {
       ).toBeTruthy();
       expect(
         screen.getByText(
-          `Rounds Fired: ${mockVisit.roundsPerFirearm[mockFirearm.id]}`
+          `${mockVisit.ammunitionUsed?.[mockFirearm.id]?.rounds} rounds of ${
+            mockAmmunition.brand
+          } ${mockAmmunition.caliber} ${mockAmmunition.grain}gr`
         )
       ).toBeTruthy();
       expect(
         screen.getByText(
           `TOTAL ROUNDS FIRED: ${Object.values(
-            mockVisit.roundsPerFirearm
-          ).reduce((a, b) => a + b, 0)}`
+            mockVisit.ammunitionUsed || {}
+          ).reduce((a, b) => a + b.rounds, 0)}`
         )
       ).toBeTruthy();
       expect(screen.getByText(/Test visit notes/)).toBeTruthy();
@@ -132,8 +156,8 @@ describe("RangeVisitDetailsScreen", () => {
   });
 
   it("shows error message when there is an error loading range visit", async () => {
-    (storage.getRangeVisits as jest.Mock).mockRejectedValue(
-      new Error("Failed to load")
+    (storage.getRangeVisits as jest.Mock).mockImplementation(() =>
+      Promise.reject(new Error("Failed to load"))
     );
     renderScreen();
 
@@ -145,6 +169,7 @@ describe("RangeVisitDetailsScreen", () => {
   it("shows confirmation dialog when delete button is pressed", async () => {
     (storage.getRangeVisits as jest.Mock).mockResolvedValue([mockVisit]);
     (storage.getFirearms as jest.Mock).mockResolvedValue([mockFirearm]);
+    (storage.getAmmunition as jest.Mock).mockResolvedValue([mockAmmunition]);
     renderScreen();
 
     await waitFor(() => {
@@ -162,6 +187,7 @@ describe("RangeVisitDetailsScreen", () => {
   it("deletes range visit when confirmed in dialog", async () => {
     (storage.getRangeVisits as jest.Mock).mockResolvedValue([mockVisit]);
     (storage.getFirearms as jest.Mock).mockResolvedValue([mockFirearm]);
+    (storage.getAmmunition as jest.Mock).mockResolvedValue([mockAmmunition]);
     (storage.deleteRangeVisit as jest.Mock).mockResolvedValue(undefined);
     renderScreen();
 
@@ -171,11 +197,14 @@ describe("RangeVisitDetailsScreen", () => {
     });
 
     // Simulate pressing the Delete button in the Alert
-    const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2];
+    const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2] as Array<{
+      text: string;
+      onPress: () => void;
+    }>;
     const deleteButton = alertButtons.find(
-      (button: any) => button.text === "Delete"
+      (button) => button.text === "Delete"
     );
-    deleteButton.onPress();
+    deleteButton?.onPress();
 
     await waitFor(() => {
       expect(storage.deleteRangeVisit).toHaveBeenCalledWith(mockVisit.id);
@@ -186,8 +215,9 @@ describe("RangeVisitDetailsScreen", () => {
   it("shows error alert when deletion fails", async () => {
     (storage.getRangeVisits as jest.Mock).mockResolvedValue([mockVisit]);
     (storage.getFirearms as jest.Mock).mockResolvedValue([mockFirearm]);
-    (storage.deleteRangeVisit as jest.Mock).mockRejectedValue(
-      new Error("Deletion failed")
+    (storage.getAmmunition as jest.Mock).mockResolvedValue([mockAmmunition]);
+    (storage.deleteRangeVisit as jest.Mock).mockImplementation(() =>
+      Promise.reject(new Error("Deletion failed"))
     );
     renderScreen();
 
@@ -197,11 +227,14 @@ describe("RangeVisitDetailsScreen", () => {
     });
 
     // Simulate pressing the Delete button in the Alert
-    const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2];
+    const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2] as Array<{
+      text: string;
+      onPress: () => void;
+    }>;
     const deleteButton = alertButtons.find(
-      (button: any) => button.text === "Delete"
+      (button) => button.text === "Delete"
     );
-    deleteButton.onPress();
+    deleteButton?.onPress();
 
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
@@ -214,6 +247,7 @@ describe("RangeVisitDetailsScreen", () => {
   it("navigates to edit screen when edit button is pressed", async () => {
     (storage.getRangeVisits as jest.Mock).mockResolvedValue([mockVisit]);
     (storage.getFirearms as jest.Mock).mockResolvedValue([mockFirearm]);
+    (storage.getAmmunition as jest.Mock).mockResolvedValue([mockAmmunition]);
     renderScreen();
 
     await waitFor(() => {
