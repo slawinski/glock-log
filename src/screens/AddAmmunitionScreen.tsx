@@ -5,8 +5,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../App";
 import { TerminalText } from "../components/TerminalText";
 import { TerminalInput } from "../components/TerminalInput";
+import TerminalDatePicker from "../components/TerminalDatePicker";
 import { storage } from "../services/storage";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   ammunitionInputSchema,
   AmmunitionInput,
@@ -31,7 +31,6 @@ export default function AddAmmunitionScreen() {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleSubmit = async () => {
     try {
@@ -92,6 +91,17 @@ export default function AddAmmunitionScreen() {
         />
       </View>
 
+      <TerminalDatePicker
+        label="DATE PURCHASED"
+        value={new Date(formData.datePurchased)}
+        onChange={(date) =>
+          setFormData((prev) => ({
+            ...prev,
+            datePurchased: date.toISOString(),
+          }))
+        }
+      />
+
       <View className="mb-4">
         <TerminalText>QUANTITY</TerminalText>
         <TerminalInput
@@ -103,34 +113,6 @@ export default function AddAmmunitionScreen() {
           placeholder="e.g., 1000"
           keyboardType="numeric"
         />
-      </View>
-
-      <View className="mb-4">
-        <TerminalText>DATE PURCHASED</TerminalText>
-        <TouchableOpacity
-          onPress={() => setShowDatePicker(true)}
-          className="border border-terminal-border p-2"
-        >
-          <TerminalText>
-            {new Date(formData.datePurchased).toLocaleDateString()}
-          </TerminalText>
-        </TouchableOpacity>
-        {showDatePicker && (
-          <DateTimePicker
-            value={new Date(formData.datePurchased)}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => {
-              setShowDatePicker(false);
-              if (selectedDate) {
-                setFormData((prev) => ({
-                  ...prev,
-                  datePurchased: selectedDate.toISOString(),
-                }));
-              }
-            }}
-          />
-        )}
       </View>
 
       <View className="mb-4">
