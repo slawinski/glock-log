@@ -63,19 +63,25 @@ const mockRangeVisits = [
     id: "visit-1",
     date: "2024-01-01T00:00:00.000Z",
     location: "Test Range 1",
-    roundsPerFirearm: {
-      "firearm-1": 50,
-      "firearm-2": 100,
+    firearmsUsed: ["firearm-1", "firearm-2"],
+    ammunitionUsed: {
+      "firearm-1": { ammunitionId: "ammo-1", rounds: 50 },
+      "firearm-2": { ammunitionId: "ammo-2", rounds: 100 },
     },
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
   },
   {
     id: "visit-2",
     date: "2024-02-01T00:00:00.000Z",
     location: "Test Range 2",
-    roundsPerFirearm: {
-      "firearm-1": 100,
-      "firearm-2": 50,
+    firearmsUsed: ["firearm-1", "firearm-2"],
+    ammunitionUsed: {
+      "firearm-1": { ammunitionId: "ammo-1", rounds: 100 },
+      "firearm-2": { ammunitionId: "ammo-2", rounds: 50 },
     },
+    createdAt: "2024-02-01T00:00:00.000Z",
+    updatedAt: "2024-02-01T00:00:00.000Z",
   },
 ];
 
@@ -117,6 +123,13 @@ describe("StatsScreen", () => {
   describe("Visits Tab", () => {
     it("shows correct visit statistics", async () => {
       render(<StatsScreen />);
+
+      // First switch to the Visits tab
+      await waitFor(() => {
+        const visitsTab = screen.getByText("VISITS");
+        fireEvent.press(visitsTab);
+      });
+
       await waitFor(() => {
         expect(screen.getByText("TOTAL VISITS")).toBeTruthy();
         expect(screen.getByText("2")).toBeTruthy(); // Total visits
@@ -151,13 +164,17 @@ describe("StatsScreen", () => {
 
     it("allows selecting firearms for timeline", async () => {
       render(<StatsScreen />);
+
+      // First switch to the Firearms tab
       await waitFor(() => {
         const firearmsTab = screen.getByText("FIREARMS");
         fireEvent.press(firearmsTab);
+      });
 
+      await waitFor(() => {
         // Check for the legend entries which show the firearm names
-        expect(screen.getByText(/━━━ Glock 19/)).toBeTruthy();
-        expect(screen.getByText(/╍╍╍ AR-15/)).toBeTruthy();
+        expect(screen.getByText("[✓] Glock 19")).toBeTruthy();
+        expect(screen.getByText("[✓] AR-15")).toBeTruthy();
       });
     });
   });

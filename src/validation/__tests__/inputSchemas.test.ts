@@ -99,13 +99,9 @@ describe("Range Visit Input Schema", () => {
       location: "Local Range",
       notes: "Great session",
       firearmsUsed: ["firearm1", "firearm2"],
-      roundsPerFirearm: {
-        firearm1: 50,
-        firearm2: 100,
-      },
       ammunitionUsed: {
-        ammo1: 50,
-        ammo2: 100,
+        firearm1: { ammunitionId: "ammo1", rounds: 50 },
+        firearm2: { ammunitionId: "ammo2", rounds: 100 },
       },
       photos: ["photo1.jpg"],
     };
@@ -119,8 +115,8 @@ describe("Range Visit Input Schema", () => {
       date: "not-a-date",
       location: "", // Empty location
       firearmsUsed: [], // Empty firearms array
-      roundsPerFirearm: {
-        firearm1: 0, // Zero rounds
+      ammunitionUsed: {
+        firearm1: { ammunitionId: "ammo1", rounds: 0 }, // Zero rounds
       },
     };
 
@@ -135,7 +131,7 @@ describe("Range Visit Input Schema", () => {
             message: "At least one firearm must be selected",
           }),
           expect.objectContaining({
-            message: "Rounds fired must be greater than 0",
+            message: "Rounds used must be greater than 0",
           }),
         ])
       );

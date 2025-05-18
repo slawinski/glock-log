@@ -104,13 +104,9 @@ describe("Range Visit Storage Schema", () => {
       location: "Local Range",
       notes: "Great session",
       firearmsUsed: ["firearm1", "firearm2"],
-      roundsPerFirearm: {
-        firearm1: 50,
-        firearm2: 100,
-      },
       ammunitionUsed: {
-        ammo1: 50,
-        ammo2: 100,
+        firearm1: { ammunitionId: "ammo1", rounds: 50 },
+        firearm2: { ammunitionId: "ammo2", rounds: 100 },
       },
       photos: ["photo1.jpg"],
       createdAt: new Date().toISOString(),
@@ -127,11 +123,8 @@ describe("Range Visit Storage Schema", () => {
       date: "not-a-date",
       location: "", // Empty location
       firearmsUsed: [], // Empty firearms array
-      roundsPerFirearm: {
-        firearm1: -1, // Negative rounds
-      },
       ammunitionUsed: {
-        ammo1: -1, // Negative rounds
+        firearm1: { ammunitionId: "ammo1", rounds: -1 }, // Negative rounds
       },
       createdAt: "not-a-date",
       updatedAt: "not-a-date",

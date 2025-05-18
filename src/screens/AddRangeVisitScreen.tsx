@@ -117,12 +117,7 @@ export default function AddRangeVisitScreen() {
       navigation.goBack();
     } catch (error) {
       console.error("Error creating range visit:", error);
-      Alert.alert(
-        "Error",
-        error instanceof Error
-          ? error.message
-          : "Failed to create range visit. Please try again."
-      );
+      Alert.alert("Error", "Failed to create range visit. Please try again.");
     } finally {
       setSaving(false);
     }
