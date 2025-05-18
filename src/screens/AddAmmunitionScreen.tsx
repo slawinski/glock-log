@@ -31,11 +31,20 @@ export default function AddAmmunitionScreen() {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dateError, setDateError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     try {
       setSaving(true);
       setError(null);
+      setDateError(null);
+
+      // Validate date is not in the future
+      const purchaseDate = new Date(formData.datePurchased);
+      if (purchaseDate > new Date()) {
+        setDateError("Purchase date cannot be in the future");
+        return;
+      }
 
       // Validate form data using Zod
       const validationResult = ammunitionInputSchema.safeParse(formData);
@@ -94,12 +103,17 @@ export default function AddAmmunitionScreen() {
       <TerminalDatePicker
         label="DATE PURCHASED"
         value={new Date(formData.datePurchased)}
-        onChange={(date) =>
+        onChange={(date) => {
+          setDateError(null);
           setFormData((prev) => ({
             ...prev,
             datePurchased: date.toISOString(),
-          }))
-        }
+          }));
+        }}
+        error={dateError || undefined}
+        maxDate={new Date()}
+        allowClear={false}
+        placeholder="Select purchase date"
       />
 
       <View className="mb-4">
