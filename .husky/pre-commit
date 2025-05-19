@@ -5,9 +5,9 @@ echo "
 "
 
 echo "📦 Checking TypeScript types..."
-npx tsc --noEmit && echo "TypeScript Check ✅" || (echo "TypeScript Check ❌" && exit 1)
+npx tsc --noEmit && echo "✅ TypeScript Check [✓]" || (echo "❌ TypeScript Check [✗]" && exit 1)
 
 echo "🧹 Running lint-staged..."
-npx lint-staged && echo "Lint-staged Check ✅" || (echo "Lint-staged Check ❌" && exit 1)
+npx lint-staged && echo "✅ Lint-staged Check [✓]" || (echo "❌ Lint-staged Check [✗]" && exit 1)
 
 echo "✅ All checks passed!"
