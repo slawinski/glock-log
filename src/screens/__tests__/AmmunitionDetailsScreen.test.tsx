@@ -1,3 +1,4 @@
+import { jest, describe, beforeEach, it, expect } from "@jest/globals";
 import React from "react";
 import {
   render,
@@ -12,11 +13,15 @@ import AmmunitionDetailsScreen from "../AmmunitionDetailsScreen";
 import { storage } from "../../services/storage";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 
+// Define types for the mock functions
+type GetAmmunitionMock = jest.Mock<() => Promise<AmmunitionStorage[]>>;
+type DeleteAmmunitionMock = jest.Mock<() => Promise<void>>;
+
 // Mock the storage service
 jest.mock("../../services/storage", () => ({
   storage: {
-    getAmmunition: jest.fn(),
-    deleteAmmunition: jest.fn(),
+    getAmmunition: jest.fn() as unknown as GetAmmunitionMock,
+    deleteAmmunition: jest.fn() as unknown as DeleteAmmunitionMock,
   },
 }));
 
@@ -27,7 +32,7 @@ const mockAmmunition: AmmunitionStorage = {
   id: "test-id",
   brand: "Test Brand",
   caliber: "9mm",
-  grain: 115,
+  grain: "115",
   quantity: 100,
   amountPaid: 29.99,
   datePurchased: new Date().toISOString(),
@@ -57,7 +62,7 @@ describe("AmmunitionDetailsScreen", () => {
   });
 
   it("shows loading state initially", () => {
-    (storage.getAmmunition as jest.Mock).mockImplementation(
+    (storage.getAmmunition as GetAmmunitionMock).mockImplementation(
       () => new Promise(() => {})
     );
     renderScreen();
@@ -65,7 +70,9 @@ describe("AmmunitionDetailsScreen", () => {
   });
 
   it("displays ammunition details when loaded successfully", async () => {
-    (storage.getAmmunition as jest.Mock).mockResolvedValue([mockAmmunition]);
+    (storage.getAmmunition as GetAmmunitionMock).mockResolvedValue([
+      mockAmmunition,
+    ]);
     renderScreen();
 
     await waitFor(() => {
@@ -85,7 +92,7 @@ describe("AmmunitionDetailsScreen", () => {
   });
 
   it("shows error message when ammunition is not found", async () => {
-    (storage.getAmmunition as jest.Mock).mockResolvedValue([]);
+    (storage.getAmmunition as GetAmmunitionMock).mockResolvedValue([]);
     renderScreen();
 
     await waitFor(() => {
@@ -94,7 +101,7 @@ describe("AmmunitionDetailsScreen", () => {
   });
 
   it("shows error message when there is an error loading ammunition", async () => {
-    (storage.getAmmunition as jest.Mock).mockRejectedValue(
+    (storage.getAmmunition as GetAmmunitionMock).mockRejectedValue(
       new Error("Failed to load")
     );
     renderScreen();
@@ -107,7 +114,9 @@ describe("AmmunitionDetailsScreen", () => {
   });
 
   it("shows confirmation dialog when delete button is pressed", async () => {
-    (storage.getAmmunition as jest.Mock).mockResolvedValue([mockAmmunition]);
+    (storage.getAmmunition as GetAmmunitionMock).mockResolvedValue([
+      mockAmmunition,
+    ]);
     renderScreen();
 
     await waitFor(() => {
@@ -123,8 +132,12 @@ describe("AmmunitionDetailsScreen", () => {
   });
 
   it("deletes ammunition when confirmed in dialog", async () => {
-    (storage.getAmmunition as jest.Mock).mockResolvedValue([mockAmmunition]);
-    (storage.deleteAmmunition as jest.Mock).mockResolvedValue(undefined);
+    (storage.getAmmunition as GetAmmunitionMock).mockResolvedValue([
+      mockAmmunition,
+    ]);
+    (storage.deleteAmmunition as DeleteAmmunitionMock).mockResolvedValue(
+      undefined
+    );
     renderScreen();
 
     await waitFor(() => {
@@ -133,11 +146,14 @@ describe("AmmunitionDetailsScreen", () => {
     });
 
     // Simulate pressing the Delete button in the Alert
-    const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2];
+    const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2] as Array<{
+      text: string;
+      onPress: () => void;
+    }>;
     const deleteButton = alertButtons.find(
-      (button: any) => button.text === "Delete"
+      (button) => button.text === "Delete"
     );
-    deleteButton.onPress();
+    deleteButton?.onPress();
 
     await waitFor(() => {
       expect(storage.deleteAmmunition).toHaveBeenCalledWith(mockAmmunition.id);
@@ -145,8 +161,10 @@ describe("AmmunitionDetailsScreen", () => {
   });
 
   it("shows error alert when deletion fails", async () => {
-    (storage.getAmmunition as jest.Mock).mockResolvedValue([mockAmmunition]);
-    (storage.deleteAmmunition as jest.Mock).mockRejectedValue(
+    (storage.getAmmunition as GetAmmunitionMock).mockResolvedValue([
+      mockAmmunition,
+    ]);
+    (storage.deleteAmmunition as DeleteAmmunitionMock).mockRejectedValue(
       new Error("Deletion failed")
     );
     renderScreen();
@@ -157,11 +175,14 @@ describe("AmmunitionDetailsScreen", () => {
     });
 
     // Simulate pressing the Delete button in the Alert
-    const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2];
+    const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2] as Array<{
+      text: string;
+      onPress: () => void;
+    }>;
     const deleteButton = alertButtons.find(
-      (button: any) => button.text === "Delete"
+      (button) => button.text === "Delete"
     );
-    deleteButton.onPress();
+    deleteButton?.onPress();
 
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(

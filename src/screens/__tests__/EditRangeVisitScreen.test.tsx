@@ -13,15 +13,27 @@ import EditRangeVisitScreen from "../EditRangeVisitScreen";
 import { storage } from "../../services/storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "react-native-image-picker";
+import {
+  RangeVisitStorage,
+  FirearmStorage,
+  AmmunitionStorage,
+} from "../../validation/storageSchemas";
+
+// Define types for the mock functions
+type GetRangeVisitsMock = jest.Mock<() => Promise<RangeVisitStorage[]>>;
+type GetFirearmsMock = jest.Mock<() => Promise<FirearmStorage[]>>;
+type GetAmmunitionMock = jest.Mock<() => Promise<AmmunitionStorage[]>>;
+type SaveRangeVisitWithAmmunitionMock = jest.Mock<() => Promise<void>>;
 
 // Mock the storage service
 jest.mock("../../services/storage", () => ({
   storage: {
-    getRangeVisits: jest.fn(),
+    getRangeVisits: jest.fn() as unknown as GetRangeVisitsMock,
     saveRangeVisit: jest.fn(),
-    getFirearms: jest.fn(),
-    getAmmunition: jest.fn(),
-    saveRangeVisitWithAmmunition: jest.fn(),
+    getFirearms: jest.fn() as unknown as GetFirearmsMock,
+    getAmmunition: jest.fn() as unknown as GetAmmunitionMock,
+    saveRangeVisitWithAmmunition:
+      jest.fn() as unknown as SaveRangeVisitWithAmmunitionMock,
   },
 }));
 
@@ -36,7 +48,10 @@ jest.spyOn(Alert, "alert");
 // Mock navigation
 const mockGoBack = jest.fn();
 jest.mock("@react-navigation/native", () => {
-  const actualNav = jest.requireActual("@react-navigation/native");
+  const actualNav = jest.requireActual("@react-navigation/native") as Record<
+    string,
+    unknown
+  >;
   return {
     ...actualNav,
     useNavigation: () => ({
@@ -48,16 +63,26 @@ jest.mock("@react-navigation/native", () => {
   };
 });
 
-const mockFirearms = [
+const mockFirearms: FirearmStorage[] = [
   {
     id: "firearm-1",
     modelName: "Glock 19",
     caliber: "9mm",
+    datePurchased: new Date().toISOString(),
+    amountPaid: 500,
+    roundsFired: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: "firearm-2",
     modelName: "AR-15",
     caliber: "5.56",
+    datePurchased: new Date().toISOString(),
+    amountPaid: 1000,
+    roundsFired: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
@@ -91,9 +116,11 @@ const renderScreen = () => {
 describe("EditRangeVisitScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (storage.getRangeVisits as jest.Mock).mockResolvedValue([mockRangeVisit]);
-    (storage.getFirearms as jest.Mock).mockResolvedValue(mockFirearms);
-    (storage.getAmmunition as jest.Mock).mockResolvedValue([]);
+    (storage.getRangeVisits as GetRangeVisitsMock).mockResolvedValue([
+      mockRangeVisit,
+    ]);
+    (storage.getFirearms as GetFirearmsMock).mockResolvedValue(mockFirearms);
+    (storage.getAmmunition as GetAmmunitionMock).mockResolvedValue([]);
   });
 
   it("shows loading state initially", async () => {
@@ -105,7 +132,7 @@ describe("EditRangeVisitScreen", () => {
   });
 
   it("shows error state when range visit is not found", async () => {
-    (storage.getRangeVisits as jest.Mock).mockResolvedValue([]);
+    (storage.getRangeVisits as GetRangeVisitsMock).mockResolvedValue([]);
     renderScreen();
     await waitFor(() => {
       expect(screen.getByText(/Range visit not found/)).toBeTruthy();
@@ -169,8 +196,11 @@ describe("EditRangeVisitScreen", () => {
     const mockImageResponse = {
       assets: [{ uri: "test-image-uri" }],
     };
+    const mockLaunchImageLibrary = jest.fn((_, callback: any) => {
+      callback(mockImageResponse);
+    });
     (ImagePicker.launchImageLibrary as jest.Mock).mockImplementation(
-      (_, callback) => callback(mockImageResponse)
+      mockLaunchImageLibrary
     );
 
     renderScreen();
@@ -196,9 +226,9 @@ describe("EditRangeVisitScreen", () => {
   });
 
   it("saves range visit when form is valid", async () => {
-    (storage.saveRangeVisitWithAmmunition as jest.Mock).mockResolvedValue(
-      undefined
-    );
+    (
+      storage.saveRangeVisitWithAmmunition as SaveRangeVisitWithAmmunitionMock
+    ).mockResolvedValue();
     renderScreen();
     await waitFor(() => {
       const saveButton = screen.getByText(/SAVE/);
@@ -215,9 +245,9 @@ describe("EditRangeVisitScreen", () => {
   });
 
   it("shows error alert when saving fails", async () => {
-    (storage.saveRangeVisitWithAmmunition as jest.Mock).mockRejectedValue(
-      new Error("Save failed")
-    );
+    (
+      storage.saveRangeVisitWithAmmunition as SaveRangeVisitWithAmmunitionMock
+    ).mockRejectedValue(new Error("Save failed"));
     renderScreen();
     await waitFor(() => {
       const saveButton = screen.getByText(/SAVE/);

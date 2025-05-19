@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { z } from "zod";
-import { ammunitionStorageSchema } from "../../validation/storageSchemas";
+import { ammunitionStorageSchema } from "../../src/validation/storageSchemas";
 
 const AMMUNITION_STORAGE_KEY = "@glock-log:ammunition";
 

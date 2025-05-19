@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   TouchableOpacity,
@@ -39,8 +39,9 @@ export default function EditRangeVisitScreen() {
     date: new Date().toISOString(),
     location: "",
     notes: "",
-    roundsFired: 0,
+    firearmsUsed: [],
     photos: [],
+    ammunitionUsed: {},
   });
   const [firearms, setFirearms] = useState<
     { id: string; modelName: string; caliber: string }[]
@@ -50,14 +51,7 @@ export default function EditRangeVisitScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (route.params?.id) {
-      fetchVisit();
-    }
-    fetchData();
-  }, [route.params?.id]);
-
-  const fetchVisit = async () => {
+  const fetchVisit = useCallback(async () => {
     try {
       setLoading(true);
       const visits = await storage.getRangeVisits();
@@ -82,9 +76,9 @@ export default function EditRangeVisitScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [route.params?.id]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [firearmsData, ammunitionData] = await Promise.all([
         storage.getFirearms(),
@@ -101,7 +95,14 @@ export default function EditRangeVisitScreen() {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (route.params?.id) {
+      fetchVisit();
+    }
+    fetchData();
+  }, [route.params?.id, fetchVisit, fetchData]);
 
   const handleImagePick = () => {
     ImagePicker.launchImageLibrary(
@@ -113,7 +114,7 @@ export default function EditRangeVisitScreen() {
         if (response.assets && response.assets[0].uri) {
           setFormData((prev) => ({
             ...prev,
-            photos: [...prev.photos, response.assets![0].uri!],
+            photos: [...(prev.photos || []), response.assets![0].uri!],
           }));
         }
       }
@@ -133,17 +134,19 @@ export default function EditRangeVisitScreen() {
       }
 
       // Validate ammunition quantities
-      for (const [firearmId, usage] of Object.entries(
-        formData.ammunitionUsed
-      )) {
-        const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
-        if (!ammo) {
-          throw new Error(`Ammunition not found for firearm ${firearmId}`);
-        }
-        if (ammo.quantity < usage.rounds) {
-          throw new Error(
-            `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
-          );
+      if (formData.ammunitionUsed) {
+        for (const [firearmId, usage] of Object.entries(
+          formData.ammunitionUsed
+        )) {
+          const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
+          if (!ammo) {
+            throw new Error(`Ammunition not found for firearm ${firearmId}`);
+          }
+          if (ammo.quantity < usage.rounds) {
+            throw new Error(
+              `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
+            );
+          }
         }
       }
 
@@ -184,7 +187,7 @@ export default function EditRangeVisitScreen() {
   const handleDeletePhoto = (index: number) => {
     setFormData((prev) => ({
       ...prev,
-      photos: prev.photos.filter((_, i) => i !== index),
+      photos: (prev.photos || []).filter((_, i) => i !== index),
     }));
   };
 
@@ -239,7 +242,7 @@ export default function EditRangeVisitScreen() {
       <View className="mb-4">
         <TerminalText>NOTES</TerminalText>
         <TerminalInput
-          value={formData.notes}
+          value={formData.notes || ""}
           onChangeText={(text) =>
             setFormData((prev) => ({ ...prev, notes: text }))
           }
@@ -271,23 +274,27 @@ export default function EditRangeVisitScreen() {
                   <View className="flex-1 mr-2">
                     <TerminalInput
                       value={
-                        formData.ammunitionUsed[
+                        formData.ammunitionUsed?.[
                           firearm.id
                         ]?.rounds.toString() || "0"
                       }
                       onChangeText={(text) => {
                         const num = parseInt(text);
                         if (!isNaN(num)) {
-                          setFormData((prev) => ({
-                            ...prev,
-                            ammunitionUsed: {
-                              ...prev.ammunitionUsed,
-                              [firearm.id]: {
-                                ...prev.ammunitionUsed[firearm.id],
-                                rounds: num,
+                          setFormData((prev) => {
+                            const currentAmmo =
+                              prev.ammunitionUsed?.[firearm.id];
+                            return {
+                              ...prev,
+                              ammunitionUsed: {
+                                ...(prev.ammunitionUsed || {}),
+                                [firearm.id]: {
+                                  ammunitionId: currentAmmo?.ammunitionId || "",
+                                  rounds: num,
+                                },
                               },
-                            },
-                          }));
+                            };
+                          });
                         }
                       }}
                       placeholder="Rounds used"
@@ -316,12 +323,12 @@ export default function EditRangeVisitScreen() {
                               setFormData((prev) => ({
                                 ...prev,
                                 ammunitionUsed: {
-                                  ...prev.ammunitionUsed,
+                                  ...(prev.ammunitionUsed || {}),
                                   [firearm.id]: {
                                     ammunitionId: ammo.id,
                                     rounds:
-                                      prev.ammunitionUsed[firearm.id]?.rounds ||
-                                      0,
+                                      prev.ammunitionUsed?.[firearm.id]
+                                        ?.rounds || 0,
                                   },
                                 },
                               }));
@@ -332,11 +339,12 @@ export default function EditRangeVisitScreen() {
                       className="border border-terminal-border p-2"
                     >
                       <TerminalText>
-                        {formData.ammunitionUsed[firearm.id]?.ammunitionId
+                        {formData.ammunitionUsed?.[firearm.id]?.ammunitionId
                           ? ammunition.find(
                               (a) =>
                                 a.id ===
-                                formData.ammunitionUsed[firearm.id].ammunitionId
+                                formData.ammunitionUsed?.[firearm.id]
+                                  ?.ammunitionId
                             )?.brand
                           : "SELECT AMMO"}
                       </TerminalText>
