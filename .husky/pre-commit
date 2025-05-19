@@ -1,0 +1,10 @@
+echo "🔍 Running pre-commit checks..."
+
+echo "📦 Checking TypeScript types..."
+npx tsc --noEmit || exit 1
+
+# Run lint-staged (which will run eslint and tests on staged files)
+echo "🧹 Running lint-staged..."
+npx lint-staged || exit 1
+
+echo "✅ All checks passed!"
