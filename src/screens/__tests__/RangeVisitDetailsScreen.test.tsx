@@ -59,7 +59,7 @@ const mockAmmunition: AmmunitionStorage = {
   id: "ammo-1",
   caliber: "9mm",
   brand: "Test Brand",
-  grain: 115,
+  grain: "115",
   quantity: 1000,
   datePurchased: new Date().toISOString(),
   amountPaid: 300,
