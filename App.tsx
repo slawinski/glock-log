@@ -6,7 +6,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 // Import screens
 import HomeScreen from "./src/screens/HomeScreen";
 import AddFirearmScreen from "./src/screens/add-firearm/AddFirearm";
-import FirearmDetailsScreen from "./src/screens/FirearmDetailsScreen";
+import FirearmDetailsScreen from "./src/screens/firearm-details/FirearmDetails";
 import EditFirearmScreen from "./src/screens/edit-firearm/EditFirearm";
 import StatsScreen from "./src/screens/StatsScreen";
 import AddRangeVisitScreen from "./src/screens/add-range-visit/AddRangeVisit";

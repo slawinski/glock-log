@@ -10,11 +10,11 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
-import { RootStackParamList } from "../../App";
-import { storage } from "../services/storage";
-import { TerminalText } from "../components/TerminalText";
-import FirearmImage from "../components/FirearmImage";
-import { FirearmStorage } from "../validation/storageSchemas";
+import { RootStackParamList } from "../../../App";
+import { storage } from "../../services/storage";
+import { TerminalText } from "../../components/TerminalText";
+import FirearmImage from "../../components/FirearmImage";
+import { FirearmStorage } from "../../validation/storageSchemas";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
