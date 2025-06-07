@@ -8,7 +8,7 @@ import { storage } from "../../services/storage";
 import { TerminalText } from "../../components/TerminalText";
 import { TerminalInput } from "../../components/TerminalInput";
 import TerminalDatePicker from "../../components/TerminalDatePicker";
-import FirearmImage from "../../components/FirearmImage";
+import FirearmImage from "../../components/firearm-image/FirearmImage";
 import {
   firearmInputSchema,
   FirearmInput,

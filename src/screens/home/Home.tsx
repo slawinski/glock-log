@@ -15,7 +15,7 @@ import {
 } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage";
 import { TerminalText } from "../../components/TerminalText";
-import FirearmImage from "../../components/FirearmImage";
+import FirearmImage from "../../components/firearm-image/FirearmImage";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

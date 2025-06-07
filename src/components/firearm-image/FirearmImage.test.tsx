@@ -1,6 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
-import FirearmImage from "../FirearmImage";
+import FirearmImage from "../firearm-image/FirearmImage";
 
 describe("FirearmImage", () => {
   it("renders with default props", () => {

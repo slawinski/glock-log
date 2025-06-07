@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, View, ImageSourcePropType } from "react-native";
+import { Image, View } from "react-native";
 
 interface FirearmImageProps {
   size?: number;
@@ -29,12 +29,12 @@ export default function FirearmImage({
         source={
           photoUri
             ? { uri: photoUri }
-            : require("../../assets/images/glock-placeholder.png")
+            : { uri: "../../assets/images/glock-placeholder.png" }
         }
+        resizeMode="contain"
         style={{
           width: size * 0.9,
           height: size * 0.9,
-          resizeMode: "contain",
         }}
         testID={`${testID}-image`}
       />

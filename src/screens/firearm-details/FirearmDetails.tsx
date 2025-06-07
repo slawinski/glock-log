@@ -13,7 +13,7 @@ import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { storage } from "../../services/storage";
 import { TerminalText } from "../../components/TerminalText";
-import FirearmImage from "../../components/FirearmImage";
+import FirearmImage from "../../components/firearm-image/FirearmImage";
 import { FirearmStorage } from "../../validation/storageSchemas";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
