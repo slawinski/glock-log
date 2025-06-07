@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
-import { RootStackParamList } from "../../../App";
+import { RootStackParamList } from "../../app/App";
 import { TerminalText } from "../../components/TerminalText";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage";

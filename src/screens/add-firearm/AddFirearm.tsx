@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../../App";
+import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
 import { storage } from "../../services/storage";
 import { TerminalText } from "../../components/TerminalText";

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../../App";
+import { RootStackParamList } from "../../app/App";
 import { TerminalText } from "../../components/TerminalText";
 import { TerminalInput } from "../../components/TerminalInput";
 import TerminalDatePicker from "../../components/TerminalDatePicker";

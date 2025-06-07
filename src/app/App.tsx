@@ -4,17 +4,17 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 // Import screens
-import HomeScreen from "./src/screens/home/Home";
-import AddFirearmScreen from "./src/screens/add-firearm/AddFirearm";
-import FirearmDetailsScreen from "./src/screens/firearm-details/FirearmDetails";
-import EditFirearmScreen from "./src/screens/edit-firearm/EditFirearm";
-import StatsScreen from "./src/screens/stats/Stats";
-import AddRangeVisitScreen from "./src/screens/add-range-visit/AddRangeVisit";
-import RangeVisitDetailsScreen from "./src/screens/range-visit-details/RangeVisitDetails";
-import EditRangeVisitScreen from "./src/screens/edit-range-visit/EditRangeVisit";
-import AddAmmunitionScreen from "./src/screens/add-ammunition/AddAmmunition";
-import AmmunitionDetailsScreen from "./src/screens/ammunition-details/AmmunitionDetails";
-import EditAmmunitionScreen from "./src/screens/edit-ammunition/EditAmmunition";
+import HomeScreen from "../screens/home/Home";
+import AddFirearmScreen from "../screens/add-firearm/AddFirearm";
+import FirearmDetailsScreen from "../screens/firearm-details/FirearmDetails";
+import EditFirearmScreen from "../screens/edit-firearm/EditFirearm";
+import StatsScreen from "../screens/stats/Stats";
+import AddRangeVisitScreen from "../screens/add-range-visit/AddRangeVisit";
+import RangeVisitDetailsScreen from "../screens/range-visit-details/RangeVisitDetails";
+import EditRangeVisitScreen from "../screens/edit-range-visit/EditRangeVisit";
+import AddAmmunitionScreen from "../screens/add-ammunition/AddAmmunition";
+import AmmunitionDetailsScreen from "../screens/ammunition-details/AmmunitionDetails";
+import EditAmmunitionScreen from "../screens/edit-ammunition/EditAmmunition";
 
 export type RootStackParamList = {
   Home: undefined;

@@ -10,7 +10,7 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
-import { RootStackParamList } from "../../../App";
+import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
 import { storage } from "../../services/storage";
 import { TerminalText } from "../../components/TerminalText";
