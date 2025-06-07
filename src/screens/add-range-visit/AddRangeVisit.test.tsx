@@ -9,7 +9,7 @@ import {
 import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import AddRangeVisitScreen from "../AddRangeVisitScreen";
+import AddRangeVisitScreen from "./AddRangeVisit";
 import { storage } from "../../services/storage";
 import * as ImagePicker from "react-native-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -95,14 +95,20 @@ const mockAmmunition = [
 
 const Stack = createNativeStackNavigator();
 
-const renderScreen = () => {
-  return render(
+const renderScreen = async ({ waitForLoad = true } = {}) => {
+  render(
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen name="AddRangeVisit" component={AddRangeVisitScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
+
+  if (waitForLoad) {
+    await waitFor(() => {
+      expect(screen.getByText(mockFirearms[0].modelName)).toBeTruthy();
+    });
+  }
 };
 
 describe("AddRangeVisitScreen", () => {
@@ -116,49 +122,41 @@ describe("AddRangeVisitScreen", () => {
   });
 
   it("renders all form fields", async () => {
-    renderScreen();
+    await renderScreen();
 
-    await waitFor(() => {
-      expect(screen.getByText(/LOCATION/)).toBeTruthy();
-      expect(screen.getByText(/VISIT DATE/)).toBeTruthy();
-      expect(screen.getByText(/FIREARMS USED/)).toBeTruthy();
-      expect(screen.getByText(/PHOTOS/)).toBeTruthy();
-      expect(screen.getByText(/CANCEL/)).toBeTruthy();
-      expect(screen.getByText(/SAVE/)).toBeTruthy();
-    });
+    expect(screen.getByText(/LOCATION/)).toBeTruthy();
+    expect(screen.getByText(/VISIT DATE/)).toBeTruthy();
+    expect(screen.getByText(/FIREARMS USED/)).toBeTruthy();
+    expect(screen.getByText(/PHOTOS/)).toBeTruthy();
+    expect(screen.getByText(/CANCEL/)).toBeTruthy();
+    expect(screen.getByText(/SAVE/)).toBeTruthy();
   });
 
   it("loads and displays firearms", async () => {
-    renderScreen();
+    await renderScreen();
 
-    await waitFor(() => {
-      expect(screen.getByText("Glock 19")).toBeTruthy();
-      expect(screen.getByText("Glock 17")).toBeTruthy();
-    });
+    expect(screen.getByText("Glock 19")).toBeTruthy();
+    expect(screen.getByText("Glock 17")).toBeTruthy();
   });
 
   it("handles form input changes", async () => {
-    renderScreen();
+    await renderScreen();
 
-    await waitFor(() => {
-      const locationInput = screen.getByPlaceholderText(/Enter range location/);
-      fireEvent.changeText(locationInput, "Test Range");
-      expect(locationInput.props.value).toBe("Test Range");
-    });
+    const locationInput = screen.getByPlaceholderText(/Enter range location/);
+    fireEvent.changeText(locationInput, "Test Range");
+    expect(locationInput.props.value).toBe("Test Range");
   });
 
   it("handles firearm selection and rounds input", async () => {
-    renderScreen();
+    await renderScreen();
 
     // Enter location first (required field)
     const locationInput = screen.getByPlaceholderText(/Enter range location/);
     fireEvent.changeText(locationInput, "Test Range");
 
     // Select firearm
-    await waitFor(() => {
-      const glock19Button = screen.getByText("Glock 19");
-      fireEvent.press(glock19Button);
-    });
+    const glock19Button = screen.getByText("Glock 19");
+    fireEvent.press(glock19Button);
 
     // Enter rounds
     const roundsInput = screen.getByPlaceholderText(/Rounds used/);
@@ -207,7 +205,7 @@ describe("AddRangeVisitScreen", () => {
       (_, callback) => callback(mockImageResponse)
     );
 
-    renderScreen();
+    await renderScreen();
 
     const addPhotoButton = screen.getByText(/ADD PHOTO/);
     fireEvent.press(addPhotoButton);
@@ -218,7 +216,7 @@ describe("AddRangeVisitScreen", () => {
   });
 
   it("shows validation error when required fields are missing", async () => {
-    renderScreen();
+    await renderScreen();
 
     const saveButton = screen.getByText(/SAVE/);
     fireEvent.press(saveButton);
@@ -232,17 +230,15 @@ describe("AddRangeVisitScreen", () => {
   });
 
   it("saves range visit when form is valid", async () => {
-    renderScreen();
+    await renderScreen();
 
     // Fill in required fields
     const locationInput = screen.getByPlaceholderText(/Enter range location/);
     fireEvent.changeText(locationInput, "Test Range");
 
     // Select a firearm and enter rounds
-    await waitFor(() => {
-      const glock19Button = screen.getByText("Glock 19");
-      fireEvent.press(glock19Button);
-    });
+    const glock19Button = screen.getByText("Glock 19");
+    fireEvent.press(glock19Button);
 
     const roundsInput = screen.getByPlaceholderText(/Rounds used/);
     fireEvent.changeText(roundsInput, "100");
@@ -276,17 +272,15 @@ describe("AddRangeVisitScreen", () => {
     (storage.saveRangeVisitWithAmmunition as jest.Mock).mockRejectedValue(
       new Error("Save failed")
     );
-    renderScreen();
+    await renderScreen();
 
     // Enter location
     const locationInput = screen.getByPlaceholderText(/Enter range location/);
     fireEvent.changeText(locationInput, "Test Range");
 
     // Select firearm
-    await waitFor(() => {
-      const glock19Button = screen.getByText("Glock 19");
-      fireEvent.press(glock19Button);
-    });
+    const glock19Button = screen.getByText("Glock 19");
+    fireEvent.press(glock19Button);
 
     // Enter rounds
     const roundsInput = screen.getByPlaceholderText(/Rounds used/);
@@ -317,8 +311,8 @@ describe("AddRangeVisitScreen", () => {
     });
   });
 
-  it("navigates back when cancel button is pressed", () => {
-    renderScreen();
+  it("navigates back when cancel button is pressed", async () => {
+    await renderScreen();
 
     const cancelButton = screen.getByText(/CANCEL/);
     fireEvent.press(cancelButton);
@@ -327,7 +321,7 @@ describe("AddRangeVisitScreen", () => {
   });
 
   it("handles date picker interaction", async () => {
-    renderScreen();
+    await renderScreen();
 
     const formattedToday = new Date().toLocaleDateString(undefined, {
       year: "numeric",
@@ -346,7 +340,7 @@ describe("AddRangeVisitScreen", () => {
     (storage.getFirearms as jest.Mock).mockRejectedValue(
       new Error("Failed to load")
     );
-    renderScreen();
+    await renderScreen({ waitForLoad: false });
 
     await waitFor(() => {
       expect(screen.getByText(/Failed to load data/)).toBeTruthy();

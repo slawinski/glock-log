@@ -2,17 +2,17 @@ import React, { useState, useEffect } from "react";
 import { View, TouchableOpacity, ScrollView, Image, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../App";
+import { RootStackParamList } from "../../../App";
 import * as ImagePicker from "react-native-image-picker";
-import { storage } from "../services/storage";
-import { TerminalText } from "../components/TerminalText";
-import { TerminalInput } from "../components/TerminalInput";
-import TerminalDatePicker from "../components/TerminalDatePicker";
+import { storage } from "../../services/storage";
+import { TerminalText } from "../../components/TerminalText";
+import { TerminalInput } from "../../components/TerminalInput";
+import TerminalDatePicker from "../../components/TerminalDatePicker";
 import {
   rangeVisitInputSchema,
   RangeVisitInput,
-} from "../validation/inputSchemas";
-import { AmmunitionStorage } from "../validation/storageSchemas";
+} from "../../validation/inputSchemas";
+import { AmmunitionStorage } from "../../validation/storageSchemas";
 
 type AddRangeVisitScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
