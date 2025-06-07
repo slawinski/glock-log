@@ -10,14 +10,16 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
-import { RootStackParamList } from "../../App";
+import { RootStackParamList } from "../../../App";
 import * as ImagePicker from "react-native-image-picker";
-import { FirearmStorage } from "../validation/storageSchemas";
-import { storage } from "../services/storage";
-import { TerminalText } from "../components/TerminalText";
-import { TerminalInput } from "../components/TerminalInput";
-import TerminalDatePicker from "../components/TerminalDatePicker";
-import { firearmInputSchema, FirearmInput } from "../validation/inputSchemas";
+import { storage } from "../../services/storage";
+import { TerminalText } from "../../components/TerminalText";
+import { TerminalInput } from "../../components/TerminalInput";
+import TerminalDatePicker from "../../components/TerminalDatePicker";
+import {
+  firearmInputSchema,
+  FirearmInput,
+} from "../../validation/inputSchemas";
 
 type EditFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -39,7 +41,6 @@ export default function EditFirearmScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     if (route.params?.id) {
@@ -54,8 +55,7 @@ export default function EditFirearmScreen() {
       const firearm = firearms.find((f) => f.id === route.params!.id);
       if (firearm) {
         // Convert storage data to input data
-        const { id, createdAt, updatedAt, roundsFired, ...firearmData } =
-          firearm;
+        const { ...firearmData } = firearm;
         setFormData({
           ...firearmData,
           photos: firearmData.photos || [],
