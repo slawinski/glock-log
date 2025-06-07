@@ -9,16 +9,15 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
-import { RootStackParamList } from "../../App";
-import { TerminalText } from "../components/TerminalText";
-import { TerminalInput } from "../components/TerminalInput";
-import TerminalDatePicker from "../components/TerminalDatePicker";
-import { storage } from "../services/storage";
+import { RootStackParamList } from "../../../App";
+import { TerminalText } from "../../components/TerminalText";
+import { TerminalInput } from "../../components/TerminalInput";
+import TerminalDatePicker from "../../components/TerminalDatePicker";
+import { storage } from "../../services/storage";
 import {
   ammunitionInputSchema,
   AmmunitionInput,
-} from "../validation/inputSchemas";
-import { AmmunitionStorage } from "../validation/storageSchemas";
+} from "../../validation/inputSchemas";
 
 type EditAmmunitionScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -46,7 +45,6 @@ export default function EditAmmunitionScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     if (route.params?.id) {
@@ -61,7 +59,7 @@ export default function EditAmmunitionScreen() {
       const ammunition = ammunitionList.find((a) => a.id === route.params!.id);
       if (ammunition) {
         // Convert storage data to input data
-        const { id, createdAt, updatedAt, ...ammunitionData } = ammunition;
+        const { ...ammunitionData } = ammunition;
         setFormData({
           ...ammunitionData,
           notes: ammunitionData.notes || "",

@@ -14,7 +14,7 @@ import RangeVisitDetailsScreen from "./src/screens/RangeVisitDetailsScreen";
 import EditRangeVisitScreen from "./src/screens/EditRangeVisitScreen";
 import AddAmmunitionScreen from "./src/screens/add-ammunition/AddAmmunition";
 import AmmunitionDetailsScreen from "./src/screens/ammunition-details/AmmunitionDetails";
-import EditAmmunitionScreen from "./src/screens/EditAmmunitionScreen";
+import EditAmmunitionScreen from "./src/screens/edit-ammunition/EditAmmunition";
 
 export type RootStackParamList = {
   Home: undefined;
