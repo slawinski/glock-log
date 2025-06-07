@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 // Import screens
-import HomeScreen from "./src/screens/HomeScreen";
+import HomeScreen from "./src/screens/home/Home";
 import AddFirearmScreen from "./src/screens/add-firearm/AddFirearm";
 import FirearmDetailsScreen from "./src/screens/firearm-details/FirearmDetails";
 import EditFirearmScreen from "./src/screens/edit-firearm/EditFirearm";
