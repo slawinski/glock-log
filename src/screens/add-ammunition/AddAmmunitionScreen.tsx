@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import { View, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../App";
-import { TerminalText } from "../components/TerminalText";
-import { TerminalInput } from "../components/TerminalInput";
-import TerminalDatePicker from "../components/TerminalDatePicker";
-import { storage } from "../services/storage";
+import { RootStackParamList } from "../../../App";
+import { TerminalText } from "../../components/TerminalText";
+import { TerminalInput } from "../../components/TerminalInput";
+import TerminalDatePicker from "../../components/TerminalDatePicker";
+import { storage } from "../../services/storage";
 import {
   ammunitionInputSchema,
   AmmunitionInput,
-} from "../validation/inputSchemas";
+} from "../../validation/inputSchemas";
 
 type AddAmmunitionScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

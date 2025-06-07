@@ -12,7 +12,7 @@ import StatsScreen from "./src/screens/StatsScreen";
 import AddRangeVisitScreen from "./src/screens/AddRangeVisitScreen";
 import RangeVisitDetailsScreen from "./src/screens/RangeVisitDetailsScreen";
 import EditRangeVisitScreen from "./src/screens/EditRangeVisitScreen";
-import AddAmmunitionScreen from "./src/screens/AddAmmunitionScreen";
+import AddAmmunitionScreen from "./src/screens/add-ammunition/AddAmmunitionScreen";
 import AmmunitionDetailsScreen from "./src/screens/AmmunitionDetailsScreen";
 import EditAmmunitionScreen from "./src/screens/EditAmmunitionScreen";
 

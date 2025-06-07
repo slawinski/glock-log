@@ -5,6 +5,7 @@ import tsParser from "@typescript-eslint/parser";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import reactNativePlugin from "eslint-plugin-react-native";
+import jestPlugin from "eslint-plugin-jest";
 
 export default [
   js.configs.recommended,
@@ -14,6 +15,7 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.es2021,
+        ...globals.jest,
       },
       parser: tsParser,
       parserOptions: {
@@ -29,6 +31,7 @@ export default [
       react: reactPlugin,
       "react-hooks": reactHooksPlugin,
       "react-native": reactNativePlugin,
+      jest: jestPlugin,
     },
     rules: {
       ...reactPlugin.configs.recommended.rules,
