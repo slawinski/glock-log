@@ -1,22 +1,18 @@
 import React, { useState } from "react";
-import {
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../App";
+import { RootStackParamList } from "../../../App";
 import * as ImagePicker from "react-native-image-picker";
-import { storage } from "../services/storage";
-import { TerminalText } from "../components/TerminalText";
-import { TerminalInput } from "../components/TerminalInput";
-import TerminalDatePicker from "../components/TerminalDatePicker";
-import FirearmImage from "../components/FirearmImage";
-import { firearmInputSchema, FirearmInput } from "../validation/inputSchemas";
+import { storage } from "../../services/storage";
+import { TerminalText } from "../../components/TerminalText";
+import { TerminalInput } from "../../components/TerminalInput";
+import TerminalDatePicker from "../../components/TerminalDatePicker";
+import FirearmImage from "../../components/FirearmImage";
+import {
+  firearmInputSchema,
+  FirearmInput,
+} from "../../validation/inputSchemas";
 
 type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -34,8 +30,7 @@ export default function AddFirearmScreen() {
     notes: "",
   });
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [error] = useState<string | null>(null);
 
   // TODO: adding files doesn't work
   const handleImagePick = () => {
@@ -75,13 +70,6 @@ export default function AddFirearmScreen() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleDeletePhoto = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      photos: (prev.photos || []).filter((_, i: number) => i !== index),
-    }));
   };
 
   if (error) {
