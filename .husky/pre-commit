@@ -6,4 +6,7 @@ npx tsc --noEmit && echo "✅ TypeScript Check [✓]" || (echo "❌ TypeScript C
 echo "🧹 Running lint-staged..."
 npx lint-staged && echo "✅ Lint-staged Check [✓]" || (echo "❌ Lint-staged Check [✗]" && exit 1)
 
+echo "🧪 Running tests..."
+npm test -- --watchAll=false && echo "✅ Tests Check [✓]" || (echo "❌ Tests Check [✗]" && exit 1)
+
 echo "✅ All checks passed!"
