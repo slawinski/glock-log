@@ -1,6 +1,6 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
-import TerminalDatePicker from "../TerminalDatePicker";
+import TerminalDatePicker from "../terminal-date-picker/TerminalDatePicker";
 
 describe("TerminalDatePicker", () => {
   const mockOnChange = jest.fn();

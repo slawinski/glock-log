@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { TerminalText } from "./TerminalText";
+import { TerminalText } from "../TerminalText";
 
-interface TerminalDatePickerProps {
+type TerminalDatePickerProps = {
   value: Date | null;
+  // eslint-disable-next-line
   onChange: (date: Date) => void;
   label: string;
   error?: string;
@@ -12,7 +13,7 @@ interface TerminalDatePickerProps {
   maxDate?: Date;
   placeholder?: string;
   allowClear?: boolean;
-}
+};
 
 export default function TerminalDatePicker({
   value,

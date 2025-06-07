@@ -7,7 +7,7 @@ import * as ImagePicker from "react-native-image-picker";
 import { storage } from "../../services/storage";
 import { TerminalText } from "../../components/TerminalText";
 import { TerminalInput } from "../../components/TerminalInput";
-import TerminalDatePicker from "../../components/TerminalDatePicker";
+import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
 import FirearmImage from "../../components/firearm-image/FirearmImage";
 import {
   firearmInputSchema,

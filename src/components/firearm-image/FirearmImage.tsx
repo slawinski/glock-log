@@ -25,7 +25,6 @@ export default function FirearmImage({
       testID={testID}
     >
       <Image
-        // TODO: do image components in RN need require?
         source={
           photoUri
             ? { uri: photoUri }

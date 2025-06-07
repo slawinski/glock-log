@@ -12,7 +12,7 @@ import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { TerminalText } from "../../components/TerminalText";
 import { TerminalInput } from "../../components/TerminalInput";
-import TerminalDatePicker from "../../components/TerminalDatePicker";
+import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
 import { storage } from "../../services/storage";
 import {
   ammunitionInputSchema,
