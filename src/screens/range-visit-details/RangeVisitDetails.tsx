@@ -10,14 +10,14 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
-import { RootStackParamList } from "../../App";
-import { storage } from "../services/storage";
-import { TerminalText } from "../components/TerminalText";
+import { RootStackParamList } from "../../../App";
+import { storage } from "../../services/storage";
+import { TerminalText } from "../../components/TerminalText";
 import {
   FirearmStorage,
   RangeVisitStorage,
   AmmunitionStorage,
-} from "../validation/storageSchemas";
+} from "../../validation/storageSchemas";
 
 type RangeVisitDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

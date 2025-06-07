@@ -10,7 +10,7 @@ import FirearmDetailsScreen from "./src/screens/firearm-details/FirearmDetails";
 import EditFirearmScreen from "./src/screens/edit-firearm/EditFirearm";
 import StatsScreen from "./src/screens/StatsScreen";
 import AddRangeVisitScreen from "./src/screens/add-range-visit/AddRangeVisit";
-import RangeVisitDetailsScreen from "./src/screens/RangeVisitDetailsScreen";
+import RangeVisitDetailsScreen from "./src/screens/range-visit-details/RangeVisitDetails";
 import EditRangeVisitScreen from "./src/screens/edit-range-visit/EditRangeVisit";
 import AddAmmunitionScreen from "./src/screens/add-ammunition/AddAmmunition";
 import AmmunitionDetailsScreen from "./src/screens/ammunition-details/AmmunitionDetails";

@@ -9,7 +9,7 @@ import {
 import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import RangeVisitDetailsScreen from "../RangeVisitDetailsScreen";
+import RangeVisitDetailsScreen from "./RangeVisitDetails";
 import { storage } from "../../services/storage";
 import {
   FirearmStorage,
