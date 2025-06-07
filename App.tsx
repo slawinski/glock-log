@@ -8,7 +8,7 @@ import HomeScreen from "./src/screens/home/Home";
 import AddFirearmScreen from "./src/screens/add-firearm/AddFirearm";
 import FirearmDetailsScreen from "./src/screens/firearm-details/FirearmDetails";
 import EditFirearmScreen from "./src/screens/edit-firearm/EditFirearm";
-import StatsScreen from "./src/screens/StatsScreen";
+import StatsScreen from "./src/screens/stats/Stats";
 import AddRangeVisitScreen from "./src/screens/add-range-visit/AddRangeVisit";
 import RangeVisitDetailsScreen from "./src/screens/range-visit-details/RangeVisitDetails";
 import EditRangeVisitScreen from "./src/screens/edit-range-visit/EditRangeVisit";

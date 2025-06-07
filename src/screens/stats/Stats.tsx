@@ -7,13 +7,13 @@ import {
   Dimensions,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import { TerminalText } from "../components/TerminalText";
+import { TerminalText } from "../../components/TerminalText";
 import {
   FirearmStorage,
   RangeVisitStorage,
   AmmunitionStorage,
-} from "../validation/storageSchemas";
-import { storage } from "../services/storage";
+} from "../../validation/storageSchemas";
+import { storage } from "../../services/storage";
 
 type TabType = "visits" | "firearms" | "ammunition";
 

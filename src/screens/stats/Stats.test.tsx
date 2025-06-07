@@ -4,10 +4,9 @@ import {
   screen,
   fireEvent,
   waitFor,
-  within,
 } from "@testing-library/react-native";
 import { Alert } from "react-native";
-import StatsScreen from "../StatsScreen";
+import StatsScreen from "./Stats";
 import { storage } from "../../services/storage";
 
 // Mock the storage service
