@@ -13,7 +13,7 @@ import AddRangeVisitScreen from "./src/screens/add-range-visit/AddRangeVisit";
 import RangeVisitDetailsScreen from "./src/screens/RangeVisitDetailsScreen";
 import EditRangeVisitScreen from "./src/screens/EditRangeVisitScreen";
 import AddAmmunitionScreen from "./src/screens/add-ammunition/AddAmmunition";
-import AmmunitionDetailsScreen from "./src/screens/AmmunitionDetailsScreen";
+import AmmunitionDetailsScreen from "./src/screens/ammunition-details/AmmunitionDetails";
 import EditAmmunitionScreen from "./src/screens/EditAmmunitionScreen";
 
 export type RootStackParamList = {

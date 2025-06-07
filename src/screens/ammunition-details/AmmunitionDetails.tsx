@@ -3,10 +3,10 @@ import { View, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
-import { RootStackParamList } from "../../App";
-import { TerminalText } from "../components/TerminalText";
-import { AmmunitionStorage } from "../validation/storageSchemas";
-import { storage } from "../services/storage";
+import { RootStackParamList } from "../../../App";
+import { TerminalText } from "../../components/TerminalText";
+import { AmmunitionStorage } from "../../validation/storageSchemas";
+import { storage } from "../../services/storage";
 
 type AmmunitionDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

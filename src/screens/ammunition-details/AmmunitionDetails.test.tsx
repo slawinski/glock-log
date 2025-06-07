@@ -9,7 +9,7 @@ import {
 import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import AmmunitionDetailsScreen from "../AmmunitionDetailsScreen";
+import AmmunitionDetailsScreen from "./AmmunitionDetails";
 import { storage } from "../../services/storage";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 
