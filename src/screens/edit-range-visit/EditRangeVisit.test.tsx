@@ -9,7 +9,7 @@ import {
 import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import EditRangeVisitScreen from "../EditRangeVisitScreen";
+import EditRangeVisitScreen from "./EditRangeVisit";
 import { storage } from "../../services/storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "react-native-image-picker";
