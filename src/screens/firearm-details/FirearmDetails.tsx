@@ -12,7 +12,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { storage } from "../../services/storage";
-import { TerminalText } from "../../components/TerminalText";
+import { TerminalText } from "../../components/terminal-text/TerminalText";
 import FirearmImage from "../../components/firearm-image/FirearmImage";
 import { FirearmStorage } from "../../validation/storageSchemas";
 

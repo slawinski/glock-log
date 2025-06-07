@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { TerminalText } from "../TerminalText";
+import { TerminalText } from "../terminal-text/TerminalText";
 
 type TerminalDatePickerProps = {
   value: Date | null;

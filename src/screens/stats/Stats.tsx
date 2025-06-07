@@ -7,7 +7,7 @@ import {
   Dimensions,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import { TerminalText } from "../../components/TerminalText";
+import { TerminalText } from "../../components/terminal-text/TerminalText";
 import {
   FirearmStorage,
   RangeVisitStorage,

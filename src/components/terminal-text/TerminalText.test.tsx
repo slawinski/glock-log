@@ -1,6 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
-import { TerminalText } from "../TerminalText";
+import { TerminalText } from "../terminal-text/TerminalText";
 
 describe("TerminalText", () => {
   it("renders children correctly", () => {

@@ -10,8 +10,8 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
-import { TerminalText } from "../../components/TerminalText";
-import { TerminalInput } from "../../components/TerminalInput";
+import { TerminalText } from "../../components/terminal-text/TerminalText";
+import { TerminalInput } from "../../components/terminal-input/TerminalInput";
 import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
 import { storage } from "../../services/storage";
 import {

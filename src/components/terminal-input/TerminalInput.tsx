@@ -3,6 +3,7 @@ import { View, Text, TextInput } from "react-native";
 
 interface TerminalInputProps {
   value: string | number;
+  // eslint-disable-next-line
   onChangeText: (text: string) => void;
   placeholder?: string;
   keyboardType?: "default" | "numeric" | "email-address" | "phone-pad";

@@ -1,6 +1,6 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
-import { TerminalInput } from "../TerminalInput";
+import { TerminalInput } from "../terminal-input/TerminalInput";
 
 describe("TerminalInput", () => {
   const mockOnChangeText = jest.fn();

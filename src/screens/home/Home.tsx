@@ -14,7 +14,7 @@ import {
   AmmunitionStorage,
 } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage";
-import { TerminalText } from "../../components/TerminalText";
+import { TerminalText } from "../../components/terminal-text/TerminalText";
 import FirearmImage from "../../components/firearm-image/FirearmImage";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<

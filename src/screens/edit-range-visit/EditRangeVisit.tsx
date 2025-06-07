@@ -13,8 +13,8 @@ import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
 import { storage } from "../../services/storage";
-import { TerminalText } from "../../components/TerminalText";
-import { TerminalInput } from "../../components/TerminalInput";
+import { TerminalText } from "../../components/terminal-text/TerminalText";
+import { TerminalInput } from "../../components/terminal-input/TerminalInput";
 import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
 import {
   rangeVisitInputSchema,
