@@ -16,7 +16,15 @@ export class StorageFactory {
     if (!this.instance) {
       switch (this.config.type) {
         case "mmkv":
-          this.instance = new MMKVAdapter(this.config);
+          try {
+            this.instance = new MMKVAdapter(this.config);
+          } catch (error) {
+            console.warn(
+              "MMKV failed to initialize, falling back to AsyncStorage:",
+              error
+            );
+            this.instance = new AsyncStorageAdapter();
+          }
           break;
         case "asyncstorage":
           this.instance = new AsyncStorageAdapter();

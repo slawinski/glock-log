@@ -1,10 +1,17 @@
 import * as FileSystem from "expo-file-system";
 import { MMKV } from "react-native-mmkv";
 
-// Create MMKV instance for storing image paths
-const imageStorage = new MMKV({
-  id: "glock-log-images",
-});
+// Create MMKV instance for storing image paths with error handling
+let imageStorage: MMKV | null = null;
+
+try {
+  imageStorage = new MMKV({
+    id: "glock-log-images",
+  });
+} catch (error) {
+  console.warn("MMKV initialization failed for image storage:", error);
+  // Fallback to using AsyncStorage or other storage method
+}
 
 // Constants
 const IMAGE_DIRECTORY = `${FileSystem.documentDirectory}images/`;
@@ -62,8 +69,17 @@ export const storeImagePaths = (
   entityId: string,
   imagePaths: string[]
 ): void => {
-  const key = `${entityType}-${entityId}`;
-  imageStorage.set(key, JSON.stringify(imagePaths));
+  if (!imageStorage) {
+    console.warn("Image storage not available, skipping path storage");
+    return;
+  }
+
+  try {
+    const key = `${entityType}-${entityId}`;
+    imageStorage.set(key, JSON.stringify(imagePaths));
+  } catch (error) {
+    console.error("Error storing image paths:", error);
+  }
 };
 
 // Get image paths from MMKV
@@ -71,9 +87,19 @@ export const getImagePaths = (
   entityType: "firearm" | "range-visit" | "ammunition",
   entityId: string
 ): string[] => {
-  const key = `${entityType}-${entityId}`;
-  const pathsJson = imageStorage.getString(key);
-  return pathsJson ? JSON.parse(pathsJson) : [];
+  if (!imageStorage) {
+    console.warn("Image storage not available, returning empty paths");
+    return [];
+  }
+
+  try {
+    const key = `${entityType}-${entityId}`;
+    const pathsJson = imageStorage.getString(key);
+    return pathsJson ? JSON.parse(pathsJson) : [];
+  } catch (error) {
+    console.error("Error getting image paths:", error);
+    return [];
+  }
 };
 
 // Delete images from file system
@@ -93,8 +119,10 @@ export const deleteImages = async (
     }
 
     // Remove from MMKV storage
-    const key = `${entityType}-${entityId}`;
-    imageStorage.delete(key);
+    if (imageStorage) {
+      const key = `${entityType}-${entityId}`;
+      imageStorage.delete(key);
+    }
   } catch (error) {
     console.error("Error deleting images:", error);
     throw new Error("Failed to delete images");
@@ -117,6 +145,12 @@ export const cleanupOrphanedImages = async (): Promise<void> => {
     await ensureImageDirectory();
 
     const allFiles = await FileSystem.readDirectoryAsync(IMAGE_DIRECTORY);
+
+    if (!imageStorage) {
+      console.warn("Image storage not available, skipping cleanup");
+      return;
+    }
+
     const allKeys = imageStorage.getAllKeys();
 
     // Get all stored image paths from MMKV
