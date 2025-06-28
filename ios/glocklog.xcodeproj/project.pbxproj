@@ -7,26 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		083CEB09E4CE21EBA8A21D39 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF5F48D5EE85FC29A2F0DDD4 /* ExpoModulesProvider.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		56C28E9EA2FF19DF61AF80B2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DDD834FD20A8F114B5AB7863 /* PrivacyInfo.xcprivacy */; };
-		94630B58A5655327828053DF /* libPods-glocklog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B07AE74D6B97DC16BE66EEB9 /* libPods-glocklog.a */; };
+		8378F7F39297C171861CB3DD /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 15F2E0E8A36BE8C960A1118D /* PrivacyInfo.xcprivacy */; };
+		8788CE56116DF9BE514B5588 /* libPods-glocklog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE807B3AA53D7ECB80CF788C /* libPods-glocklog.a */; };
+		A15352F0C6759F348D90E17C /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ACEF5FCEDD9D7ADB6AF19BD /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		06675DA0FE92BA72618EB8C6 /* Pods-glocklog.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-glocklog.release.xcconfig"; path = "Target Support Files/Pods-glocklog/Pods-glocklog.release.xcconfig"; sourceTree = "<group>"; };
+		03A12DA6EE072195C6CDCE32 /* Pods-glocklog.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-glocklog.debug.xcconfig"; path = "Target Support Files/Pods-glocklog/Pods-glocklog.debug.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* glocklog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = glocklog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = glocklog/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = glocklog/Info.plist; sourceTree = "<group>"; };
+		15F2E0E8A36BE8C960A1118D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = glocklog/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		566DA326EC5E745816BC429E /* Pods-glocklog.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-glocklog.release.xcconfig"; path = "Target Support Files/Pods-glocklog/Pods-glocklog.release.xcconfig"; sourceTree = "<group>"; };
+		7ACEF5FCEDD9D7ADB6AF19BD /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-glocklog/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = glocklog/SplashScreen.storyboard; sourceTree = "<group>"; };
-		B07AE74D6B97DC16BE66EEB9 /* libPods-glocklog.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-glocklog.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		DBE6253148394D35F2AD0ED8 /* Pods-glocklog.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-glocklog.debug.xcconfig"; path = "Target Support Files/Pods-glocklog/Pods-glocklog.debug.xcconfig"; sourceTree = "<group>"; };
-		DDD834FD20A8F114B5AB7863 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = glocklog/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		DF5F48D5EE85FC29A2F0DDD4 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-glocklog/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		CE807B3AA53D7ECB80CF788C /* libPods-glocklog.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-glocklog.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = glocklog/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* glocklog-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "glocklog-Bridging-Header.h"; path = "glocklog/glocklog-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94630B58A5655327828053DF /* libPods-glocklog.a in Frameworks */,
+				8788CE56116DF9BE514B5588 /* libPods-glocklog.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				DDD834FD20A8F114B5AB7863 /* PrivacyInfo.xcprivacy */,
+				15F2E0E8A36BE8C960A1118D /* PrivacyInfo.xcprivacy */,
 			);
 			name = glocklog;
 			sourceTree = "<group>";
@@ -62,27 +62,27 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				B07AE74D6B97DC16BE66EEB9 /* libPods-glocklog.a */,
+				CE807B3AA53D7ECB80CF788C /* libPods-glocklog.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		30E8FC2865B002842B895B26 /* Pods */ = {
+		6891EB3539CC785401E9E8B0 /* glocklog */ = {
 			isa = PBXGroup;
 			children = (
-				DBE6253148394D35F2AD0ED8 /* Pods-glocklog.debug.xcconfig */,
-				06675DA0FE92BA72618EB8C6 /* Pods-glocklog.release.xcconfig */,
+				7ACEF5FCEDD9D7ADB6AF19BD /* ExpoModulesProvider.swift */,
+			);
+			name = glocklog;
+			sourceTree = "<group>";
+		};
+		727DE6274533B15A326F634C /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				03A12DA6EE072195C6CDCE32 /* Pods-glocklog.debug.xcconfig */,
+				566DA326EC5E745816BC429E /* Pods-glocklog.release.xcconfig */,
 			);
 			name = Pods;
 			path = Pods;
-			sourceTree = "<group>";
-		};
-		816D59C5C7790B004EDEDA23 /* glocklog */ = {
-			isa = PBXGroup;
-			children = (
-				DF5F48D5EE85FC29A2F0DDD4 /* ExpoModulesProvider.swift */,
-			);
-			name = glocklog;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -99,8 +99,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				30E8FC2865B002842B895B26 /* Pods */,
-				8F95218A0AF4B8D82C5B9E14 /* ExpoModulesProviders */,
+				727DE6274533B15A326F634C /* Pods */,
+				ECA78B7770E99DD34AF25809 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -115,14 +115,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8F95218A0AF4B8D82C5B9E14 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				816D59C5C7790B004EDEDA23 /* glocklog */,
-			);
-			name = ExpoModulesProviders;
-			sourceTree = "<group>";
-		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -130,6 +122,14 @@
 			);
 			name = Supporting;
 			path = glocklog/Supporting;
+			sourceTree = "<group>";
+		};
+		ECA78B7770E99DD34AF25809 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				6891EB3539CC785401E9E8B0 /* glocklog */,
+			);
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "glocklog" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				6E49E2F122C59B805E4A236E /* [Expo] Configure project */,
+				C5A942549986A1875146C72A /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				ED997F2C10F967B256069617 /* [CP] Embed Pods Frameworks */,
+				D5BC9086EE4F16A817BBAD87 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				56C28E9EA2FF19DF61AF80B2 /* PrivacyInfo.xcprivacy in Resources */,
+				8378F7F39297C171861CB3DD /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,25 +239,6 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
-		};
-		6E49E2F122C59B805E4A236E /* [Expo] Configure project */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-glocklog/expo-configure-project.sh\"\n";
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -303,7 +284,26 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-glocklog/Pods-glocklog-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		ED997F2C10F967B256069617 /* [CP] Embed Pods Frameworks */ = {
+		C5A942549986A1875146C72A /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-glocklog/expo-configure-project.sh\"\n";
+		};
+		D5BC9086EE4F16A817BBAD87 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -329,7 +329,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				083CEB09E4CE21EBA8A21D39 /* ExpoModulesProvider.swift in Sources */,
+				A15352F0C6759F348D90E17C /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,7 +338,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DBE6253148394D35F2AD0ED8 /* Pods-glocklog.debug.xcconfig */;
+			baseConfigurationReference = 03A12DA6EE072195C6CDCE32 /* Pods-glocklog.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -374,7 +374,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 06675DA0FE92BA72618EB8C6 /* Pods-glocklog.release.xcconfig */;
+			baseConfigurationReference = 566DA326EC5E745816BC429E /* Pods-glocklog.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

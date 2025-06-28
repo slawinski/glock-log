@@ -1,6 +1,6 @@
-import { getDefaultConfig } from "expo/metro-config";
+const { getDefaultConfig } = require("expo/metro-config");
 
-const config = getDefaultConfig(import.meta.url);
+const config = getDefaultConfig(__dirname);
 
 // Enable the new architecture
 config.resolver.unstable_enableSymlinks = true;
@@ -11,4 +11,4 @@ config.transformer = {
   unstable_allowRequireContext: true,
 };
 
-export default config;
+module.exports = config;
