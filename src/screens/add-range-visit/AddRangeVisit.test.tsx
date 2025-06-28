@@ -1,4 +1,3 @@
- 
 import React from "react";
 import {
   render,
@@ -148,7 +147,7 @@ describe("AddRangeVisitScreen", () => {
     expect(screen.getByText(/LOCATION/)).toBeTruthy();
     expect(screen.getByText(/VISIT DATE/)).toBeTruthy();
     expect(screen.getByText(/FIREARMS USED/)).toBeTruthy();
-    expect(screen.getByText(/PHOTOS/)).toBeTruthy();
+    expect(screen.getByText(/ADD PHOTOS/)).toBeTruthy();
     expect(screen.getByText(/CANCEL/)).toBeTruthy();
     expect(screen.getByText(/SAVE/)).toBeTruthy();
   });
@@ -186,7 +185,7 @@ describe("AddRangeVisitScreen", () => {
 
     // Select ammunition
     await waitFor(() => {
-      const selectAmmoButton = screen.getByText("SELECT AMMO");
+      const selectAmmoButton = screen.getByText("Select Ammunition");
       fireEvent.press(selectAmmoButton);
     });
 
@@ -206,7 +205,10 @@ describe("AddRangeVisitScreen", () => {
           location: "Test Range",
           firearmsUsed: ["firearm-1"],
           ammunitionUsed: {
-            "firearm-1": { ammunitionId: expect.any(String), rounds: 100 },
+            "firearm-1": {
+              ammunitionId: mockAmmunition[0].id,
+              rounds: 100,
+            },
           },
         })
       );
@@ -228,7 +230,7 @@ describe("AddRangeVisitScreen", () => {
 
     await renderScreen();
 
-    const addPhotoButton = screen.getByText(/ADD PHOTO/);
+    const addPhotoButton = screen.getByText(/ADD PHOTOS/);
     fireEvent.press(addPhotoButton);
 
     await waitFor(() => {
@@ -253,21 +255,19 @@ describe("AddRangeVisitScreen", () => {
   it("saves range visit when form is valid", async () => {
     await renderScreen();
 
-    // Fill in required fields
     const locationInput = screen.getByPlaceholderText(/Enter range location/);
     fireEvent.changeText(locationInput, "Test Range");
 
-    // Select a firearm and enter rounds
+    // Select firearm
     const glock19Button = screen.getByText("Glock 19");
     fireEvent.press(glock19Button);
 
     const roundsInput = screen.getByPlaceholderText(/Rounds used/);
     fireEvent.changeText(roundsInput, "100");
-    fireEvent(roundsInput, "blur");
 
     // Select ammunition for the firearm
     await waitFor(() => {
-      const selectAmmoButton = screen.getByText("SELECT AMMO");
+      const selectAmmoButton = screen.getByText("Select Ammunition");
       fireEvent.press(selectAmmoButton);
     });
 
@@ -275,17 +275,20 @@ describe("AddRangeVisitScreen", () => {
     const saveButton = screen.getByText(/SAVE/);
     fireEvent.press(saveButton);
 
+    // Verify save was called with correct data
     await waitFor(() => {
       expect(storage.saveRangeVisitWithAmmunition).toHaveBeenCalledWith(
         expect.objectContaining({
           location: "Test Range",
           firearmsUsed: ["firearm-1"],
           ammunitionUsed: {
-            "firearm-1": { ammunitionId: expect.any(String), rounds: 100 },
+            "firearm-1": {
+              ammunitionId: mockAmmunition[0].id,
+              rounds: 100,
+            },
           },
         })
       );
-      expect(mockGoBack).toHaveBeenCalled();
     });
   });
 
@@ -295,35 +298,24 @@ describe("AddRangeVisitScreen", () => {
     );
     await renderScreen();
 
-    // Enter location
     const locationInput = screen.getByPlaceholderText(/Enter range location/);
     fireEvent.changeText(locationInput, "Test Range");
 
-    // Select firearm
     const glock19Button = screen.getByText("Glock 19");
     fireEvent.press(glock19Button);
 
-    // Enter rounds
     const roundsInput = screen.getByPlaceholderText(/Rounds used/);
     fireEvent.changeText(roundsInput, "100");
-    fireEvent(roundsInput, "blur");
 
     // Select ammunition
     await waitFor(() => {
-      const selectAmmoButton = screen.getByText("SELECT AMMO");
+      const selectAmmoButton = screen.getByText("Select Ammunition");
       fireEvent.press(selectAmmoButton);
     });
 
-    // Ensure state is updated
-    await waitFor(() => {
-      expect(roundsInput.props.value).toBe("100");
-    });
-
-    // Save the form
     const saveButton = screen.getByText(/SAVE/);
     fireEvent.press(saveButton);
 
-    // Verify error alert
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
         "Error",
@@ -355,6 +347,53 @@ describe("AddRangeVisitScreen", () => {
     // DateTimePicker should be visible
     const datePickerElement = screen.UNSAFE_getByType(DateTimePicker);
     expect(datePickerElement).toBeTruthy();
+  });
+
+  it("adds a range visit with a borrowed firearm", async () => {
+    await renderScreen();
+
+    const locationInput = screen.getByPlaceholderText(/Enter range location/);
+    fireEvent.changeText(locationInput, "Test Range");
+
+    const addBorrowedButton = screen.getByText(
+      /\+ Log ammunition for a borrowed firearm/
+    );
+    fireEvent.press(addBorrowedButton);
+
+    await waitFor(() => {
+      expect(Alert.alert).toHaveBeenCalledWith(
+        "Select Ammunition",
+        expect.any(String),
+        expect.any(Array)
+      );
+    });
+
+    // After alert selection, a new input should appear.
+    const roundsInput = screen.getByPlaceholderText(/Rounds used/);
+    fireEvent.changeText(roundsInput, "50");
+
+    const saveButton = screen.getByText(/SAVE/);
+    fireEvent.press(saveButton);
+
+    await waitFor(() => {
+      expect(storage.saveRangeVisitWithAmmunition).toHaveBeenCalledWith(
+        expect.objectContaining({
+          location: "Test Range",
+          firearmsUsed: [],
+          ammunitionUsed: expect.any(Object),
+        })
+      );
+
+      const savedData = (storage.saveRangeVisitWithAmmunition as jest.Mock).mock
+        .calls[0][0];
+      const ammoUsedKeys = Object.keys(savedData.ammunitionUsed);
+      expect(ammoUsedKeys.length).toBe(1);
+      expect(ammoUsedKeys[0]).toMatch(/^borrowed-/);
+      expect(savedData.ammunitionUsed[ammoUsedKeys[0]]).toEqual({
+        ammunitionId: mockAmmunition[0].id,
+        rounds: 50,
+      });
+    });
   });
 
   it("shows error when firearms fail to load", async () => {

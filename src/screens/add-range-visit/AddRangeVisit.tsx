@@ -13,7 +13,10 @@ import {
   rangeVisitInputSchema,
   RangeVisitInput,
 } from "../../validation/inputSchemas";
-import { AmmunitionStorage } from "../../validation/storageSchemas";
+import {
+  AmmunitionStorage,
+  FirearmStorage,
+} from "../../validation/storageSchemas";
 
 type AddRangeVisitScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -49,7 +52,7 @@ export default function AddRangeVisitScreen() {
           storage.getAmmunition(),
         ]);
         setFirearms(
-          loadedFirearms.map((f) => ({
+          loadedFirearms.map((f: FirearmStorage) => ({
             id: f.id,
             modelName: f.modelName,
             caliber: f.caliber,
@@ -63,6 +66,36 @@ export default function AddRangeVisitScreen() {
     };
     loadData();
   }, []);
+
+  const handleAddBorrowedAmmunition = () => {
+    const availableAmmo = ammunition.filter((ammo) => ammo.quantity > 0);
+
+    if (availableAmmo.length === 0) {
+      Alert.alert("No Ammunition", "You have no ammunition in stock.");
+      return;
+    }
+
+    Alert.alert(
+      "Select Ammunition",
+      "Choose ammunition for the borrowed firearm",
+      [
+        ...availableAmmo.map((ammo) => ({
+          text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
+          onPress: () => {
+            const borrowedKey = `borrowed-${Date.now()}`;
+            setAmmunitionUsed((prev) => ({
+              ...prev,
+              [borrowedKey]: {
+                ammunitionId: ammo.id,
+                rounds: 0, // User can edit this
+              },
+            }));
+          },
+        })),
+        { text: "Cancel", style: "cancel" },
+      ]
+    );
+  };
 
   const handleImagePick = () => {
     ImagePicker.launchImageLibrary(
@@ -212,7 +245,7 @@ export default function AddRangeVisitScreen() {
                         ammunitionUsed[firearm.id]?.rounds.toString() || "0"
                       }
                       onChangeText={(text) => {
-                        const num = parseInt(text);
+                        const num = parseInt(text, 10);
                         if (!isNaN(num)) {
                           setAmmunitionUsed((prev) => ({
                             ...prev,
@@ -243,29 +276,32 @@ export default function AddRangeVisitScreen() {
                         Alert.alert(
                           "Select Ammunition",
                           "Choose ammunition type",
-                          compatibleAmmo.map((ammo) => ({
-                            text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
-                            onPress: () => {
-                              setAmmunitionUsed((prev) => ({
-                                ...prev,
-                                [firearm.id]: {
-                                  ammunitionId: ammo.id,
-                                  rounds: prev[firearm.id]?.rounds || 0,
-                                },
-                              }));
-                            },
-                          }))
+                          [
+                            ...compatibleAmmo.map((ammo) => ({
+                              text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
+                              onPress: () => {
+                                setAmmunitionUsed((prev) => ({
+                                  ...prev,
+                                  [firearm.id]: {
+                                    ...prev[firearm.id],
+                                    ammunitionId: ammo.id,
+                                  },
+                                }));
+                              },
+                            })),
+                            { text: "Cancel", style: "cancel" },
+                          ]
                         );
                       }}
-                      className="border border-terminal-border p-2"
                     >
-                      <TerminalText>
+                      <TerminalText className="text-terminal-accent">
                         {ammunitionUsed[firearm.id]?.ammunitionId
                           ? ammunition.find(
                               (a) =>
-                                a.id === ammunitionUsed[firearm.id].ammunitionId
+                                a.id ===
+                                ammunitionUsed[firearm.id]?.ammunitionId
                             )?.brand
-                          : "SELECT AMMO"}
+                          : "Select Ammunition"}
                       </TerminalText>
                     </TouchableOpacity>
                   </View>
@@ -274,6 +310,64 @@ export default function AddRangeVisitScreen() {
             )}
           </View>
         ))}
+      </View>
+
+      <View className="my-4">
+        <TouchableOpacity
+          onPress={handleAddBorrowedAmmunition}
+          className="border border-terminal-accent p-2"
+        >
+          <TerminalText>+ Log ammunition for a borrowed firearm</TerminalText>
+        </TouchableOpacity>
+
+        {Object.entries(ammunitionUsed)
+          .filter(([key]) => key.startsWith("borrowed-"))
+          .map(([key, usage]) => {
+            const ammoDetails = ammunition.find(
+              (a) => a.id === usage.ammunitionId
+            );
+            return (
+              <View
+                key={key}
+                className="mt-2 p-2 border border-terminal-dim rounded"
+              >
+                <View className="flex-row justify-between items-center mb-2">
+                  <TerminalText>
+                    {ammoDetails
+                      ? `${ammoDetails.brand} ${ammoDetails.caliber}`
+                      : "Borrowed Firearm"}
+                  </TerminalText>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setAmmunitionUsed((prev) => {
+                        const newAmmo = { ...prev };
+                        delete newAmmo[key];
+                        return newAmmo;
+                      });
+                    }}
+                  >
+                    <TerminalText className="text-terminal-error">
+                      Remove
+                    </TerminalText>
+                  </TouchableOpacity>
+                </View>
+                <TerminalInput
+                  value={usage.rounds.toString()}
+                  onChangeText={(text) => {
+                    const num = parseInt(text, 10);
+                    if (!isNaN(num)) {
+                      setAmmunitionUsed((prev) => ({
+                        ...prev,
+                        [key]: { ...prev[key], rounds: num },
+                      }));
+                    }
+                  }}
+                  placeholder="Rounds used"
+                  keyboardType="numeric"
+                />
+              </View>
+            );
+          })}
       </View>
 
       <View className="mb-4">

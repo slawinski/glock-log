@@ -36,9 +36,7 @@ export const rangeVisitInputSchema = z.object({
   date: z.string().datetime(),
   location: z.string().min(1, "Location is required"),
   notes: z.string().optional(),
-  firearmsUsed: z
-    .array(z.string())
-    .min(1, "At least one firearm must be selected"),
+  firearmsUsed: z.array(z.string()),
   ammunitionUsed: z
     .record(
       z.string(), // firearmId
