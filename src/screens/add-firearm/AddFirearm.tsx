@@ -9,10 +9,8 @@ import { TerminalText } from "../../components/terminal-text/TerminalText";
 import { TerminalInput } from "../../components/terminal-input/TerminalInput";
 import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
 import { ImageGallery } from "../../components/image-gallery";
-import {
-  PlaceholderImagePicker,
-  PlaceholderImageKey,
-} from "../../components/placeholder-image-picker/PlaceholderImagePicker";
+import { PlaceholderImagePicker } from "../../components/placeholder-image-picker/PlaceholderImagePicker";
+import { PlaceholderImageKey } from "../../services/image-source-manager";
 import {
   firearmInputSchema,
   FirearmInput,
@@ -164,6 +162,22 @@ export default function AddFirearmScreen() {
             setFormData((prev) => ({ ...prev, amountPaid: amount }));
           }}
           placeholder="Enter amount paid"
+          keyboardType="numeric"
+        />
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>INITIAL ROUNDS FIRED</TerminalText>
+        <TerminalInput
+          value={formData.initialRoundsFired?.toString() ?? ""}
+          onChangeText={(text) => {
+            const rounds = parseInt(text, 10);
+            setFormData((prev) => ({
+              ...prev,
+              initialRoundsFired: isNaN(rounds) ? undefined : rounds,
+            }));
+          }}
+          placeholder="e.g., 500"
           keyboardType="numeric"
         />
       </View>

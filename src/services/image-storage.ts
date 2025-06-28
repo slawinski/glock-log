@@ -110,8 +110,13 @@ export const deleteImages = async (
   try {
     const imagePaths = getImagePaths(entityType, entityId);
 
+    // Filter out placeholder images and delete only actual files
+    const filePathsToDelete = imagePaths.filter(
+      (path) => !path.startsWith("placeholder:")
+    );
+
     // Delete each image file
-    for (const path of imagePaths) {
+    for (const path of filePathsToDelete) {
       const fileInfo = await FileSystem.getInfoAsync(path);
       if (fileInfo.exists) {
         await FileSystem.deleteAsync(path);

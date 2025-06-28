@@ -98,12 +98,14 @@ export const storage = {
         storeImagePaths("firearm", firearmId, savedImagePaths);
       }
 
+      const { initialRoundsFired, ...restOfFirearm } = firearm;
+
       const storageData: FirearmStorage = {
-        ...firearm,
+        ...restOfFirearm,
         id: firearmId,
         createdAt: existingFirearm?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        roundsFired: existingFirearm?.roundsFired || 0,
+        roundsFired: existingFirearm?.roundsFired || initialRoundsFired || 0,
         // Replace original URIs with saved file paths
         photos:
           savedImagePaths.length > 0

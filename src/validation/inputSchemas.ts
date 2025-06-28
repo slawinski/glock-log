@@ -9,6 +9,10 @@ export const firearmInputSchema = z.object({
   amountPaid: z
     .number()
     .min(0, "Amount paid must be greater than or equal to 0"),
+  initialRoundsFired: z
+    .number()
+    .min(0, "Initial rounds fired must be a positive number")
+    .optional(),
   photos: z.array(z.string()).optional(),
   notes: z.string().optional(),
 });
