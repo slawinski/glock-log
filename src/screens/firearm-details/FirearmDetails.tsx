@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   ScrollView,
-  Image,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
@@ -11,9 +10,9 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
-import FirearmImage from "../../components/firearm-image/FirearmImage";
+import { ImageGallery } from "../../components/image-gallery";
 import { FirearmStorage } from "../../validation/storageSchemas";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
@@ -107,11 +106,7 @@ export default function FirearmDetailsScreen() {
 
   return (
     <ScrollView className="flex-1 bg-terminal-bg">
-      <View className="items-center p-4">
-        <FirearmImage size={300} className="mb-8" />
-      </View>
-
-      <View className="px-4">
+      <View className="p-4">
         <View className="mb-4">
           <TerminalText className="text-lg">{firearm.modelName}</TerminalText>
           <TerminalText className="text-terminal-dim">
@@ -133,18 +128,30 @@ export default function FirearmDetailsScreen() {
           </TerminalText>
         </View>
 
+        <View className="mb-4">
+          <TerminalText>AMOUNT PAID</TerminalText>
+          <TerminalText className="text-terminal-dim">
+            ${firearm.amountPaid.toFixed(2)}
+          </TerminalText>
+        </View>
+
         {firearm.notes && (
           <View className="mb-4">
+            <TerminalText>NOTES</TerminalText>
+            <TerminalText className="text-terminal-dim">
+              {firearm.notes}
+            </TerminalText>
+          </View>
+        )}
+
+        {firearm.photos && firearm.photos.length > 0 && (
+          <View className="mb-4">
             <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
-            <ScrollView horizontal className="flex-row">
-              {firearm.notes.split("\n").map((photo, index) => (
-                <Image
-                  key={index}
-                  source={{ uri: photo }}
-                  className="w-32 h-32 m-1 border border-terminal-border"
-                />
-              ))}
-            </ScrollView>
+            <ImageGallery
+              images={firearm.photos}
+              size="large"
+              showDeleteButton={false}
+            />
           </View>
         )}
 

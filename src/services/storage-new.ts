@@ -13,6 +13,12 @@ import {
   RangeVisitInput,
   AmmunitionInput,
 } from "../validation/inputSchemas";
+import {
+  saveImageToFileSystem,
+  storeImagePaths,
+  deleteImages,
+  getImagePaths,
+} from "./image-storage";
 
 const STORAGE_KEYS = {
   FIREARMS: "@glock-log:firearms",
@@ -53,12 +59,34 @@ export const storage = {
   // Firearms
   async saveFirearm(firearm: FirearmInput): Promise<void> {
     try {
+      const firearmId = generateId("firearm");
+
+      // Handle image storage if photos are provided
+      let savedImagePaths: string[] = [];
+      if (firearm.photos && firearm.photos.length > 0) {
+        savedImagePaths = await Promise.all(
+          firearm.photos.map(async (imageUri, index) => {
+            return await saveImageToFileSystem(
+              imageUri,
+              "firearm",
+              firearmId,
+              index
+            );
+          })
+        );
+
+        // Store image paths in MMKV
+        storeImagePaths("firearm", firearmId, savedImagePaths);
+      }
+
       const storageData: FirearmStorage = {
         ...firearm,
-        id: generateId("firearm"),
+        id: firearmId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         roundsFired: 0,
+        // Replace original URIs with saved file paths
+        photos: savedImagePaths,
       };
 
       const validatedFirearm = validateBeforeSave(
@@ -96,6 +124,9 @@ export const storage = {
 
   async deleteFirearm(id: string): Promise<void> {
     try {
+      // Delete associated images first
+      await deleteImages("firearm", id);
+
       const firearms = await this.getFirearms();
       const filteredFirearms = firearms.filter((firearm) => firearm.id !== id);
       const storage = StorageFactory.getStorage();
@@ -175,12 +206,34 @@ export const storage = {
   // Range Visits
   async saveRangeVisit(visit: RangeVisitInput): Promise<void> {
     try {
+      const visitId = generateId("visit");
+
+      // Handle image storage if photos are provided
+      let savedImagePaths: string[] = [];
+      if (visit.photos && visit.photos.length > 0) {
+        savedImagePaths = await Promise.all(
+          visit.photos.map(async (imageUri, index) => {
+            return await saveImageToFileSystem(
+              imageUri,
+              "range-visit",
+              visitId,
+              index
+            );
+          })
+        );
+
+        // Store image paths in MMKV
+        storeImagePaths("range-visit", visitId, savedImagePaths);
+      }
+
       const storageData: RangeVisitStorage = {
         ...visit,
         ammunitionUsed: visit.ammunitionUsed || {},
-        id: generateId("visit"),
+        id: visitId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        // Replace original URIs with saved file paths
+        photos: savedImagePaths,
       };
 
       const validatedVisit = validateBeforeSave(
@@ -218,6 +271,9 @@ export const storage = {
 
   async deleteRangeVisit(id: string): Promise<void> {
     try {
+      // Delete associated images first
+      await deleteImages("range-visit", id);
+
       const visits = await this.getRangeVisits();
       const filteredVisits = visits.filter((visit) => visit.id !== id);
       const storage = StorageFactory.getStorage();
@@ -307,6 +363,34 @@ export const storage = {
     } catch (error) {
       console.error("Error saving range visit with ammunition:", error);
       throw error;
+    }
+  },
+
+  // Image management methods
+  async getFirearmImages(firearmId: string): Promise<string[]> {
+    try {
+      return getImagePaths("firearm", firearmId);
+    } catch (error) {
+      console.error("Error getting firearm images:", error);
+      return [];
+    }
+  },
+
+  async getRangeVisitImages(visitId: string): Promise<string[]> {
+    try {
+      return getImagePaths("range-visit", visitId);
+    } catch (error) {
+      console.error("Error getting range visit images:", error);
+      return [];
+    }
+  },
+
+  async getAmmunitionImages(ammunitionId: string): Promise<string[]> {
+    try {
+      return getImagePaths("ammunition", ammunitionId);
+    } catch (error) {
+      console.error("Error getting ammunition images:", error);
+      return [];
     }
   },
 };

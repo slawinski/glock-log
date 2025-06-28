@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, ScrollView, Image, Alert } from "react-native";
+import { View, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
 import { TerminalInput } from "../../components/terminal-input/TerminalInput";
 import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
+import { ImageGallery } from "../../components/image-gallery";
 import {
   rangeVisitInputSchema,
   RangeVisitInput,
@@ -68,16 +69,27 @@ export default function AddRangeVisitScreen() {
       {
         mediaType: "photo",
         quality: 0.8,
+        selectionLimit: 10, // Allow multiple images
       },
       (response) => {
-        if (response.assets && response.assets[0].uri) {
+        if (response.assets && response.assets.length > 0) {
+          const newImageUris = response.assets
+            .map((asset) => asset.uri!)
+            .filter(Boolean);
           setFormData((prev) => ({
             ...prev,
-            photos: [...(prev.photos || []), response.assets![0].uri!],
+            photos: [...(prev.photos || []), ...newImageUris],
           }));
         }
       }
     );
+  };
+
+  const handleDeleteImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      photos: (prev.photos || []).filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmit = async () => {
@@ -120,13 +132,6 @@ export default function AddRangeVisitScreen() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleDeletePhoto = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      photos: (prev.photos || []).filter((_, i: number) => i !== index),
-    }));
   };
 
   if (error) {
@@ -277,21 +282,33 @@ export default function AddRangeVisitScreen() {
           onPress={handleImagePick}
           className="border border-terminal-border p-3 mb-2"
         >
-          <TerminalText>ADD PHOTO</TerminalText>
+          <TerminalText>ADD PHOTOS</TerminalText>
         </TouchableOpacity>
-        <ScrollView horizontal className="flex-row">
-          {formData.photos?.map((photo, index) => (
-            <View key={index} className="relative">
-              <Image source={{ uri: photo }} className="w-40 h-40 m-1" />
-              <TouchableOpacity
-                onPress={() => handleDeletePhoto(index)}
-                className="absolute top-0 right-0 bg-terminal-error p-1"
-              >
-                <TerminalText className="text-xs">X</TerminalText>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
+
+        {/* Image Gallery */}
+        {formData.photos && formData.photos.length > 0 && (
+          <View className="mb-4">
+            <TerminalText className="mb-2">SELECTED PHOTOS</TerminalText>
+            <ImageGallery
+              images={formData.photos}
+              onDeleteImage={handleDeleteImage}
+              size="medium"
+              showDeleteButton={true}
+            />
+          </View>
+        )}
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>NOTES</TerminalText>
+        <TerminalInput
+          value={formData.notes || ""}
+          onChangeText={(text) =>
+            setFormData((prev) => ({ ...prev, notes: text }))
+          }
+          placeholder="Add any notes about this range visit"
+          multiline
+        />
       </View>
 
       <View className="flex-row justify-between">

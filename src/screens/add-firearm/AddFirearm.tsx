@@ -4,11 +4,11 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
 import { TerminalInput } from "../../components/terminal-input/TerminalInput";
 import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
-import FirearmImage from "../../components/firearm-image/FirearmImage";
+import { ImageGallery } from "../../components/image-gallery";
 import {
   firearmInputSchema,
   FirearmInput,
@@ -32,22 +32,32 @@ export default function AddFirearmScreen() {
   const [saving, setSaving] = useState(false);
   const [error] = useState<string | null>(null);
 
-  // TODO: adding files doesn't work
   const handleImagePick = () => {
     ImagePicker.launchImageLibrary(
       {
         mediaType: "photo",
         quality: 0.8,
+        selectionLimit: 10, // Allow multiple images
       },
       (response) => {
-        if (response.assets && response.assets[0].uri) {
+        if (response.assets && response.assets.length > 0) {
+          const newImageUris = response.assets
+            .map((asset) => asset.uri!)
+            .filter(Boolean);
           setFormData((prev) => ({
             ...prev,
-            photos: [...(prev.photos || []), response.assets![0].uri!],
+            photos: [...(prev.photos || []), ...newImageUris],
           }));
         }
       }
     );
+  };
+
+  const handleDeleteImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      photos: (prev.photos || []).filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmit = async () => {
@@ -85,13 +95,25 @@ export default function AddFirearmScreen() {
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
       <View className="items-center mb-6">
-        <FirearmImage size={200} />
         <TouchableOpacity
           onPress={handleImagePick}
-          className="mt-4 border border-terminal-border px-4 py-2"
+          className="border border-terminal-border px-4 py-2 mb-4"
         >
-          <TerminalText>ADD PHOTO</TerminalText>
+          <TerminalText>ADD PHOTOS</TerminalText>
         </TouchableOpacity>
+
+        {/* Image Gallery */}
+        {formData.photos && formData.photos.length > 0 && (
+          <View className="w-full mb-4">
+            <TerminalText className="mb-2">SELECTED PHOTOS</TerminalText>
+            <ImageGallery
+              images={formData.photos}
+              onDeleteImage={handleDeleteImage}
+              size="medium"
+              showDeleteButton={true}
+            />
+          </View>
+        )}
       </View>
 
       <View className="mb-4">
@@ -142,6 +164,18 @@ export default function AddFirearmScreen() {
           label="PURCHASE DATE"
           maxDate={new Date()}
           placeholder="Select purchase date"
+        />
+      </View>
+
+      <View className="mb-4">
+        <TerminalText>NOTES</TerminalText>
+        <TerminalInput
+          value={formData.notes || ""}
+          onChangeText={(text) =>
+            setFormData((prev) => ({ ...prev, notes: text }))
+          }
+          placeholder="Add any notes about this firearm"
+          multiline
         />
       </View>
 

@@ -3,7 +3,6 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
-  Image,
   Alert,
   ActivityIndicator,
 } from "react-native";
@@ -11,8 +10,9 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
+import { ImageGallery } from "../../components/image-gallery";
 import {
   FirearmStorage,
   RangeVisitStorage,
@@ -195,15 +195,11 @@ export default function RangeVisitDetailsScreen() {
       {visit.photos && visit.photos.length > 0 && (
         <View className="mb-4">
           <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
-          <ScrollView horizontal className="flex-row">
-            {visit.photos.map((photo, index) => (
-              <Image
-                key={index}
-                source={{ uri: photo }}
-                className="w-40 h-40 m-1"
-              />
-            ))}
-          </ScrollView>
+          <ImageGallery
+            images={visit.photos}
+            size="large"
+            showDeleteButton={false}
+          />
         </View>
       )}
 
