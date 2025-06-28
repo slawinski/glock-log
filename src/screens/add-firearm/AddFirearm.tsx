@@ -10,6 +10,10 @@ import { TerminalInput } from "../../components/terminal-input/TerminalInput";
 import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
 import { ImageGallery } from "../../components/image-gallery";
 import {
+  PlaceholderImagePicker,
+  PlaceholderImageKey,
+} from "../../components/placeholder-image-picker/PlaceholderImagePicker";
+import {
   firearmInputSchema,
   FirearmInput,
 } from "../../validation/inputSchemas";
@@ -51,6 +55,13 @@ export default function AddFirearmScreen() {
         }
       }
     );
+  };
+
+  const handlePlaceholderSelect = (imageName: PlaceholderImageKey) => {
+    setFormData((prev) => ({
+      ...prev,
+      photos: [`placeholder:${imageName}`],
+    }));
   };
 
   const handleDeleteImage = (index: number) => {
@@ -112,6 +123,12 @@ export default function AddFirearmScreen() {
               size="medium"
               showDeleteButton={true}
             />
+          </View>
+        )}
+
+        {(!formData.photos || formData.photos.length === 0) && (
+          <View className="w-full mb-4">
+            <PlaceholderImagePicker onSelect={handlePlaceholderSelect} />
           </View>
         )}
       </View>

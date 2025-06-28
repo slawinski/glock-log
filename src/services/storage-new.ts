@@ -71,16 +71,28 @@ export const storage = {
       // Handle image storage if photos are provided
       let savedImagePaths: string[] = [];
       if (firearm.photos && firearm.photos.length > 0) {
-        savedImagePaths = await Promise.all(
-          firearm.photos.map(async (imageUri, index) => {
-            return await saveImageToFileSystem(
-              imageUri,
-              "firearm",
-              firearmId,
-              index
-            );
-          })
+        const imageUrisToSave = firearm.photos.filter(
+          (p) => !p.startsWith("placeholder:")
         );
+        const placeholderPhotos = firearm.photos.filter((p) =>
+          p.startsWith("placeholder:")
+        );
+
+        if (imageUrisToSave.length > 0) {
+          const newImagePaths = await Promise.all(
+            imageUrisToSave.map(async (imageUri, index) => {
+              return await saveImageToFileSystem(
+                imageUri,
+                "firearm",
+                firearmId,
+                index
+              );
+            })
+          );
+          savedImagePaths = [...newImagePaths, ...placeholderPhotos];
+        } else {
+          savedImagePaths = placeholderPhotos;
+        }
 
         // Store image paths in MMKV
         storeImagePaths("firearm", firearmId, savedImagePaths);

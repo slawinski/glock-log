@@ -2,6 +2,7 @@ import React from "react";
 import { View, TouchableOpacity, Alert } from "react-native";
 import { Image } from "expo-image";
 import { TerminalText } from "../terminal-text/TerminalText";
+import { resolveImageSource } from "../../services/image-source-manager";
 
 interface ImageGalleryProps {
   images: string[];
@@ -48,10 +49,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
   return (
     <View className="flex-row flex-wrap gap-2">
-      {images.map((imageUri, imageIndex) => (
+      {images.map((imageIdentifier, imageIndex) => (
         <View key={imageIndex} className="relative">
           <Image
-            source={{ uri: imageUri }}
+            source={resolveImageSource(imageIdentifier)}
             style={{
               width: getImageSize(),
               height: getImageSize(),
@@ -62,7 +63,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             placeholderContentFit="cover"
             transition={200}
             onError={() => {
-              console.error(`Failed to load image: ${imageUri}`);
+              console.error(`Failed to load image: ${imageIdentifier}`);
             }}
           />
           {showDeleteButton && onDeleteImage && (

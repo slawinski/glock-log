@@ -1,5 +1,6 @@
 import React from "react";
 import { Image, View } from "react-native";
+import { resolveImageSource } from "../../services/image-source-manager";
 
 interface FirearmImageProps {
   size?: number;
@@ -14,6 +15,10 @@ export default function FirearmImage({
   photoUri,
   testID,
 }: FirearmImageProps) {
+  const imageSource = photoUri
+    ? resolveImageSource(photoUri)
+    : resolveImageSource("placeholder:pistol-placeholder.png");
+
   return (
     <View
       className={`justify-center items-center bg-black ${className}`}
@@ -25,11 +30,7 @@ export default function FirearmImage({
       testID={testID}
     >
       <Image
-        source={
-          photoUri
-            ? { uri: photoUri }
-            : require("../../../assets/images/pistol-placeholder.png")
-        }
+        source={imageSource}
         resizeMode="contain"
         style={{
           width: size * 0.9,
