@@ -17,14 +17,16 @@
       "bundleIdentifier": "com.pietrucha.glocklog",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "newArchEnabled": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.pietrucha.glocklog"
+      "package": "com.pietrucha.glocklog",
+      "newArchEnabled": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
