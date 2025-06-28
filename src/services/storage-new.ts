@@ -59,7 +59,14 @@ export const storage = {
   // Firearms
   async saveFirearm(firearm: FirearmInput): Promise<void> {
     try {
-      const firearmId = generateId("firearm");
+      const firearms = await this.getFirearms();
+      const isUpdate = !!firearm.id;
+      const firearmId = firearm.id || generateId("firearm");
+
+      let existingFirearm: FirearmStorage | undefined;
+      if (isUpdate) {
+        existingFirearm = firearms.find((f) => f.id === firearmId);
+      }
 
       // Handle image storage if photos are provided
       let savedImagePaths: string[] = [];
@@ -82,18 +89,21 @@ export const storage = {
       const storageData: FirearmStorage = {
         ...firearm,
         id: firearmId,
-        createdAt: new Date().toISOString(),
+        createdAt: existingFirearm?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        roundsFired: 0,
+        roundsFired: existingFirearm?.roundsFired || 0,
         // Replace original URIs with saved file paths
-        photos: savedImagePaths,
+        photos:
+          savedImagePaths.length > 0
+            ? savedImagePaths
+            : existingFirearm?.photos || [],
       };
 
       const validatedFirearm = validateBeforeSave(
         storageData,
         firearmStorageSchema
       );
-      const firearms = await this.getFirearms();
+
       const index = firearms.findIndex((f) => f.id === validatedFirearm.id);
 
       if (index === -1) {
@@ -143,10 +153,18 @@ export const storage = {
   // Ammunition
   async saveAmmunition(ammunition: AmmunitionInput): Promise<void> {
     try {
+      const ammunitionList = await this.getAmmunition();
+      const isUpdate = !!ammunition.id;
+      const ammunitionId = ammunition.id || generateId("ammo");
+
+      let existingAmmunition: AmmunitionStorage | undefined;
+      if (isUpdate) {
+        existingAmmunition = ammunitionList.find((a) => a.id === ammunitionId);
+      }
       const storageData: AmmunitionStorage = {
         ...ammunition,
-        id: generateId("ammo"),
-        createdAt: new Date().toISOString(),
+        id: ammunitionId,
+        createdAt: existingAmmunition?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
@@ -154,7 +172,7 @@ export const storage = {
         storageData,
         ammunitionStorageSchema
       );
-      const ammunitionList = await this.getAmmunition();
+
       const index = ammunitionList.findIndex(
         (a) => a.id === validatedAmmunition.id
       );
@@ -206,7 +224,14 @@ export const storage = {
   // Range Visits
   async saveRangeVisit(visit: RangeVisitInput): Promise<void> {
     try {
-      const visitId = generateId("visit");
+      const visits = await this.getRangeVisits();
+      const isUpdate = !!visit.id;
+      const visitId = visit.id || generateId("visit");
+
+      let existingVisit: RangeVisitStorage | undefined;
+      if (isUpdate) {
+        existingVisit = visits.find((v) => v.id === visitId);
+      }
 
       // Handle image storage if photos are provided
       let savedImagePaths: string[] = [];
@@ -230,17 +255,20 @@ export const storage = {
         ...visit,
         ammunitionUsed: visit.ammunitionUsed || {},
         id: visitId,
-        createdAt: new Date().toISOString(),
+        createdAt: existingVisit?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         // Replace original URIs with saved file paths
-        photos: savedImagePaths,
+        photos:
+          savedImagePaths.length > 0
+            ? savedImagePaths
+            : existingVisit?.photos || [],
       };
 
       const validatedVisit = validateBeforeSave(
         storageData,
         rangeVisitStorageSchema
       );
-      const visits = await this.getRangeVisits();
+
       const index = visits.findIndex((v) => v.id === validatedVisit.id);
 
       if (index === -1) {

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // Input schemas for frontend validation
 export const firearmInputSchema = z.object({
+  id: z.string().optional(),
   modelName: z.string().min(1, "Model name is required"),
   caliber: z.string().min(1, "Caliber is required"),
   datePurchased: z.string().datetime(),
@@ -13,6 +14,7 @@ export const firearmInputSchema = z.object({
 });
 
 export const ammunitionInputSchema = z.object({
+  id: z.string().optional(),
   caliber: z.string().min(1, "Caliber is required"),
   brand: z.string().min(1, "Brand is required"),
   grain: z.string().min(1, "Grain is required"),
@@ -26,6 +28,7 @@ export const ammunitionInputSchema = z.object({
 });
 
 export const rangeVisitInputSchema = z.object({
+  id: z.string().optional(),
   date: z.string().datetime(),
   location: z.string().min(1, "Location is required"),
   notes: z.string().optional(),
