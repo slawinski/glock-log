@@ -1,4 +1,4 @@
-echo "🚀 Starting Pre-commit Checks..."
+echo "🚀 Starting Pre-push Checks..."
 
 echo "📦 Checking TypeScript types..."
 npx tsc --noEmit && echo "✅ TypeScript Check [✓]" || (echo "❌ TypeScript Check [✗]" && exit 1)
@@ -9,4 +9,4 @@ npx lint-staged && echo "✅ Lint-staged Check [✓]" || (echo "❌ Lint-staged 
 echo "🧪 Running tests..."
 npm test -- --watchAll=false && echo "✅ Tests Check [✓]" || (echo "❌ Tests Check [✗]" && exit 1)
 
-echo "✅ All checks passed!"
+echo "✅ All checks passed!" 

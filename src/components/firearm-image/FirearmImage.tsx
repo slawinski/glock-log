@@ -28,7 +28,7 @@ export default function FirearmImage({
         source={
           photoUri
             ? { uri: photoUri }
-            : { uri: "../../assets/images/glock-placeholder.png" }
+            : require("../../../assets/images/pistol-placeholder.png")
         }
         resizeMode="contain"
         style={{
