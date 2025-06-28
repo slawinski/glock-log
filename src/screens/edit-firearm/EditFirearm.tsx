@@ -27,17 +27,14 @@ type EditFirearmScreenNavigationProp = NativeStackNavigationProp<
 >;
 type EditFirearmScreenRouteProp = RouteProp<RootStackParamList, "EditFirearm">;
 
+type FirearmFormData = Omit<FirearmInput, "amountPaid"> & {
+  amountPaid: number | null;
+};
+
 export default function EditFirearmScreen() {
   const navigation = useNavigation<EditFirearmScreenNavigationProp>();
   const route = useRoute<EditFirearmScreenRouteProp>();
-  const [formData, setFormData] = useState<FirearmInput>({
-    modelName: "",
-    caliber: "",
-    datePurchased: new Date().toISOString(),
-    amountPaid: 0,
-    photos: [],
-    notes: "",
-  });
+  const [formData, setFormData] = useState<FirearmFormData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,11 +51,9 @@ export default function EditFirearmScreen() {
       const firearms = await storage.getFirearms();
       const firearm = firearms.find((f) => f.id === route.params!.id);
       if (firearm) {
-        // Convert storage data to input data
-        const { ...firearmData } = firearm;
         setFormData({
-          ...firearmData,
-          photos: firearmData.photos || [],
+          ...firearm,
+          photos: firearm.photos || [],
         });
       } else {
         setError("Firearm not found");
@@ -80,8 +75,8 @@ export default function EditFirearmScreen() {
       (response) => {
         if (response.assets && response.assets[0].uri) {
           setFormData((prev) => ({
-            ...prev,
-            photos: [...(prev.photos || []), response.assets![0].uri!],
+            ...prev!,
+            photos: [...(prev!.photos || []), response.assets![0].uri!],
           }));
         }
       }
@@ -89,18 +84,26 @@ export default function EditFirearmScreen() {
   };
 
   const handleSubmit = async () => {
+    if (!formData) return;
+
     try {
       setSaving(true);
 
+      const dataToValidate = {
+        ...formData,
+        amountPaid: formData.amountPaid || 0,
+      };
+
       // Validate form data using Zod
-      const validationResult = firearmInputSchema.safeParse(formData);
+      const validationResult = firearmInputSchema.safeParse(dataToValidate);
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0].message;
         Alert.alert("Validation error", errorMessage);
+        setSaving(false);
         return;
       }
 
-      await storage.saveFirearm(formData);
+      await storage.saveFirearm(validationResult.data);
       navigation.goBack();
     } catch (error) {
       console.error("Error updating firearm:", error);
@@ -111,10 +114,20 @@ export default function EditFirearmScreen() {
   };
 
   const handleDeletePhoto = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      photos: (prev.photos || []).filter((_, i: number) => i !== index),
-    }));
+    if (!formData) return;
+    setFormData({
+      ...formData,
+      photos: (formData.photos || []).filter((_, i: number) => i !== index),
+    });
+  };
+
+  const handleFormChange = (
+    field: keyof FirearmFormData,
+    value: string | number | null
+  ) => {
+    if (formData) {
+      setFormData({ ...formData, [field]: value });
+    }
   };
 
   if (loading) {
@@ -126,11 +139,11 @@ export default function EditFirearmScreen() {
     );
   }
 
-  if (error) {
+  if (error || !formData) {
     return (
       <View className="flex-1 justify-center items-center bg-terminal-bg">
         <TerminalText className="text-terminal-error text-lg">
-          {error}
+          {error || "Firearm data could not be loaded."}
         </TerminalText>
       </View>
     );
@@ -142,9 +155,7 @@ export default function EditFirearmScreen() {
         <TerminalText>MODEL NAME</TerminalText>
         <TerminalInput
           value={formData.modelName}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, modelName: text }))
-          }
+          onChangeText={(text) => handleFormChange("modelName", text)}
           placeholder="e.g., Glock 19"
         />
       </View>
@@ -153,9 +164,7 @@ export default function EditFirearmScreen() {
         <TerminalText>CALIBER</TerminalText>
         <TerminalInput
           value={formData.caliber}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, caliber: text }))
-          }
+          onChangeText={(text) => handleFormChange("caliber", text)}
           placeholder="e.g., 9mm"
         />
       </View>
@@ -163,10 +172,10 @@ export default function EditFirearmScreen() {
       <View className="mb-4">
         <TerminalText>AMOUNT PAID</TerminalText>
         <TerminalInput
-          value={formData.amountPaid.toString()}
+          value={formData.amountPaid}
           onChangeText={(text) => {
-            const amount = parseFloat(text) || 0;
-            setFormData((prev) => ({ ...prev, amountPaid: amount }));
+            const amount = parseFloat(text);
+            handleFormChange("amountPaid", isNaN(amount) ? null : amount);
           }}
           placeholder="Enter amount paid"
           keyboardType="numeric"
@@ -178,10 +187,7 @@ export default function EditFirearmScreen() {
         <TerminalDatePicker
           value={new Date(formData.datePurchased)}
           onChange={(date) =>
-            setFormData((prev) => ({
-              ...prev,
-              datePurchased: date.toISOString(),
-            }))
+            handleFormChange("datePurchased", date.toISOString())
           }
           label="PURCHASE DATE"
           maxDate={new Date()}
@@ -211,12 +217,6 @@ export default function EditFirearmScreen() {
           ))}
         </ScrollView>
       </View>
-
-      {error && (
-        <View className="mb-4">
-          <TerminalText className="text-terminal-error">{error}</TerminalText>
-        </View>
-      )}
 
       <View className="flex-row justify-between">
         <TouchableOpacity

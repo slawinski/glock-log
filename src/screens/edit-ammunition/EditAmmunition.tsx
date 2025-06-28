@@ -29,19 +29,19 @@ type EditAmmunitionScreenRouteProp = RouteProp<
   "EditAmmunition"
 >;
 
+type AmmunitionFormData = Omit<
+  AmmunitionInput,
+  "quantity" | "amountPaid" | "grain"
+> & {
+  quantity: number | null;
+  amountPaid: number | null;
+  grain: string | null;
+};
+
 export default function EditAmmunitionScreen() {
   const navigation = useNavigation<EditAmmunitionScreenNavigationProp>();
   const route = useRoute<EditAmmunitionScreenRouteProp>();
-  const [formData, setFormData] = useState<AmmunitionInput>({
-    caliber: "",
-    brand: "",
-    grain: "",
-    quantity: 0,
-    amountPaid: 0,
-    datePurchased: new Date().toISOString(),
-    notes: "",
-    photos: [],
-  });
+  const [formData, setFormData] = useState<AmmunitionFormData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,12 +58,10 @@ export default function EditAmmunitionScreen() {
       const ammunitionList = await storage.getAmmunition();
       const ammunition = ammunitionList.find((a) => a.id === route.params!.id);
       if (ammunition) {
-        // Convert storage data to input data
-        const { ...ammunitionData } = ammunition;
         setFormData({
-          ...ammunitionData,
-          notes: ammunitionData.notes || "",
-          photos: ammunitionData.photos || [],
+          ...ammunition,
+          notes: ammunition.notes || "",
+          photos: ammunition.photos || [],
         });
       } else {
         setError("Ammunition not found");
@@ -77,24 +75,43 @@ export default function EditAmmunitionScreen() {
   };
 
   const handleSubmit = async () => {
+    if (!formData) return;
+
     try {
       setSaving(true);
 
+      const dataToValidate = {
+        ...formData,
+        grain: formData.grain || "",
+        quantity: formData.quantity || 0,
+        amountPaid: formData.amountPaid || 0,
+      };
+
       // Validate form data using Zod
-      const validationResult = ammunitionInputSchema.safeParse(formData);
+      const validationResult = ammunitionInputSchema.safeParse(dataToValidate);
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0].message;
         Alert.alert("Validation error", errorMessage);
+        setSaving(false);
         return;
       }
 
-      await storage.saveAmmunition(formData);
+      await storage.saveAmmunition(validationResult.data);
       navigation.goBack();
     } catch (error) {
       console.error("Error updating ammunition:", error);
       Alert.alert("Error", "Failed to update ammunition. Please try again.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleFormChange = (
+    field: keyof AmmunitionFormData,
+    value: string | number | null
+  ) => {
+    if (formData) {
+      setFormData({ ...formData, [field]: value });
     }
   };
 
@@ -107,11 +124,11 @@ export default function EditAmmunitionScreen() {
     );
   }
 
-  if (error) {
+  if (error || !formData) {
     return (
       <View className="flex-1 justify-center items-center bg-terminal-bg">
         <TerminalText className="text-terminal-error text-lg">
-          {error}
+          {error || "Ammunition data could not be loaded."}
         </TerminalText>
       </View>
     );
@@ -125,9 +142,7 @@ export default function EditAmmunitionScreen() {
         <TerminalText>CALIBER</TerminalText>
         <TerminalInput
           value={formData.caliber}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, caliber: text }))
-          }
+          onChangeText={(text) => handleFormChange("caliber", text)}
           placeholder="e.g., 9mm"
         />
       </View>
@@ -136,9 +151,7 @@ export default function EditAmmunitionScreen() {
         <TerminalText>BRAND</TerminalText>
         <TerminalInput
           value={formData.brand}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, brand: text }))
-          }
+          onChangeText={(text) => handleFormChange("brand", text)}
           placeholder="e.g., Federal"
         />
       </View>
@@ -147,9 +160,7 @@ export default function EditAmmunitionScreen() {
         <TerminalText>GRAIN</TerminalText>
         <TerminalInput
           value={formData.grain}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, grain: text }))
-          }
+          onChangeText={(text) => handleFormChange("grain", text)}
           placeholder="e.g., 115"
           keyboardType="numeric"
         />
@@ -158,10 +169,11 @@ export default function EditAmmunitionScreen() {
       <View className="mb-4">
         <TerminalText>QUANTITY</TerminalText>
         <TerminalInput
-          value={String(formData.quantity)}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, quantity: parseInt(text) || 0 }))
-          }
+          value={formData.quantity}
+          onChangeText={(text) => {
+            const quantity = parseInt(text);
+            handleFormChange("quantity", isNaN(quantity) ? null : quantity);
+          }}
           placeholder="e.g., 1000"
           keyboardType="numeric"
         />
@@ -170,13 +182,11 @@ export default function EditAmmunitionScreen() {
       <View className="mb-4">
         <TerminalText>AMOUNT PAID</TerminalText>
         <TerminalInput
-          value={String(formData.amountPaid)}
-          onChangeText={(text) =>
-            setFormData((prev) => ({
-              ...prev,
-              amountPaid: parseFloat(text) || 0,
-            }))
-          }
+          value={formData.amountPaid}
+          onChangeText={(text) => {
+            const amount = parseFloat(text);
+            handleFormChange("amountPaid", isNaN(amount) ? null : amount);
+          }}
           placeholder="e.g., 299.99"
           keyboardType="numeric"
         />
@@ -187,10 +197,7 @@ export default function EditAmmunitionScreen() {
         <TerminalDatePicker
           value={new Date(formData.datePurchased)}
           onChange={(date) =>
-            setFormData((prev) => ({
-              ...prev,
-              datePurchased: date.toISOString(),
-            }))
+            handleFormChange("datePurchased", date.toISOString())
           }
           label="PURCHASE DATE"
           maxDate={new Date()}
@@ -202,19 +209,11 @@ export default function EditAmmunitionScreen() {
         <TerminalText>NOTES</TerminalText>
         <TerminalInput
           value={formData.notes || ""}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, notes: text }))
-          }
+          onChangeText={(text) => handleFormChange("notes", text)}
           placeholder="Optional notes"
           multiline
         />
       </View>
-
-      {error && (
-        <View className="mb-4">
-          <TerminalText className="text-terminal-error">{error}</TerminalText>
-        </View>
-      )}
 
       <View className="flex-row justify-between">
         <TouchableOpacity

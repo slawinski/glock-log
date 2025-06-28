@@ -17,15 +17,24 @@ type AddAmmunitionScreenNavigationProp = NativeStackNavigationProp<
   "AddAmmunition"
 >;
 
+type AmmunitionFormData = Omit<
+  AmmunitionInput,
+  "quantity" | "amountPaid" | "grain"
+> & {
+  quantity: number | null;
+  amountPaid: number | null;
+  grain: string | null;
+};
+
 export default function AddAmmunitionScreen() {
   const navigation = useNavigation<AddAmmunitionScreenNavigationProp>();
-  const [formData, setFormData] = useState<AmmunitionInput>({
+  const [formData, setFormData] = useState<AmmunitionFormData>({
     caliber: "",
     brand: "",
-    grain: "",
-    quantity: 0,
+    grain: null,
+    quantity: null,
     datePurchased: new Date().toISOString(),
-    amountPaid: 0,
+    amountPaid: null,
     notes: "",
     photos: [],
   });
@@ -46,15 +55,22 @@ export default function AddAmmunitionScreen() {
         return;
       }
 
+      const dataToValidate = {
+        ...formData,
+        grain: formData.grain || "",
+        quantity: formData.quantity || 0,
+        amountPaid: formData.amountPaid || 0,
+      };
+
       // Validate form data using Zod
-      const validationResult = ammunitionInputSchema.safeParse(formData);
+      const validationResult = ammunitionInputSchema.safeParse(dataToValidate);
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0].message;
         Alert.alert("Validation error", errorMessage);
         return;
       }
 
-      await storage.saveAmmunition(formData);
+      await storage.saveAmmunition(validationResult.data);
       navigation.goBack();
     } catch (error) {
       console.error("Error creating ammunition:", error);
@@ -119,10 +135,13 @@ export default function AddAmmunitionScreen() {
       <View className="mb-4">
         <TerminalText>QUANTITY</TerminalText>
         <TerminalInput
-          value={formData.quantity.toString()}
+          value={formData.quantity}
           onChangeText={(text) => {
-            const quantity = parseInt(text) || 0;
-            setFormData((prev) => ({ ...prev, quantity }));
+            const quantity = parseInt(text);
+            setFormData((prev) => ({
+              ...prev,
+              quantity: isNaN(quantity) ? null : quantity,
+            }));
           }}
           placeholder="e.g., 1000"
           keyboardType="numeric"
@@ -132,10 +151,13 @@ export default function AddAmmunitionScreen() {
       <View className="mb-4">
         <TerminalText>AMOUNT PAID</TerminalText>
         <TerminalInput
-          value={formData.amountPaid.toString()}
+          value={formData.amountPaid}
           onChangeText={(text) => {
-            const amountPaid = parseFloat(text) || 0;
-            setFormData((prev) => ({ ...prev, amountPaid }));
+            const amountPaid = parseFloat(text);
+            setFormData((prev) => ({
+              ...prev,
+              amountPaid: isNaN(amountPaid) ? null : amountPaid,
+            }));
           }}
           placeholder="e.g., 299.99"
           keyboardType="numeric"

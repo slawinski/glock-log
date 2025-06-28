@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TextInput } from "react-native";
 
 interface TerminalInputProps {
-  value: string | number;
+  value: string | number | null | undefined;
   // eslint-disable-next-line
   onChangeText: (text: string) => void;
   placeholder?: string;
@@ -20,19 +20,24 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
   multiline = false,
   className = "",
   testID,
-}) => (
-  <View className="flex-row items-center">
-    <Text className="text-terminal-text font-terminal mr-2">{">"}</Text>
-    <TextInput
-      value={value.toString()}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-      placeholderTextColor="#666"
-      keyboardType={keyboardType}
-      multiline={multiline}
-      className={`flex-1 text-terminal-text font-terminal bg-transparent ${className}`}
-      style={{ minHeight: multiline ? 100 : undefined }}
-      testID={testID}
-    />
-  </View>
-);
+}) => {
+  const displayValue =
+    value === null || value === undefined ? "" : value.toString();
+
+  return (
+    <View className="flex-row items-center">
+      <Text className="text-terminal-text font-terminal mr-2">{">"}</Text>
+      <TextInput
+        value={displayValue}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor="#666"
+        keyboardType={keyboardType}
+        multiline={multiline}
+        className={`flex-1 text-terminal-text font-terminal bg-transparent ${className}`}
+        style={{ minHeight: multiline ? 100 : undefined }}
+        testID={testID}
+      />
+    </View>
+  );
+};

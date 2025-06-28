@@ -21,13 +21,17 @@ type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
   "AddFirearm"
 >;
 
+type FirearmFormData = Omit<FirearmInput, "amountPaid"> & {
+  amountPaid: number | null;
+};
+
 export default function AddFirearmScreen() {
   const navigation = useNavigation<AddFirearmScreenNavigationProp>();
-  const [formData, setFormData] = useState<FirearmInput>({
+  const [formData, setFormData] = useState<FirearmFormData>({
     modelName: "",
     caliber: "",
     datePurchased: new Date().toISOString(),
-    amountPaid: 0,
+    amountPaid: null,
     photos: [],
     notes: "",
   });
@@ -73,15 +77,21 @@ export default function AddFirearmScreen() {
     try {
       setSaving(true);
 
+      const dataToValidate = {
+        ...formData,
+        amountPaid: formData.amountPaid || 0,
+      };
+
       // Validate form data using Zod
-      const validationResult = firearmInputSchema.safeParse(formData);
+      const validationResult = firearmInputSchema.safeParse(dataToValidate);
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0].message;
         Alert.alert("Validation error", errorMessage);
+        setSaving(false);
         return;
       }
 
-      await storage.saveFirearm(formData);
+      await storage.saveFirearm(validationResult.data);
       navigation.goBack();
     } catch (error) {
       console.error("Error creating firearm:", error);
@@ -156,10 +166,13 @@ export default function AddFirearmScreen() {
       <View className="mb-4">
         <TerminalText>AMOUNT PAID</TerminalText>
         <TerminalInput
-          value={formData.amountPaid.toString()}
+          value={formData.amountPaid}
           onChangeText={(text) => {
-            const amount = parseFloat(text) || 0;
-            setFormData((prev) => ({ ...prev, amountPaid: amount }));
+            const amount = parseFloat(text);
+            setFormData((prev) => ({
+              ...prev,
+              amountPaid: isNaN(amount) ? null : amount,
+            }));
           }}
           placeholder="Enter amount paid"
           keyboardType="numeric"
