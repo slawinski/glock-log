@@ -13,7 +13,7 @@ import {
   RangeVisitStorage,
   AmmunitionStorage,
 } from "../../validation/storageSchemas";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 
 type TabType = "visits" | "firearms" | "ammunition";
 

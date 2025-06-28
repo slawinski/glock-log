@@ -9,16 +9,12 @@ import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import EditAmmunitionScreen from "./EditAmmunition";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { AmmunitionStorage } from "../../validation/storageSchemas";
 
-// Mock the storage service
-jest.mock("../../services/storage", () => ({
-  storage: {
-    getAmmunition: jest.fn(),
-    saveAmmunition: jest.fn(),
-  },
-}));
+// Mock the storage module
+jest.mock("../../services/storage-new");
 
 // Mock Alert
 jest.spyOn(Alert, "alert");
@@ -38,8 +34,8 @@ jest.mock("@react-navigation/native", () => {
   };
 });
 
-const mockAmmunition = {
-  id: "test-id",
+const mockAmmunition: AmmunitionStorage = {
+  id: "ammo-1",
   caliber: "9mm",
   brand: "Federal",
   grain: "115",

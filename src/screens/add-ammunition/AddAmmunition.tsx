@@ -6,7 +6,7 @@ import { RootStackParamList } from "../../app/App";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
 import { TerminalInput } from "../../components/terminal-input/TerminalInput";
 import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import {
   ammunitionInputSchema,
   AmmunitionInput,

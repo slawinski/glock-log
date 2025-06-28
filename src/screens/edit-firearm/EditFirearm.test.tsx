@@ -9,17 +9,13 @@ import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import EditFirearmScreen from "./EditFirearm";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "react-native-image-picker";
+import { FirearmStorage } from "../../validation/storageSchemas";
 
-// Mock the storage service
-jest.mock("../../services/storage", () => ({
-  storage: {
-    getFirearms: jest.fn(),
-    saveFirearm: jest.fn(),
-  },
-}));
+// Mock the storage module
+jest.mock("../../services/storage-new");
 
 // Mock ImagePicker
 jest.mock("react-native-image-picker", () => ({
@@ -44,8 +40,8 @@ jest.mock("@react-navigation/native", () => {
   };
 });
 
-const mockFirearm = {
-  id: "test-id",
+const mockFirearm: FirearmStorage = {
+  id: "firearm-1",
   modelName: "Glock 19",
   caliber: "9mm",
   datePurchased: "2024-01-01T00:00:00.000Z",

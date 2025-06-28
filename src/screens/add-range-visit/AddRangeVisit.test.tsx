@@ -10,19 +10,16 @@ import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AddRangeVisitScreen from "./AddRangeVisit";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import * as ImagePicker from "react-native-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import {
+  FirearmStorage,
+  AmmunitionStorage,
+} from "../../validation/storageSchemas";
 
-// Mock the storage service
-jest.mock("../../services/storage", () => ({
-  storage: {
-    saveRangeVisit: jest.fn(),
-    saveRangeVisitWithAmmunition: jest.fn(),
-    getFirearms: jest.fn(),
-    getAmmunition: jest.fn(),
-  },
-}));
+// Mock the storage module
+jest.mock("../../services/storage-new");
 
 // Mock Alert
 const originalAlert = Alert.alert;
@@ -69,27 +66,51 @@ jest.mock("@react-navigation/native", () => {
   };
 });
 
-const mockFirearms = [
-  { id: "firearm-1", modelName: "Glock 19", caliber: "9mm" },
-  { id: "firearm-2", modelName: "Glock 17", caliber: "9mm" },
+const mockFirearms: FirearmStorage[] = [
+  {
+    id: "firearm-1",
+    modelName: "Glock 19",
+    caliber: "9mm",
+    datePurchased: "2023-01-01T00:00:00.000Z",
+    amountPaid: 500,
+    roundsFired: 100,
+    createdAt: "2023-01-01T00:00:00.000Z",
+    updatedAt: "2023-01-01T00:00:00.000Z",
+  },
+  {
+    id: "firearm-2",
+    modelName: "Glock 17",
+    caliber: "9mm",
+    datePurchased: "2023-01-01T00:00:00.000Z",
+    amountPaid: 500,
+    roundsFired: 200,
+    createdAt: "2023-01-01T00:00:00.000Z",
+    updatedAt: "2023-01-01T00:00:00.000Z",
+  },
 ];
 
-const mockAmmunition = [
+const mockAmmunition: AmmunitionStorage[] = [
   {
     id: "ammo-1",
     caliber: "9mm",
     brand: "Federal",
-    grain: 115,
-    quantity: 100,
-    amountPaid: 25,
+    grain: "115",
+    quantity: 1000,
+    amountPaid: 300,
+    datePurchased: "2023-01-01T00:00:00.000Z",
+    createdAt: "2023-01-01T00:00:00.000Z",
+    updatedAt: "2023-01-01T00:00:00.000Z",
   },
   {
     id: "ammo-2",
     caliber: "9mm",
     brand: "Blazer",
-    grain: 124,
-    quantity: 50,
-    amountPaid: 15,
+    grain: "124",
+    quantity: 500,
+    amountPaid: 150,
+    datePurchased: "2023-01-01T00:00:00.000Z",
+    createdAt: "2023-01-01T00:00:00.000Z",
+    updatedAt: "2023-01-01T00:00:00.000Z",
   },
 ];
 

@@ -9,15 +9,11 @@ import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AddFirearmScreen from "./AddFirearm";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import * as ImagePicker from "react-native-image-picker";
 
-// Mock the storage service
-jest.mock("../../services/storage", () => ({
-  storage: {
-    saveFirearm: jest.fn(),
-  },
-}));
+// Mock the storage module
+jest.mock("../../services/storage-new");
 
 // Mock Alert
 jest.spyOn(Alert, "alert");

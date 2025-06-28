@@ -7,34 +7,38 @@ import {
 } from "@testing-library/react-native";
 import { Alert } from "react-native";
 import StatsScreen from "./Stats";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
+import {
+  FirearmStorage,
+  RangeVisitStorage,
+} from "../../validation/storageSchemas";
 
-// Mock the storage service
-jest.mock("../../services/storage", () => ({
-  storage: {
-    getFirearms: jest.fn(),
-    getAmmunition: jest.fn(),
-    getRangeVisits: jest.fn(),
-  },
-}));
+// Mock the storage module
+jest.mock("../../services/storage-new");
 
 // Mock Alert
 jest.spyOn(Alert, "alert");
 
-const mockFirearms = [
+const mockFirearms: FirearmStorage[] = [
   {
     id: "firearm-1",
     modelName: "Glock 19",
     caliber: "9mm",
-    roundsFired: 1000,
-    amountPaid: 500,
+    roundsFired: 500,
+    amountPaid: 600,
+    datePurchased: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: "firearm-2",
     modelName: "AR-15",
     caliber: "5.56",
-    roundsFired: 500,
-    amountPaid: 800,
+    roundsFired: 1500,
+    amountPaid: 1200,
+    datePurchased: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
@@ -57,7 +61,7 @@ const mockAmmunition = [
   },
 ];
 
-const mockRangeVisits = [
+const mockRangeVisits: RangeVisitStorage[] = [
   {
     id: "visit-1",
     date: "2024-01-01T00:00:00.000Z",

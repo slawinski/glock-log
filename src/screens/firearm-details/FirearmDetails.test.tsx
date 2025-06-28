@@ -9,11 +9,11 @@ import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import FirearmDetailsScreen from "./FirearmDetails";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import { FirearmStorage } from "../../validation/storageSchemas";
 
-// Mock the storage service
-jest.mock("../../services/storage");
+// Mock the storage module
+jest.mock("../../services/storage-new");
 
 // Mock Alert
 jest.spyOn(Alert, "alert");

@@ -10,20 +10,15 @@ import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AmmunitionDetailsScreen from "./AmmunitionDetails";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 
 // Define types for the mock functions
 type GetAmmunitionMock = jest.Mock<() => Promise<AmmunitionStorage[]>>;
 type DeleteAmmunitionMock = jest.Mock<() => Promise<void>>;
 
-// Mock the storage service
-jest.mock("../../services/storage", () => ({
-  storage: {
-    getAmmunition: jest.fn() as unknown as GetAmmunitionMock,
-    deleteAmmunition: jest.fn() as unknown as DeleteAmmunitionMock,
-  },
-}));
+// Mock the storage module
+jest.mock("../../services/storage-new");
 
 // Mock Alert
 jest.spyOn(Alert, "alert");

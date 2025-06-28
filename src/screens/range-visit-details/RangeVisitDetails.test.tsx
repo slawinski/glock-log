@@ -10,7 +10,7 @@ import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import RangeVisitDetailsScreen from "./RangeVisitDetails";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import {
   FirearmStorage,
   RangeVisitStorage,
@@ -30,15 +30,8 @@ jest.mock("@react-navigation/native", () => ({
   }),
 }));
 
-// Mock the storage service
-jest.mock("../../services/storage", () => ({
-  storage: {
-    getRangeVisits: jest.fn(),
-    getFirearms: jest.fn(),
-    getAmmunition: jest.fn(),
-    deleteRangeVisit: jest.fn(),
-  },
-}));
+// Mock the storage module
+jest.mock("../../services/storage-new");
 
 // Mock Alert
 jest.spyOn(Alert, "alert");

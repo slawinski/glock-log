@@ -10,7 +10,7 @@ import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import EditRangeVisitScreen from "./EditRangeVisit";
-import { storage } from "../../services/storage";
+import { storage } from "../../services/storage-new";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "react-native-image-picker";
 import {
@@ -25,17 +25,8 @@ type GetFirearmsMock = jest.Mock<() => Promise<FirearmStorage[]>>;
 type GetAmmunitionMock = jest.Mock<() => Promise<AmmunitionStorage[]>>;
 type SaveRangeVisitWithAmmunitionMock = jest.Mock<() => Promise<void>>;
 
-// Mock the storage service
-jest.mock("../../services/storage", () => ({
-  storage: {
-    getRangeVisits: jest.fn() as unknown as GetRangeVisitsMock,
-    saveRangeVisit: jest.fn(),
-    getFirearms: jest.fn() as unknown as GetFirearmsMock,
-    getAmmunition: jest.fn() as unknown as GetAmmunitionMock,
-    saveRangeVisitWithAmmunition:
-      jest.fn() as unknown as SaveRangeVisitWithAmmunitionMock,
-  },
-}));
+// Mock the storage module
+jest.mock("../../services/storage-new");
 
 // Mock ImagePicker
 jest.mock("react-native-image-picker", () => ({
