@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { TerminalText } from "../terminal-text/TerminalText";
 
 type TerminalDatePickerProps = {
@@ -25,7 +25,20 @@ export default function TerminalDatePicker({
   placeholder = "Select date",
   allowClear = false,
 }: TerminalDatePickerProps) {
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = (date: Date) => {
+    onChange(date);
+    hideDatePicker();
+  };
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString(undefined, {
@@ -56,7 +69,7 @@ export default function TerminalDatePicker({
       </View>
 
       <TouchableOpacity
-        onPress={() => setShowDatePicker(true)}
+        onPress={showDatePicker}
         className={`border ${
           error ? "border-terminal-error" : "border-terminal-border"
         } p-2 flex-row justify-between items-center`}
@@ -76,21 +89,15 @@ export default function TerminalDatePicker({
         </TerminalText>
       )}
 
-      {showDatePicker && (
-        <DateTimePicker
-          value={value || new Date()}
-          mode="date"
-          display="default"
-          minimumDate={minDate}
-          maximumDate={maxDate}
-          onChange={(event, selectedDate) => {
-            setShowDatePicker(false);
-            if (selectedDate) {
-              onChange(selectedDate);
-            }
-          }}
-        />
-      )}
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}
+        mode="date"
+        onConfirm={handleConfirm}
+        onCancel={hideDatePicker}
+        date={value || new Date()}
+        minimumDate={minDate}
+        maximumDate={maxDate}
+      />
     </View>
   );
 }

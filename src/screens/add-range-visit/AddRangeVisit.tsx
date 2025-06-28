@@ -191,7 +191,6 @@ export default function AddRangeVisitScreen() {
       </View>
 
       <View className="mb-4">
-        <TerminalText>DATE</TerminalText>
         <TerminalDatePicker
           value={new Date(formData.date)}
           onChange={(date) =>

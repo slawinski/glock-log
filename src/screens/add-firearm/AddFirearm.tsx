@@ -196,7 +196,6 @@ export default function AddFirearmScreen() {
       </View>
 
       <View className="mb-4">
-        <TerminalText>DATE PURCHASED</TerminalText>
         <TerminalDatePicker
           value={new Date(formData.datePurchased)}
           onChange={(date) =>
