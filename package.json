@@ -15,6 +15,7 @@
     "build:check": "expo build:check"
   },
   "dependencies": {
+    "@expo-google-fonts/vt323": "^0.4.0",
     "@hookform/resolvers": "^5.0.1",
     "@prisma/client": "^6.6.0",
     "@react-native-async-storage/async-storage": "2.1.2",

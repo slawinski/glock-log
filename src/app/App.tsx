@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { View } from "react-native";
+import { useFonts, VT323_400Regular } from "@expo-google-fonts/vt323";
 import { ScanlinesOverlay } from "../components/scanlines-overlay";
 
 // Import screens
@@ -35,6 +36,14 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    VT323_400Regular,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   // TODO: Remove this once the migration is no longer needed
   // useEffect(() => {
   //   runMigrations().catch(console.error);
@@ -52,68 +61,66 @@ export default function App() {
               },
               headerTintColor: "#00ff00",
               headerTitleStyle: {
-                fontFamily: "Courier New",
+                fontFamily: "VT323_400Regular",
                 fontWeight: "bold",
+                fontSize: 34,
               },
               contentStyle: {
                 backgroundColor: "#0a0a0a",
               },
+              headerTitleAlign: "center",
             }}
           >
-            <Stack.Screen
-              name="Home"
-              component={HomeScreen}
-              options={{ title: "> GLOCK LOG" }}
-            />
+            <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen
               name="AddFirearm"
               component={AddFirearmScreen}
-              options={{ title: "> NEW FIREARM" }}
+              options={{ title: "NEW FIREARM" }}
             />
             <Stack.Screen
               name="FirearmDetails"
               component={FirearmDetailsScreen}
-              options={{ title: "> FIREARM DETAILS" }}
+              options={{ title: "FIREARM DETAILS" }}
             />
             <Stack.Screen
               name="EditFirearm"
               component={EditFirearmScreen}
-              options={{ title: "> EDIT FIREARM" }}
+              options={{ title: "EDIT FIREARM" }}
             />
             <Stack.Screen
               name="Stats"
               component={StatsScreen}
-              options={{ title: "> SYSTEM STATISTICS" }}
+              options={{ title: "SYSTEM STATISTICS" }}
             />
             <Stack.Screen
               name="AddRangeVisit"
               component={AddRangeVisitScreen}
-              options={{ title: "> NEW RANGE VISIT" }}
+              options={{ title: "NEW RANGE VISIT" }}
             />
             <Stack.Screen
               name="RangeVisitDetails"
               component={RangeVisitDetailsScreen}
-              options={{ title: "> RANGE VISIT DETAILS" }}
+              options={{ title: "RANGE VISIT DETAILS" }}
             />
             <Stack.Screen
               name="EditRangeVisit"
               component={EditRangeVisitScreen}
-              options={{ title: "> EDIT RANGE VISIT" }}
+              options={{ title: "EDIT RANGE VISIT" }}
             />
             <Stack.Screen
               name="AddAmmunition"
               component={AddAmmunitionScreen}
-              options={{ title: "> NEW AMMUNITION" }}
+              options={{ title: "NEW AMMUNITION" }}
             />
             <Stack.Screen
               name="AmmunitionDetails"
               component={AmmunitionDetailsScreen}
-              options={{ title: "> AMMUNITION DETAILS" }}
+              options={{ title: "AMMUNITION DETAILS" }}
             />
             <Stack.Screen
               name="EditAmmunition"
               component={EditAmmunitionScreen}
-              options={{ title: "> EDIT AMMUNITION" }}
+              options={{ title: "EDIT AMMUNITION" }}
             />
           </Stack.Navigator>
         </NavigationContainer>

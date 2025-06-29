@@ -1,9 +1,10 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useLayoutEffect } from "react";
 import {
   View,
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  Button,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -33,6 +34,26 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("firearms");
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        <Button
+          onPress={() => navigation.navigate("Stats")}
+          title="STATS"
+          color="#00ff00"
+        />
+      ),
+      headerRight: () => (
+        <Button
+          onPress={() => navigation.navigate(getAddScreen())}
+          title="+"
+          color="#00ff00"
+        />
+      ),
+      title: "GLOCK LOG",
+    });
+  }, [navigation, activeTab]);
 
   // Fetch data when the screen is focused
   useFocusEffect(
@@ -314,22 +335,6 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-terminal-bg">
-      <View className="flex-row justify-between mb-4">
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Stats")}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>STATS</TerminalText>
-        </TouchableOpacity>
-        <View className="flex-row">
-          <TouchableOpacity
-            onPress={() => navigation.navigate(getAddScreen())}
-            className="border border-terminal-border px-4 py-2"
-          >
-            <TerminalText className="text-2xl">+</TerminalText>
-          </TouchableOpacity>
-        </View>
-      </View>
       {renderTabBar()}
       <View className="flex-1 p-4">{renderContent()}</View>
     </View>
