@@ -2,6 +2,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { View } from "react-native";
+import { ScanlinesOverlay } from "../components/scanlines-overlay";
 
 // Import screens
 import HomeScreen from "../screens/home/Home";
@@ -40,81 +42,84 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Home"
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: "#0a0a0a",
-            },
-            headerTintColor: "#00ff00",
-            headerTitleStyle: {
-              fontFamily: "Courier New",
-              fontWeight: "bold",
-            },
-            contentStyle: {
-              backgroundColor: "#0a0a0a",
-            },
-          }}
-        >
-          <Stack.Screen
-            name="Home"
-            component={HomeScreen}
-            options={{ title: "> GLOCK LOG" }}
-          />
-          <Stack.Screen
-            name="AddFirearm"
-            component={AddFirearmScreen}
-            options={{ title: "> NEW FIREARM" }}
-          />
-          <Stack.Screen
-            name="FirearmDetails"
-            component={FirearmDetailsScreen}
-            options={{ title: "> FIREARM DETAILS" }}
-          />
-          <Stack.Screen
-            name="EditFirearm"
-            component={EditFirearmScreen}
-            options={{ title: "> EDIT FIREARM" }}
-          />
-          <Stack.Screen
-            name="Stats"
-            component={StatsScreen}
-            options={{ title: "> SYSTEM STATISTICS" }}
-          />
-          <Stack.Screen
-            name="AddRangeVisit"
-            component={AddRangeVisitScreen}
-            options={{ title: "> NEW RANGE VISIT" }}
-          />
-          <Stack.Screen
-            name="RangeVisitDetails"
-            component={RangeVisitDetailsScreen}
-            options={{ title: "> RANGE VISIT DETAILS" }}
-          />
-          <Stack.Screen
-            name="EditRangeVisit"
-            component={EditRangeVisitScreen}
-            options={{ title: "> EDIT RANGE VISIT" }}
-          />
-          <Stack.Screen
-            name="AddAmmunition"
-            component={AddAmmunitionScreen}
-            options={{ title: "> NEW AMMUNITION" }}
-          />
-          <Stack.Screen
-            name="AmmunitionDetails"
-            component={AmmunitionDetailsScreen}
-            options={{ title: "> AMMUNITION DETAILS" }}
-          />
-          <Stack.Screen
-            name="EditAmmunition"
-            component={EditAmmunitionScreen}
-            options={{ title: "> EDIT AMMUNITION" }}
-          />
-        </Stack.Navigator>
+      <View className="flex-1 bg-terminal-bg">
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Home"
+            screenOptions={{
+              headerStyle: {
+                backgroundColor: "#0a0a0a",
+              },
+              headerTintColor: "#00ff00",
+              headerTitleStyle: {
+                fontFamily: "Courier New",
+                fontWeight: "bold",
+              },
+              contentStyle: {
+                backgroundColor: "#0a0a0a",
+              },
+            }}
+          >
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={{ title: "> GLOCK LOG" }}
+            />
+            <Stack.Screen
+              name="AddFirearm"
+              component={AddFirearmScreen}
+              options={{ title: "> NEW FIREARM" }}
+            />
+            <Stack.Screen
+              name="FirearmDetails"
+              component={FirearmDetailsScreen}
+              options={{ title: "> FIREARM DETAILS" }}
+            />
+            <Stack.Screen
+              name="EditFirearm"
+              component={EditFirearmScreen}
+              options={{ title: "> EDIT FIREARM" }}
+            />
+            <Stack.Screen
+              name="Stats"
+              component={StatsScreen}
+              options={{ title: "> SYSTEM STATISTICS" }}
+            />
+            <Stack.Screen
+              name="AddRangeVisit"
+              component={AddRangeVisitScreen}
+              options={{ title: "> NEW RANGE VISIT" }}
+            />
+            <Stack.Screen
+              name="RangeVisitDetails"
+              component={RangeVisitDetailsScreen}
+              options={{ title: "> RANGE VISIT DETAILS" }}
+            />
+            <Stack.Screen
+              name="EditRangeVisit"
+              component={EditRangeVisitScreen}
+              options={{ title: "> EDIT RANGE VISIT" }}
+            />
+            <Stack.Screen
+              name="AddAmmunition"
+              component={AddAmmunitionScreen}
+              options={{ title: "> NEW AMMUNITION" }}
+            />
+            <Stack.Screen
+              name="AmmunitionDetails"
+              component={AmmunitionDetailsScreen}
+              options={{ title: "> AMMUNITION DETAILS" }}
+            />
+            <Stack.Screen
+              name="EditAmmunition"
+              component={EditAmmunitionScreen}
+              options={{ title: "> EDIT AMMUNITION" }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
         <StatusBar style="light" />
-      </NavigationContainer>
+        <ScanlinesOverlay />
+      </View>
     </SafeAreaProvider>
   );
 }
