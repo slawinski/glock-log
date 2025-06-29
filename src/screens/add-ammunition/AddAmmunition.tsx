@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, ScrollView, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
@@ -11,6 +11,7 @@ import {
   ammunitionInputSchema,
   AmmunitionInput,
 } from "../../validation/inputSchemas";
+import { TerminalButton } from "../../components/terminal-button/TerminalButton";
 
 type AddAmmunitionScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -183,21 +184,12 @@ export default function AddAmmunitionScreen() {
       )}
 
       <View className="flex-row justify-between">
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>CANCEL</TerminalText>
-        </TouchableOpacity>
-        <TouchableOpacity
+        <TerminalButton onPress={() => navigation.goBack()} caption="CANCEL" />
+        <TerminalButton
           onPress={handleSubmit}
           disabled={saving}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>
-            {saving ? "SAVING..." : "SAVE AMMUNITION"}
-          </TerminalText>
-        </TouchableOpacity>
+          caption={saving ? "SAVING..." : "SAVE AMMUNITION"}
+        />
       </View>
     </ScrollView>
   );

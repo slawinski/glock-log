@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
@@ -14,6 +8,7 @@ import { storage } from "../../services/storage-new";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
 import { ImageGallery } from "../../components/image-gallery";
 import { FirearmStorage } from "../../validation/storageSchemas";
+import { TerminalButton } from "../../components/terminal-button/TerminalButton";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -156,26 +151,14 @@ export default function FirearmDetailsScreen() {
         )}
 
         <View className="flex-row justify-between mt-4">
-          <TouchableOpacity
+          <TerminalButton
             onPress={() =>
               navigation.navigate("EditFirearm", { id: firearm.id })
             }
-            className="border border-terminal-border px-4 py-2"
-          >
-            <TerminalText>EDIT</TerminalText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleDelete}
-            className="border border-terminal-border px-4 py-2"
-          >
-            <TerminalText>DELETE</TerminalText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            className="border border-terminal-border px-4 py-2"
-          >
-            <TerminalText>BACK</TerminalText>
-          </TouchableOpacity>
+            caption="EDIT"
+          />
+          <TerminalButton onPress={handleDelete} caption="DELETE" />
+          <TerminalButton onPress={() => navigation.goBack()} caption="BACK" />
         </View>
       </View>
     </ScrollView>

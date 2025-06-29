@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, ScrollView, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
@@ -15,6 +15,7 @@ import {
   firearmInputSchema,
   FirearmInput,
 } from "../../validation/inputSchemas";
+import { TerminalButton } from "../../components/terminal-button/TerminalButton";
 
 type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -114,12 +115,11 @@ export default function AddFirearmScreen() {
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
       <View className="items-center mb-6">
-        <TouchableOpacity
+        <TerminalButton
           onPress={handleImagePick}
-          className="border border-terminal-border px-4 py-2 mb-4"
-        >
-          <TerminalText>ADD PHOTOS</TerminalText>
-        </TouchableOpacity>
+          className="mb-4"
+          caption="ADD PHOTOS"
+        />
 
         {/* Image Gallery */}
         {formData.photos && formData.photos.length > 0 && (
@@ -229,19 +229,12 @@ export default function AddFirearmScreen() {
       )}
 
       <View className="flex-row justify-between">
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>CANCEL</TerminalText>
-        </TouchableOpacity>
-        <TouchableOpacity
+        <TerminalButton onPress={() => navigation.goBack()} caption="CANCEL" />
+        <TerminalButton
           onPress={handleSubmit}
           disabled={saving}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>{saving ? "SAVING..." : "SAVE FIREARM"}</TerminalText>
-        </TouchableOpacity>
+          caption={saving ? "SAVING..." : "SAVE FIREARM"}
+        />
       </View>
     </ScrollView>
   );

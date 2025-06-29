@@ -20,6 +20,7 @@ import {
   firearmInputSchema,
   FirearmInput,
 } from "../../validation/inputSchemas";
+import { TerminalButton } from "../../components/terminal-button/TerminalButton";
 
 type EditFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -197,12 +198,11 @@ export default function EditFirearmScreen() {
 
       <View className="mb-4">
         <TerminalText>PHOTOS</TerminalText>
-        <TouchableOpacity
+        <TerminalButton
           onPress={handleImagePick}
-          className="border border-terminal-border p-3 mb-2"
-        >
-          <TerminalText>ADD PHOTO</TerminalText>
-        </TouchableOpacity>
+          className="p-3 mb-2"
+          caption="ADD PHOTO"
+        />
         <ScrollView horizontal className="flex-row">
           {formData.photos?.map((photo, index) => (
             <View key={index} className="relative">
@@ -219,19 +219,12 @@ export default function EditFirearmScreen() {
       </View>
 
       <View className="flex-row justify-between">
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>CANCEL</TerminalText>
-        </TouchableOpacity>
-        <TouchableOpacity
+        <TerminalButton onPress={() => navigation.goBack()} caption="CANCEL" />
+        <TerminalButton
           onPress={handleSubmit}
           disabled={saving}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>{saving ? "SAVING..." : "SAVE CHANGES"}</TerminalText>
-        </TouchableOpacity>
+          caption={saving ? "SAVING..." : "SAVE CHANGES"}
+        />
       </View>
     </ScrollView>
   );

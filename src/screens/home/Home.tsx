@@ -16,6 +16,7 @@ import {
 import { storage } from "../../services/storage-new";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
 import FirearmImage from "../../components/firearm-image/FirearmImage";
+import { HeaderButton } from "../../components/terminal-button";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -37,14 +38,18 @@ export default function HomeScreen() {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.navigate("Stats")}>
-          <TerminalText className="text-2xl">STATS</TerminalText>
-        </TouchableOpacity>
+        <HeaderButton
+          onPress={() => navigation.navigate("Stats")}
+          caption="STATS"
+          className="text-2xl"
+        />
       ),
       headerRight: () => (
-        <TouchableOpacity onPress={() => navigation.navigate(getAddScreen())}>
-          <TerminalText className="text-3xl">+</TerminalText>
-        </TouchableOpacity>
+        <HeaderButton
+          onPress={() => navigation.navigate(getAddScreen())}
+          caption="+"
+          className="text-3xl"
+        />
       ),
       title: "GLOCK LOG",
     });
