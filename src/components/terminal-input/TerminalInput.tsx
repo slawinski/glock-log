@@ -25,8 +25,15 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
     value === null || value === undefined ? "" : value.toString();
 
   return (
-    <View className="flex-row items-center">
-      <Text className="text-terminal-text font-terminal mr-2">{">"}</Text>
+    <View
+      className={`flex-row items-center border-2 p-1 rounded-md border-transparent`}
+    >
+      <Text
+        className="text-terminal-text font-terminal mr-2"
+        style={{ fontSize: 18, lineHeight: 20 }}
+      >
+        {">"}
+      </Text>
       <TextInput
         value={displayValue}
         onChangeText={onChangeText}
@@ -35,7 +42,13 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
         keyboardType={keyboardType}
         multiline={multiline}
         className={`flex-1 text-terminal-text font-terminal bg-transparent ${className}`}
-        style={{ minHeight: multiline ? 100 : undefined }}
+        style={{
+          minHeight: multiline ? 100 : undefined,
+          paddingVertical: 0,
+          textAlignVertical: "center",
+          fontSize: 18,
+          lineHeight: 20,
+        }}
         testID={testID}
       />
     </View>
