@@ -26,7 +26,9 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
 
   return (
     <View
-      className={`flex-row items-center border-2 p-1 rounded-md border-transparent`}
+      className={`flex-row ${
+        multiline ? "items-start" : "items-center"
+      } border-2 p-1 rounded-md border-transparent`}
     >
       <Text
         className="text-terminal-text font-terminal mr-2"
@@ -45,7 +47,7 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
         style={{
           minHeight: multiline ? 100 : undefined,
           paddingVertical: 0,
-          textAlignVertical: "center",
+          textAlignVertical: multiline ? "top" : "center",
           fontSize: 18,
           lineHeight: 20,
         }}
