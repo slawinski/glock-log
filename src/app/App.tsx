@@ -69,6 +69,7 @@ export default function App() {
                 backgroundColor: "#0a0a0a",
               },
               headerTitleAlign: "center",
+              headerBackButtonDisplayMode: "minimal",
             }}
           >
             <Stack.Screen name="Home" component={HomeScreen} />
