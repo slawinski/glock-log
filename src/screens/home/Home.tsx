@@ -17,6 +17,7 @@ import { storage } from "../../services/storage-new";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
 import FirearmImage from "../../components/firearm-image/FirearmImage";
 import { HeaderButton } from "../../components/terminal-button";
+import { TabBar } from "../../components/terminal-tabs";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -24,6 +25,12 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 type TabType = "firearms" | "visits" | "ammunition";
+
+const TABS = [
+  { id: "firearms", title: "FIREARMS" },
+  { id: "visits", title: "VISITS" },
+  { id: "ammunition", title: "AMMUNITION" },
+];
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -195,44 +202,6 @@ export default function HomeScreen() {
     }
   };
 
-  const Tab = ({
-    title,
-    active,
-    onPress,
-  }: {
-    title: string;
-    active: boolean;
-    onPress: () => void;
-  }) => (
-    <TouchableOpacity onPress={onPress} className="flex-1 items-center py-3">
-      <TerminalText
-        className={`${active ? "text-terminal-text" : "text-terminal-border"}`}
-      >
-        {active ? `[ ${title} ]` : title}
-      </TerminalText>
-    </TouchableOpacity>
-  );
-
-  const renderTabBar = () => (
-    <View className="flex-row justify-around mb-4 bg-terminal-bg border-b border-terminal-border">
-      <Tab
-        title="FIREARMS"
-        active={activeTab === "firearms"}
-        onPress={() => setActiveTab("firearms")}
-      />
-      <Tab
-        title="VISITS"
-        active={activeTab === "visits"}
-        onPress={() => setActiveTab("visits")}
-      />
-      <Tab
-        title="AMMUNITION"
-        active={activeTab === "ammunition"}
-        onPress={() => setActiveTab("ammunition")}
-      />
-    </View>
-  );
-
   const renderContent = () => {
     if (loading) {
       return (
@@ -316,7 +285,11 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-terminal-bg">
-      {renderTabBar()}
+      <TabBar
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabPress={(tabId) => setActiveTab(tabId as TabType)}
+      />
       <View className="flex-1 p-4">{renderContent()}</View>
     </View>
   );

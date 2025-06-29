@@ -14,8 +14,15 @@ import {
   AmmunitionStorage,
 } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
+import { TabBar } from "../../components/terminal-tabs";
 
 type TabType = "visits" | "firearms" | "ammunition";
+
+const TABS = [
+  { id: "firearms", title: "FIREARMS" },
+  { id: "visits", title: "VISITS" },
+  { id: "ammunition", title: "AMMUNITION" },
+];
 
 export default function StatsScreen() {
   const [firearms, setFirearms] = useState<FirearmStorage[]>([]);
@@ -254,59 +261,6 @@ export default function StatsScreen() {
     };
   };
 
-  const renderTabBar = () => (
-    <View className="flex-row justify-around mb-4 bg-terminal-bg border-b border-terminal-border">
-      <TouchableOpacity
-        onPress={() => setActiveTab("firearms")}
-        className={`flex-1 items-center py-3 ${
-          activeTab === "firearms" ? "border-b-2 border-terminal-text" : ""
-        }`}
-      >
-        <TerminalText
-          className={`${
-            activeTab === "firearms"
-              ? "text-terminal-text"
-              : "text-terminal-border"
-          }`}
-        >
-          FIREARMS
-        </TerminalText>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => setActiveTab("visits")}
-        className={`flex-1 items-center py-3 ${
-          activeTab === "visits" ? "border-b-2 border-terminal-text" : ""
-        }`}
-      >
-        <TerminalText
-          className={`${
-            activeTab === "visits"
-              ? "text-terminal-text"
-              : "text-terminal-border"
-          }`}
-        >
-          VISITS
-        </TerminalText>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => setActiveTab("ammunition")}
-        className={`flex-1 items-center py-3 ${
-          activeTab === "ammunition" ? "border-b-2 border-terminal-text" : ""
-        }`}
-      >
-        <TerminalText
-          className={`${
-            activeTab === "ammunition"
-              ? "text-terminal-text"
-              : "text-terminal-border"
-          }`}
-        >
-          AMMUNITION
-        </TerminalText>
-      </TouchableOpacity>
-    </View>
-  );
-
   const renderVisitsTab = () => {
     const visitStats = calculateVisitStats();
     return (
@@ -527,7 +481,11 @@ export default function StatsScreen() {
 
   return (
     <View className="flex-1 bg-terminal-bg p-4">
-      {renderTabBar()}
+      <TabBar
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabPress={(tabId) => setActiveTab(tabId as TabType)}
+      />
       {activeTab === "visits" && renderVisitsTab()}
       {activeTab === "firearms" && renderFirearmsTab()}
       {activeTab === "ammunition" && renderAmmunitionTab()}
