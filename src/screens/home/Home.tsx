@@ -103,25 +103,21 @@ export default function HomeScreen() {
   const renderFirearmItem = ({ item }: { item: FirearmStorage }) => (
     <TouchableOpacity
       onPress={() => navigation.navigate("FirearmDetails", { id: item.id })}
-      className="bg-terminal-bg border border-terminal-border p-4 mb-2"
+      className="bg-terminal-bg border border-terminal-border p-4 mb-4"
     >
-      <View className="flex-row justify-between items-center">
-        <View className="flex-row items-center">
-          <FirearmImage
-            photoUri={item.photos?.[0]}
-            size={60}
-            className="mr-4"
-          />
-          <View>
-            <TerminalText className="text-lg">{item.modelName}</TerminalText>
-            <TerminalText className="text-terminal-dim">
-              {item.caliber}
+      <View className="flex-row items-start">
+        <FirearmImage photoUri={item.photos?.[0]} size={60} className="mr-4" />
+        <View className="flex-1">
+          <View className="flex-row justify-between">
+            <TerminalText className="text-lg flex-1" numberOfLines={1}>
+              {item.modelName} ({item.caliber})
+            </TerminalText>
+            <TerminalText className="text-terminal-dim ml-2">
+              {item.roundsFired} rounds
             </TerminalText>
           </View>
-        </View>
-        <View className="items-end">
-          <TerminalText className="text-terminal-dim">
-            {item.roundsFired} rounds
+          <TerminalText className="text-terminal-dim text-xs mt-1">
+            Added: {new Date(item.createdAt).toLocaleDateString()}
           </TerminalText>
         </View>
       </View>
