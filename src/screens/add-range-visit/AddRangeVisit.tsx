@@ -31,7 +31,7 @@ export default function AddRangeVisitScreen() {
   const [ammunition, setAmmunition] = useState<AmmunitionStorage[]>([]);
   const [selectedFirearms, setSelectedFirearms] = useState<string[]>([]);
   const [ammunitionUsed, setAmmunitionUsed] = useState<{
-    [key: string]: { ammunitionId: string; rounds: number };
+    [key: string]: { ammunitionId?: string; rounds: number | null };
   }>({});
   const [formData, setFormData] = useState<RangeVisitInput>({
     date: new Date().toISOString(),
@@ -87,7 +87,7 @@ export default function AddRangeVisitScreen() {
               ...prev,
               [borrowedKey]: {
                 ammunitionId: ammo.id,
-                rounds: 0, // User can edit this
+                rounds: null, // User can edit this
               },
             }));
           },
@@ -129,11 +129,23 @@ export default function AddRangeVisitScreen() {
     try {
       setSaving(true);
 
+      const finalAmmunitionUsed: RangeVisitInput["ammunitionUsed"] = {};
+      if (ammunitionUsed) {
+        for (const [key, value] of Object.entries(ammunitionUsed)) {
+          if (value.rounds && value.rounds > 0 && value.ammunitionId) {
+            finalAmmunitionUsed[key] = {
+              ammunitionId: value.ammunitionId,
+              rounds: value.rounds,
+            };
+          }
+        }
+      }
+
       // Prepare the data for validation
       const visitData: RangeVisitInput = {
         ...formData,
         firearmsUsed: selectedFirearms,
-        ammunitionUsed: ammunitionUsed,
+        ammunitionUsed: finalAmmunitionUsed,
       };
 
       // Validate form data using Zod
@@ -145,15 +157,17 @@ export default function AddRangeVisitScreen() {
       }
 
       // Validate ammunition quantities
-      for (const [firearmId, usage] of Object.entries(ammunitionUsed)) {
-        const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
-        if (!ammo) {
-          throw new Error(`Ammunition not found for firearm ${firearmId}`);
-        }
-        if (ammo.quantity < usage.rounds) {
-          throw new Error(
-            `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
-          );
+      if (finalAmmunitionUsed) {
+        for (const [firearmId, usage] of Object.entries(finalAmmunitionUsed)) {
+          const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
+          if (!ammo) {
+            throw new Error(`Ammunition not found for firearm ${firearmId}`);
+          }
+          if (ammo.quantity < usage.rounds) {
+            throw new Error(
+              `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
+            );
+          }
         }
       }
 
@@ -241,19 +255,17 @@ export default function AddRangeVisitScreen() {
                   <View className="flex-1 mr-2">
                     <TerminalInput
                       value={
-                        ammunitionUsed[firearm.id]?.rounds.toString() || "0"
+                        ammunitionUsed[firearm.id]?.rounds?.toString() ?? ""
                       }
                       onChangeText={(text) => {
                         const num = parseInt(text, 10);
-                        if (!isNaN(num)) {
-                          setAmmunitionUsed((prev) => ({
-                            ...prev,
-                            [firearm.id]: {
-                              ...prev[firearm.id],
-                              rounds: num,
-                            },
-                          }));
-                        }
+                        setAmmunitionUsed((prev) => ({
+                          ...prev,
+                          [firearm.id]: {
+                            ...prev[firearm.id],
+                            rounds: isNaN(num) ? null : num,
+                          },
+                        }));
                       }}
                       placeholder="Rounds used"
                       keyboardType="numeric"
@@ -351,15 +363,13 @@ export default function AddRangeVisitScreen() {
                   </TouchableOpacity>
                 </View>
                 <TerminalInput
-                  value={usage.rounds.toString()}
+                  value={usage.rounds?.toString() || ""}
                   onChangeText={(text) => {
                     const num = parseInt(text, 10);
-                    if (!isNaN(num)) {
-                      setAmmunitionUsed((prev) => ({
-                        ...prev,
-                        [key]: { ...prev[key], rounds: num },
-                      }));
-                    }
+                    setAmmunitionUsed((prev) => ({
+                      ...prev,
+                      [key]: { ...prev[key], rounds: isNaN(num) ? null : num },
+                    }));
                   }}
                   placeholder="Rounds used"
                   keyboardType="numeric"
