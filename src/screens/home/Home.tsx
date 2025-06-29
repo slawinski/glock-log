@@ -194,56 +194,41 @@ export default function HomeScreen() {
     }
   };
 
+  const Tab = ({
+    title,
+    active,
+    onPress,
+  }: {
+    title: string;
+    active: boolean;
+    onPress: () => void;
+  }) => (
+    <TouchableOpacity onPress={onPress} className="flex-1 items-center py-3">
+      <TerminalText
+        className={`${active ? "text-terminal-text" : "text-terminal-border"}`}
+      >
+        {active ? `[ ${title} ]` : title}
+      </TerminalText>
+    </TouchableOpacity>
+  );
+
   const renderTabBar = () => (
     <View className="flex-row justify-around mb-4 bg-terminal-bg border-b border-terminal-border">
-      <TouchableOpacity
+      <Tab
+        title="FIREARMS"
+        active={activeTab === "firearms"}
         onPress={() => setActiveTab("firearms")}
-        className={`flex-1 items-center py-3 ${
-          activeTab === "firearms" ? "border-b-2 border-terminal-text" : ""
-        }`}
-      >
-        <TerminalText
-          className={`${
-            activeTab === "firearms"
-              ? "text-terminal-text"
-              : "text-terminal-border"
-          }`}
-        >
-          FIREARMS
-        </TerminalText>
-      </TouchableOpacity>
-      <TouchableOpacity
+      />
+      <Tab
+        title="VISITS"
+        active={activeTab === "visits"}
         onPress={() => setActiveTab("visits")}
-        className={`flex-1 items-center py-3 ${
-          activeTab === "visits" ? "border-b-2 border-terminal-text" : ""
-        }`}
-      >
-        <TerminalText
-          className={`${
-            activeTab === "visits"
-              ? "text-terminal-text"
-              : "text-terminal-border"
-          }`}
-        >
-          VISITS
-        </TerminalText>
-      </TouchableOpacity>
-      <TouchableOpacity
+      />
+      <Tab
+        title="AMMUNITION"
+        active={activeTab === "ammunition"}
         onPress={() => setActiveTab("ammunition")}
-        className={`flex-1 items-center py-3 ${
-          activeTab === "ammunition" ? "border-b-2 border-terminal-text" : ""
-        }`}
-      >
-        <TerminalText
-          className={`${
-            activeTab === "ammunition"
-              ? "text-terminal-text"
-              : "text-terminal-border"
-          }`}
-        >
-          AMMUNITION
-        </TerminalText>
-      </TouchableOpacity>
+      />
     </View>
   );
 
