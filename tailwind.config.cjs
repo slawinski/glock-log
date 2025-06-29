@@ -16,7 +16,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        terminal: ["Courier New", "monospace"],
+        terminal: ["VT323_400Regular", "monospace"],
       },
       boxShadow: {
         terminal: "0 0 10px rgba(0, 255, 0, 0.3)",

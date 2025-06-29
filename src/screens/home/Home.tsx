@@ -4,7 +4,6 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  Button,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -38,18 +37,14 @@ export default function HomeScreen() {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
-        <Button
-          onPress={() => navigation.navigate("Stats")}
-          title="STATS"
-          color="#00ff00"
-        />
+        <TouchableOpacity onPress={() => navigation.navigate("Stats")}>
+          <TerminalText className="text-2xl">STATS</TerminalText>
+        </TouchableOpacity>
       ),
       headerRight: () => (
-        <Button
-          onPress={() => navigation.navigate(getAddScreen())}
-          title="+"
-          color="#00ff00"
-        />
+        <TouchableOpacity onPress={() => navigation.navigate(getAddScreen())}>
+          <TerminalText className="text-3xl">+</TerminalText>
+        </TouchableOpacity>
       ),
       title: "GLOCK LOG",
     });

@@ -10,7 +10,7 @@ export const TerminalText: React.FC<TerminalTextProps> = ({
   children,
   className = "",
 }) => (
-  <Text className={`text-terminal-text font-terminal ${className}`}>
+  <Text className={`text-terminal-text font-terminal text-lg ${className}`}>
     {children}
   </Text>
 );
