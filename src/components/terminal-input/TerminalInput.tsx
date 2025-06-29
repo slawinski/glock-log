@@ -82,7 +82,7 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
               {placeholder}
             </Text>
           ) : null}
-          {isFocused && !multiline && (
+          {isFocused && (
             <Text
               className="text-terminal-text font-terminal"
               style={{

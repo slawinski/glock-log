@@ -103,37 +103,43 @@ export default function FirearmDetailsScreen() {
     <ScrollView className="flex-1 bg-terminal-bg">
       <View className="p-4">
         <View className="mb-4">
-          <TerminalText className="text-lg">{firearm.modelName}</TerminalText>
-          <TerminalText className="text-terminal-dim">
-            {firearm.caliber}
-          </TerminalText>
+          <View className="flex-row items-center">
+            <TerminalText className="text-lg">MODEL: </TerminalText>
+            <TerminalText className="text-lg">{firearm.modelName}</TerminalText>
+          </View>
+          <View className="flex-row items-center">
+            <TerminalText>CALIBER: </TerminalText>
+            <TerminalText className="text-terminal-dim">
+              {firearm.caliber}
+            </TerminalText>
+          </View>
         </View>
 
-        <View className="mb-4">
-          <TerminalText>ROUNDS FIRED</TerminalText>
+        <View className="mb-4 flex-row">
+          <TerminalText>ROUNDS FIRED: </TerminalText>
           <TerminalText className="text-terminal-dim">
             {firearm.roundsFired} rounds
           </TerminalText>
         </View>
 
-        <View className="mb-4">
-          <TerminalText>DATE PURCHASED</TerminalText>
+        <View className="mb-4 flex-row">
+          <TerminalText>DATE PURCHASED: </TerminalText>
           <TerminalText className="text-terminal-dim">
             {new Date(firearm.datePurchased).toLocaleDateString()}
           </TerminalText>
         </View>
 
-        <View className="mb-4">
-          <TerminalText>AMOUNT PAID</TerminalText>
+        <View className="mb-4 flex-row">
+          <TerminalText>AMOUNT PAID: </TerminalText>
           <TerminalText className="text-terminal-dim">
             ${firearm.amountPaid.toFixed(2)}
           </TerminalText>
         </View>
 
         {firearm.notes && (
-          <View className="mb-4">
-            <TerminalText>NOTES</TerminalText>
-            <TerminalText className="text-terminal-dim">
+          <View className="mb-4 flex-row">
+            <TerminalText>NOTES: </TerminalText>
+            <TerminalText className="text-terminal-dim flex-shrink">
               {firearm.notes}
             </TerminalText>
           </View>

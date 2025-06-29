@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
@@ -13,6 +7,7 @@ import { RootStackParamList } from "../../app/App";
 import { storage } from "../../services/storage-new";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
 import { ImageGallery } from "../../components/image-gallery";
+import { TerminalButton } from "../../components/terminal-button/TerminalButton";
 import {
   FirearmStorage,
   RangeVisitStorage,
@@ -139,33 +134,31 @@ export default function RangeVisitDetailsScreen() {
 
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
-      <TerminalText className="text-2xl mb-6">RANGE VISIT DETAILS</TerminalText>
-
-      <View className="mb-4">
-        <TerminalText className="text-lg mb-2">LOCATION</TerminalText>
-        <TerminalText className="text-terminal-dim">
+      <View className="mb-4 flex-row">
+        <TerminalText className="text-lg">LOCATION: </TerminalText>
+        <TerminalText className="text-terminal-dim text-lg">
           {visit.location}
         </TerminalText>
       </View>
 
-      <View className="mb-4">
-        <TerminalText className="text-lg mb-2">DATE</TerminalText>
-        <TerminalText className="text-terminal-dim">
+      <View className="mb-4 flex-row">
+        <TerminalText className="text-lg">DATE: </TerminalText>
+        <TerminalText className="text-terminal-dim text-lg">
           {new Date(visit.date).toLocaleDateString()}
         </TerminalText>
       </View>
 
       <View className="mb-4">
-        <TerminalText className="text-lg mb-2">FIREARMS USED</TerminalText>
+        <TerminalText className="text-lg mb-2">FIREARMS USED:</TerminalText>
         {visit.firearmsUsed.map((firearmId) => {
           const firearm = firearms[firearmId];
           const usage = visit.ammunitionUsed?.[firearmId];
           const ammo = usage ? ammunition[usage.ammunitionId] : null;
 
           return (
-            <View key={firearmId} className="mb-2">
+            <View key={firearmId} className="mb-2 flex-row">
               <TerminalText>
-                {firearm?.modelName} ({firearm?.caliber})
+                {firearm?.modelName} ({firearm?.caliber}){" "}
               </TerminalText>
               {usage && ammo && (
                 <TerminalText className="text-terminal-dim">
@@ -184,9 +177,9 @@ export default function RangeVisitDetailsScreen() {
       </View>
 
       {visit.notes && (
-        <View className="mb-4">
-          <TerminalText className="text-lg mb-2">NOTES</TerminalText>
-          <TerminalText className="text-terminal-dim">
+        <View className="mb-4 flex-row">
+          <TerminalText className="text-lg">NOTES: </TerminalText>
+          <TerminalText className="text-terminal-dim text-lg flex-shrink">
             {visit.notes}
           </TerminalText>
         </View>
@@ -204,20 +197,14 @@ export default function RangeVisitDetailsScreen() {
       )}
 
       <View className="flex-row justify-between mb-4">
-        <TouchableOpacity
+        <TerminalButton
           onPress={() =>
             navigation.navigate("EditRangeVisit", { id: visit.id })
           }
-          className="border border-terminal-border p-3 flex-1 mr-2"
-        >
-          <TerminalText>EDIT</TerminalText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleDelete}
-          className="border border-terminal-border p-3 flex-1 ml-2"
-        >
-          <TerminalText className="text-terminal-error">DELETE</TerminalText>
-        </TouchableOpacity>
+          caption="EDIT"
+        />
+        <TerminalButton onPress={handleDelete} caption="DELETE" />
+        <TerminalButton onPress={() => navigation.goBack()} caption="BACK" />
       </View>
     </ScrollView>
   );

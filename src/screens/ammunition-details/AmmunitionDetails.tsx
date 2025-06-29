@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import { View, Alert, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
@@ -7,6 +7,7 @@ import { RootStackParamList } from "../../app/App";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
+import { TerminalButton } from "../../components/terminal-button/TerminalButton";
 
 type AmmunitionDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -102,63 +103,57 @@ export default function AmmunitionDetailsScreen() {
   return (
     <View className="flex-1 bg-terminal-bg p-4">
       <View className="mb-4">
-        <TerminalText className="text-lg">{ammunition.brand}</TerminalText>
-        <TerminalText className="text-terminal-dim">
-          {ammunition.caliber} - {ammunition.grain}gr
-        </TerminalText>
+        <View className="flex-row">
+          <TerminalText className="text-lg">BRAND: </TerminalText>
+          <TerminalText className="text-lg">{ammunition.brand}</TerminalText>
+        </View>
+        <View className="flex-row">
+          <TerminalText>DETAILS: </TerminalText>
+          <TerminalText className="text-terminal-dim">
+            {ammunition.caliber} - {ammunition.grain}gr
+          </TerminalText>
+        </View>
       </View>
 
-      <View className="mb-4">
-        <TerminalText>QUANTITY</TerminalText>
+      <View className="mb-4 flex-row">
+        <TerminalText>QUANTITY: </TerminalText>
         <TerminalText className="text-terminal-dim">
           {ammunition.quantity} rounds
         </TerminalText>
       </View>
 
-      <View className="mb-4">
-        <TerminalText>AMOUNT PAID</TerminalText>
+      <View className="mb-4 flex-row">
+        <TerminalText>AMOUNT PAID: </TerminalText>
         <TerminalText className="text-terminal-dim">
           ${ammunition.amountPaid.toFixed(2)}
         </TerminalText>
       </View>
 
-      <View className="mb-4">
-        <TerminalText>DATE PURCHASED</TerminalText>
+      <View className="mb-4 flex-row">
+        <TerminalText>DATE PURCHASED: </TerminalText>
         <TerminalText className="text-terminal-dim">
           {new Date(ammunition.datePurchased).toLocaleDateString()}
         </TerminalText>
       </View>
 
       {ammunition.notes && (
-        <View className="mb-4">
-          <TerminalText>NOTES</TerminalText>
-          <TerminalText className="text-terminal-dim">
+        <View className="mb-4 flex-row">
+          <TerminalText>NOTES: </TerminalText>
+          <TerminalText className="text-terminal-dim flex-shrink">
             {ammunition.notes}
           </TerminalText>
         </View>
       )}
 
       <View className="flex-row justify-between mt-4">
-        <TouchableOpacity
+        <TerminalButton
           onPress={() =>
             navigation.navigate("EditAmmunition", { id: ammunition.id })
           }
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>EDIT</TerminalText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleDelete}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>DELETE</TerminalText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>BACK</TerminalText>
-        </TouchableOpacity>
+          caption="EDIT"
+        />
+        <TerminalButton onPress={handleDelete} caption="DELETE" />
+        <TerminalButton onPress={() => navigation.goBack()} caption="BACK" />
       </View>
     </View>
   );
