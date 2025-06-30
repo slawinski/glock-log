@@ -18,7 +18,7 @@ interface TabProps {
 const Tab: React.FC<TabProps> = ({ title, active, onPress }) => (
   <TouchableOpacity onPress={onPress} className="flex-1 items-center py-3">
     <TerminalText
-      className={`${active ? "text-terminal-text" : "text-terminal-border"}`}
+      className={`${active ? "text-terminal-green" : "text-terminal-border"}`}
     >
       {active ? `[ ${title} ]` : title}
     </TerminalText>

@@ -53,7 +53,7 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
       } border-2 p-1 rounded-md border-transparent`}
     >
       <Text
-        className="text-terminal-text font-terminal mr-2"
+        className="text-terminal-green font-terminal mr-2"
         style={{ fontSize: 18, lineHeight: 20 }}
       >
         {">"}
@@ -65,7 +65,7 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
         <View className="flex-row items-baseline">
           {displayValue ? (
             <Text
-              className={`text-terminal-text font-terminal ${className}`}
+              className={`text-terminal-green font-terminal ${className}`}
               style={{ fontSize: 18, lineHeight: 20 }}
             >
               {displayValue}
@@ -84,7 +84,7 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
           ) : null}
           {isFocused && (
             <Text
-              className="text-terminal-text font-terminal"
+              className="text-terminal-green font-terminal"
               style={{
                 fontSize: 18,
                 lineHeight: 20,

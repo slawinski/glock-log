@@ -11,7 +11,7 @@ describe("TerminalText", () => {
   it("applies default className correctly", () => {
     const { getByText } = render(<TerminalText>Test Text</TerminalText>);
     const textElement = getByText("Test Text");
-    expect(textElement.props.className).toContain("text-terminal-text");
+    expect(textElement.props.className).toContain("text-terminal-green");
     expect(textElement.props.className).toContain("font-terminal");
   });
 
@@ -22,7 +22,7 @@ describe("TerminalText", () => {
     );
     const textElement = getByText("Test Text");
     expect(textElement.props.className).toContain(customClass);
-    expect(textElement.props.className).toContain("text-terminal-text");
+    expect(textElement.props.className).toContain("text-terminal-green");
     expect(textElement.props.className).toContain("font-terminal");
   });
 });

@@ -13,7 +13,7 @@ export const TerminalText: React.FC<TerminalTextProps> = ({
   numberOfLines,
 }) => (
   <Text
-    className={`text-terminal-text font-terminal text-lg ${className}`}
+    className={`font-terminal text-lg text-terminal-green ${className}`}
     numberOfLines={numberOfLines}
   >
     {children}

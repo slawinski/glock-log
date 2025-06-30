@@ -16,6 +16,7 @@ import {
 import { storage } from "../../services/storage-new";
 import { TabBar } from "../../components/terminal-tabs";
 import { TerminalButton } from "../../components/terminal-button";
+import { TerminalCalendar } from "../../components/terminal-calendar";
 
 type TabType = "visits" | "firearms" | "ammunition";
 
@@ -264,8 +265,13 @@ export default function StatsScreen() {
 
   const renderVisitsTab = () => {
     const visitStats = calculateVisitStats();
+    const visitDates = rangeVisits.map((visit) => new Date(visit.date));
     return (
       <ScrollView className="flex-1">
+        <View className="mb-4">
+          <TerminalCalendar highlightedDates={visitDates} />
+        </View>
+
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">TOTAL VISITS: </TerminalText>
           <TerminalText className="text-terminal-dim text-lg">
