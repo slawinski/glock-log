@@ -14,9 +14,17 @@ import {
   AmmunitionStorage,
 } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
-import { TabBar } from "../../components/terminal-tabs";
+import { TerminalTabs } from "../../components/terminal-tabs";
 import { TerminalButton } from "../../components/terminal-button";
 import { TerminalCalendar } from "../../components/terminal-calendar";
+import {
+  Ammunition,
+  Firearm,
+  RangeVisit,
+} from "../../validation/storageSchemas";
+import { AmmunitionDetails } from "../ammunition-details/AmmunitionDetails";
+import { FirearmDetails } from "../firearm-details/FirearmDetails";
+import { RangeVisitDetails } from "../range-visit-details/RangeVisitDetails";
 
 type TabType = "visits" | "firearms" | "ammunition";
 
@@ -42,7 +50,6 @@ export default function StatsScreen() {
   }, []);
 
   useEffect(() => {
-    // Initialize visible firearms with all firearms when data is loaded
     if (firearms.length > 0) {
       setVisibleFirearms(new Set(firearms.map((f) => f.id)));
     }
@@ -51,7 +58,6 @@ export default function StatsScreen() {
   const toggleFirearm = (firearmId: string) => {
     setVisibleFirearms((prev) => {
       const newSet = new Set(prev);
-      // If trying to deselect the last visible firearm, select all instead
       if (newSet.has(firearmId) && newSet.size === 1) {
         return new Set(firearms.map((f) => f.id));
       }
@@ -65,11 +71,9 @@ export default function StatsScreen() {
   };
 
   const toggleAllFirearms = () => {
-    // If all firearms are selected, deselect all
     if (visibleFirearms.size === firearms.length) {
       setVisibleFirearms(new Set());
     } else {
-      // Otherwise, select all firearms
       setVisibleFirearms(new Set(firearms.map((f) => f.id)));
     }
   };
@@ -105,9 +109,8 @@ export default function StatsScreen() {
       return acc;
     }, {} as Record<string, number>);
     const mostCommonCaliber =
-      Object.entries(caliberCounts).sort(
-        ([, a], [, b]) => (b as number) - (a as number)
-      )[0]?.[0] || "None";
+      Object.entries(caliberCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ||
+      "None";
     const mostUsedFirearm = firearms.sort(
       (a, b) => b.roundsFired - a.roundsFired
     )[0];
@@ -120,29 +123,24 @@ export default function StatsScreen() {
   };
 
   const calculateFirearmRoundsTimeline = () => {
-    // Sort visits by date
     const sortedVisits = [...rangeVisits].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
-    // Create a map to track running totals for each firearm
     const runningTotals = new Map<string, number[]>();
     const labels: string[] = [];
 
-    // Initialize running totals for each firearm
     firearms.forEach((firearm) => {
       runningTotals.set(firearm.id, []);
     });
 
-    // Process each visit
     sortedVisits.forEach((visit) => {
       const date = new Date(visit.date);
-      const month = date.getMonth() + 1; // getMonth() returns 0-11
+      const month = date.getMonth() + 1;
       const day = date.getDate();
       const monthYear = `${month}/${day}`;
       labels.push(monthYear);
 
-      // Update running totals for each firearm
       firearms.forEach((firearm) => {
         const currentTotals = runningTotals.get(firearm.id) || [];
         const lastTotal = currentTotals[currentTotals.length - 1] || 0;
@@ -154,14 +152,13 @@ export default function StatsScreen() {
       });
     });
 
-    // Define line styles and colors
     const lineStyles = [
-      { style: "solid", color: "#00ff00", label: "━━━" }, // Bright green
-      { style: "dashed", color: "#00cc00", label: "╍╍╍" }, // Medium green
-      { style: "dotted", color: "#009900", label: "┄┄┄" }, // Dark green
-      { style: "solid", color: "#00ff66", label: "━━━" }, // Light green
-      { style: "dashed", color: "#00ff33", label: "╍╍╍" }, // Bright green with dash
-      { style: "dotted", color: "#00cc66", label: "┄┄┄" }, // Medium green with dots
+      { style: "solid", color: "#00ff00", label: "━━━" },
+      { style: "dashed", color: "#00cc00", label: "╍╍╍" },
+      { style: "dotted", color: "#009900", label: "┄┄┄" },
+      { style: "solid", color: "#00ff66", label: "━━━" },
+      { style: "dashed", color: "#00ff33", label: "╍╍╍" },
+      { style: "dotted", color: "#00cc66", label: "┄┄┄" },
     ];
 
     return {
@@ -200,15 +197,14 @@ export default function StatsScreen() {
       (sum, ammo) => sum + ammo.amountPaid,
       0
     );
-    const costPerRound = totalSpent / totalRounds;
+    const costPerRound = totalRounds > 0 ? totalSpent / totalRounds : 0;
     const caliberCounts = ammunition.reduce((acc, ammo) => {
       acc[ammo.caliber] = (acc[ammo.caliber] || 0) + ammo.quantity;
       return acc;
     }, {} as Record<string, number>);
     const mostStockedCaliber =
-      Object.entries(caliberCounts).sort(
-        ([, a], [, b]) => (b as number) - (a as number)
-      )[0]?.[0] || "None";
+      Object.entries(caliberCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ||
+      "None";
 
     return {
       totalRounds,
@@ -227,9 +223,8 @@ export default function StatsScreen() {
       return acc;
     }, {} as Record<string, number>);
     const busiestMonth =
-      Object.entries(visitsByMonth).sort(
-        ([, a], [, b]) => (b as number) - (a as number)
-      )[0]?.[0] || "None";
+      Object.entries(visitsByMonth).sort(([, a], [, b]) => b - a)[0]?.[0] ||
+      "None";
 
     const totalRoundsFired = rangeVisits.reduce((sum, visit) => {
       return (
@@ -241,25 +236,22 @@ export default function StatsScreen() {
       );
     }, 0);
 
-    const locationCounts = rangeVisits.reduce((acc, visit) => {
-      if (visit.location) {
-        acc[visit.location] = (acc[visit.location] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>);
-
     const mostVisitedLocation =
-      Object.entries(locationCounts).sort(
-        ([, a], [, b]) => (b as number) - (a as number)
-      )[0]?.[0] || "None";
+      Object.entries(
+        rangeVisits.reduce((acc, visit) => {
+          acc[visit.location] = (acc[visit.location] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      ).sort(([, a], [, b]) => b - a)[0]?.[0] || "None";
+
+    const averageRoundsPerVisit =
+      rangeVisits.length > 0 ? totalRoundsFired / rangeVisits.length : 0;
 
     return {
-      totalVisits: rangeVisits.length,
+      busiestMonth,
       totalRoundsFired,
       mostVisitedLocation,
-      averageRoundsPerVisit:
-        rangeVisits.length > 0 ? totalRoundsFired / rangeVisits.length : 0,
-      busiestMonth,
+      averageRoundsPerVisit,
     };
   };
 
@@ -274,7 +266,7 @@ export default function StatsScreen() {
 
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">TOTAL VISITS: </TerminalText>
-          <TerminalText>{visitStats.totalVisits}</TerminalText>
+          <TerminalText>{rangeVisits.length}</TerminalText>
         </View>
 
         <View className="mb-4 flex-row">
@@ -462,8 +454,8 @@ export default function StatsScreen() {
   }
 
   return (
-    <View className="flex-1 bg-terminal-bg p-4">
-      <TabBar
+    <View className="flex-1 p-4 bg-terminal-bg">
+      <TerminalTabs
         tabs={TABS}
         activeTab={activeTab}
         onTabPress={(tabId) => setActiveTab(tabId as TabType)}

@@ -17,21 +17,27 @@ interface TabProps {
 
 const Tab: React.FC<TabProps> = ({ title, active, onPress }) => (
   <TouchableOpacity onPress={onPress} className="flex-1 items-center py-3">
-    <TerminalText
-      className={`${active ? "text-terminal-green" : "text-terminal-border"}`}
-    >
-      {active ? `[ ${title} ]` : title}
-    </TerminalText>
+    {active ? (
+      <TerminalText className="text-terminal-green">
+        [{" "}
+        <TerminalText className="bg-terminal-green text-terminal-bg">
+          {title}
+        </TerminalText>{" "}
+        ]
+      </TerminalText>
+    ) : (
+      <TerminalText className="text-terminal-border">{title}</TerminalText>
+    )}
   </TouchableOpacity>
 );
 
-interface TabBarProps {
+interface TerminalTabsProps {
   tabs: TabConfig[];
   activeTab: TabId;
   onTabPress: (tabId: TabId) => void;
 }
 
-export const TabBar: React.FC<TabBarProps> = ({
+export const TerminalTabs: React.FC<TerminalTabsProps> = ({
   tabs,
   activeTab,
   onTabPress,

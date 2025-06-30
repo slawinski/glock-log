@@ -17,7 +17,7 @@ import { storage } from "../../services/storage-new";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
 import FirearmImage from "../../components/firearm-image/FirearmImage";
 import { HeaderButton } from "../../components/terminal-button";
-import { TabBar } from "../../components/terminal-tabs";
+import { TerminalTabs } from "../../components/terminal-tabs";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -288,13 +288,13 @@ export default function HomeScreen() {
   };
 
   return (
-    <View className="flex-1 bg-terminal-bg">
-      <TabBar
+    <View className="flex-1 p-4 bg-terminal-bg">
+      <TerminalTabs
         tabs={TABS}
         activeTab={activeTab}
         onTabPress={(tabId) => setActiveTab(tabId as TabType)}
       />
-      <View className="flex-1 p-4">{renderContent()}</View>
+      {renderContent()}
     </View>
   );
 }
