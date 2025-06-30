@@ -119,18 +119,25 @@ export default function HomeScreen() {
     >
       <View className="flex-row items-start">
         <FirearmImage photoUri={item.photos?.[0]} size={60} className="mr-4" />
-        <View className="flex-1">
-          <View className="flex-row justify-between">
-            <TerminalText className="text-lg flex-1" numberOfLines={1}>
+        <View className="flex-1 flex-row flex-wrap">
+          <View className="w-1/2 pr-2">
+            <TerminalText className="text-lg" numberOfLines={1}>
               {item.modelName} ({item.caliber})
             </TerminalText>
-            <TerminalText className="text-terminal-dim ml-2">
+          </View>
+          <View className="w-1/2 items-end">
+            <TerminalText className="text-terminal-dim">
               {item.roundsFired} rounds
             </TerminalText>
           </View>
-          <TerminalText className="text-terminal-dim text-xs mt-1">
-            Added: {new Date(item.createdAt).toLocaleDateString()}
-          </TerminalText>
+          <View className="w-1/2 pr-2 mt-1">
+            <TerminalText className="text-terminal-dim text-xs">
+              Added: {new Date(item.createdAt).toLocaleDateString()}
+            </TerminalText>
+          </View>
+          <View className="w-1/2 items-end justify-end">
+            <TerminalText className="text-lg">{">"}</TerminalText>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -148,17 +155,22 @@ export default function HomeScreen() {
         }
         className="bg-terminal-bg border border-terminal-border p-4 mb-2"
       >
-        <View className="flex-row justify-between items-center">
-          <View>
+        <View className="flex-row flex-wrap">
+          <View className="w-1/2 pr-2">
             <TerminalText className="text-lg">{item.location}</TerminalText>
+          </View>
+          <View className="w-1/2 items-end">
+            <TerminalText className="text-terminal-dim">
+              {totalRounds} rounds
+            </TerminalText>
+          </View>
+          <View className="w-1/2 pr-2 mt-1">
             <TerminalText className="text-terminal-dim">
               {new Date(item.date).toLocaleDateString()}
             </TerminalText>
           </View>
-          <View className="items-end">
-            <TerminalText className="text-terminal-dim">
-              {totalRounds} rounds
-            </TerminalText>
+          <View className="w-1/2 items-end justify-end">
+            <TerminalText className="text-lg">{">"}</TerminalText>
           </View>
         </View>
       </TouchableOpacity>
@@ -170,20 +182,22 @@ export default function HomeScreen() {
       onPress={() => navigation.navigate("AmmunitionDetails", { id: item.id })}
       className="bg-terminal-bg border border-terminal-border p-4 mb-2"
     >
-      <View className="flex-row justify-between items-center">
-        <View>
+      <View className="flex-row flex-wrap">
+        <View className="w-1/2 pr-2">
           <TerminalText className="text-lg">{item.brand}</TerminalText>
+        </View>
+        <View className="w-1/2 items-end">
+          <TerminalText className="text-terminal-dim">
+            {item.quantity} rounds
+          </TerminalText>
+        </View>
+        <View className="w-1/2 pr-2 mt-1">
           <TerminalText className="text-terminal-dim">
             {item.caliber} - {item.grain}gr
           </TerminalText>
         </View>
-        <View className="items-end">
-          <TerminalText className="text-terminal-dim">
-            {item.quantity} rounds
-          </TerminalText>
-          <TerminalText className="text-terminal-dim">
-            ${item.amountPaid.toFixed(2)}
-          </TerminalText>
+        <View className="w-1/2 items-end justify-end">
+          <TerminalText className="text-lg">{">"}</TerminalText>
         </View>
       </View>
     </TouchableOpacity>
