@@ -3,7 +3,6 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
-  Image,
   Alert,
   ActivityIndicator,
 } from "react-native";
@@ -13,6 +12,7 @@ import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
 import { storage } from "../../services/storage-new";
+import FirearmImage from "../../components/firearm-image/FirearmImage";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
 import { TerminalInput } from "../../components/terminal-input/TerminalInput";
 import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
@@ -206,7 +206,7 @@ export default function EditFirearmScreen() {
         <ScrollView horizontal className="flex-row">
           {formData.photos?.map((photo, index) => (
             <View key={index} className="relative">
-              <Image source={{ uri: photo }} className="w-40 h-40 m-1" />
+              <FirearmImage photoUri={photo} size={160} className="m-1" />
               <TouchableOpacity
                 onPress={() => handleDeletePhoto(index)}
                 className="absolute top-0 right-0 bg-terminal-error p-1"

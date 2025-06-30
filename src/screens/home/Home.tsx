@@ -184,7 +184,9 @@ export default function HomeScreen() {
     >
       <View className="flex-row flex-wrap">
         <View className="w-1/2 pr-2">
-          <TerminalText className="text-lg">{item.brand}</TerminalText>
+          <TerminalText className="text-lg" numberOfLines={1}>
+            {item.brand} ({item.caliber})
+          </TerminalText>
         </View>
         <View className="w-1/2 items-end">
           <TerminalText className="text-terminal-dim">
@@ -193,7 +195,8 @@ export default function HomeScreen() {
         </View>
         <View className="w-1/2 pr-2 mt-1">
           <TerminalText className="text-terminal-dim">
-            {item.caliber} - {item.grain}gr
+            {item.grain}gr
+            {item.pricePerRound && ` - $${item.pricePerRound.toFixed(2)}/rd`}
           </TerminalText>
         </View>
         <View className="w-1/2 items-end justify-end">

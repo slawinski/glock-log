@@ -27,6 +27,7 @@ export const ammunitionInputSchema = z.object({
   amountPaid: z
     .number()
     .min(0, "Amount paid must be greater than or equal to 0"),
+  pricePerRound: z.number().optional(),
   notes: z.string().optional(),
   photos: z.array(z.string()).optional(),
 });

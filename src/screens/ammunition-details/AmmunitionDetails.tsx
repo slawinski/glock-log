@@ -129,6 +129,15 @@ export default function AmmunitionDetailsScreen() {
         </TerminalText>
       </View>
 
+      {ammunition.pricePerRound && (
+        <View className="mb-4 flex-row">
+          <TerminalText>PRICE PER ROUND: </TerminalText>
+          <TerminalText className="text-terminal-dim">
+            ${ammunition.pricePerRound.toFixed(2)}
+          </TerminalText>
+        </View>
+      )}
+
       <View className="mb-4 flex-row">
         <TerminalText>DATE PURCHASED: </TerminalText>
         <TerminalText className="text-terminal-dim">

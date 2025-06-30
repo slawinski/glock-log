@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, ScrollView, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -42,6 +42,15 @@ export default function AddAmmunitionScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
+  const [pricePerRound, setPricePerRound] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (formData.amountPaid && formData.quantity) {
+      setPricePerRound(formData.amountPaid / formData.quantity);
+    } else {
+      setPricePerRound(null);
+    }
+  }, [formData.amountPaid, formData.quantity]);
 
   const handleSubmit = async () => {
     try {
@@ -61,6 +70,7 @@ export default function AddAmmunitionScreen() {
         grain: formData.grain || "",
         quantity: formData.quantity || 0,
         amountPaid: formData.amountPaid || 0,
+        pricePerRound: pricePerRound,
       };
 
       // Validate form data using Zod
@@ -164,6 +174,14 @@ export default function AddAmmunitionScreen() {
           keyboardType="numeric"
         />
       </View>
+
+      {pricePerRound !== null && (
+        <View className="mb-4">
+          <TerminalText>
+            PRICE PER ROUND: ${pricePerRound.toFixed(2)}
+          </TerminalText>
+        </View>
+      )}
 
       <View className="mb-4">
         <TerminalText>NOTES</TerminalText>
