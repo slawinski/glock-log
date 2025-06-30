@@ -248,9 +248,7 @@ export default function AddRangeVisitScreen() {
             </TouchableOpacity>
             {selectedFirearms.includes(firearm.id) && (
               <View className="mt-2">
-                <TerminalText className="text-terminal-dim">
-                  AMMUNITION USED
-                </TerminalText>
+                <TerminalText>AMMUNITION USED</TerminalText>
                 <View className="flex-row items-center">
                   <View className="flex-1 mr-2">
                     <TerminalInput

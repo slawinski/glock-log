@@ -109,7 +109,7 @@ export default function AmmunitionDetailsScreen() {
         </View>
         <View className="flex-row">
           <TerminalText>DETAILS: </TerminalText>
-          <TerminalText className="text-terminal-dim">
+          <TerminalText>
             {ammunition.caliber} - {ammunition.grain}gr
           </TerminalText>
         </View>
@@ -117,30 +117,24 @@ export default function AmmunitionDetailsScreen() {
 
       <View className="mb-4 flex-row">
         <TerminalText>QUANTITY: </TerminalText>
-        <TerminalText className="text-terminal-dim">
-          {ammunition.quantity} rounds
-        </TerminalText>
+        <TerminalText>{ammunition.quantity} rounds</TerminalText>
       </View>
 
       <View className="mb-4 flex-row">
         <TerminalText>AMOUNT PAID: </TerminalText>
-        <TerminalText className="text-terminal-dim">
-          ${ammunition.amountPaid.toFixed(2)}
-        </TerminalText>
+        <TerminalText>${ammunition.amountPaid.toFixed(2)}</TerminalText>
       </View>
 
       {ammunition.pricePerRound && (
         <View className="mb-4 flex-row">
           <TerminalText>PRICE PER ROUND: </TerminalText>
-          <TerminalText className="text-terminal-dim">
-            ${ammunition.pricePerRound.toFixed(2)}
-          </TerminalText>
+          <TerminalText>${ammunition.pricePerRound.toFixed(2)}</TerminalText>
         </View>
       )}
 
       <View className="mb-4 flex-row">
         <TerminalText>DATE PURCHASED: </TerminalText>
-        <TerminalText className="text-terminal-dim">
+        <TerminalText>
           {new Date(ammunition.datePurchased).toLocaleDateString()}
         </TerminalText>
       </View>
@@ -148,7 +142,7 @@ export default function AmmunitionDetailsScreen() {
       {ammunition.notes && (
         <View className="mb-4 flex-row">
           <TerminalText>NOTES: </TerminalText>
-          <TerminalText className="text-terminal-dim flex-shrink">
+          <TerminalText className="flex-shrink">
             {ammunition.notes}
           </TerminalText>
         </View>

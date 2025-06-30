@@ -109,39 +109,31 @@ export default function FirearmDetailsScreen() {
           </View>
           <View className="flex-row items-center">
             <TerminalText>CALIBER: </TerminalText>
-            <TerminalText className="text-terminal-dim">
-              {firearm.caliber}
-            </TerminalText>
+            <TerminalText>{firearm.caliber}</TerminalText>
           </View>
         </View>
 
         <View className="mb-4 flex-row">
           <TerminalText>ROUNDS FIRED: </TerminalText>
-          <TerminalText className="text-terminal-dim">
-            {firearm.roundsFired} rounds
-          </TerminalText>
+          <TerminalText>{firearm.roundsFired} rounds</TerminalText>
         </View>
 
         <View className="mb-4 flex-row">
           <TerminalText>DATE PURCHASED: </TerminalText>
-          <TerminalText className="text-terminal-dim">
+          <TerminalText>
             {new Date(firearm.datePurchased).toLocaleDateString()}
           </TerminalText>
         </View>
 
         <View className="mb-4 flex-row">
           <TerminalText>AMOUNT PAID: </TerminalText>
-          <TerminalText className="text-terminal-dim">
-            ${firearm.amountPaid.toFixed(2)}
-          </TerminalText>
+          <TerminalText>${firearm.amountPaid.toFixed(2)}</TerminalText>
         </View>
 
         {firearm.notes && (
           <View className="mb-4 flex-row">
             <TerminalText>NOTES: </TerminalText>
-            <TerminalText className="text-terminal-dim flex-shrink">
-              {firearm.notes}
-            </TerminalText>
+            <TerminalText className="flex-shrink">{firearm.notes}</TerminalText>
           </View>
         )}
 

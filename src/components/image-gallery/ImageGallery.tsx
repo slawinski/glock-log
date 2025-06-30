@@ -42,7 +42,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   if (!images || images.length === 0) {
     return (
       <View className="items-center justify-center py-8">
-        <TerminalText className="text-terminal-dim">No images</TerminalText>
+        <TerminalText>No images</TerminalText>
       </View>
     );
   }

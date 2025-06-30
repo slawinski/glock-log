@@ -126,12 +126,10 @@ export default function HomeScreen() {
             </TerminalText>
           </View>
           <View className="w-1/2 items-end">
-            <TerminalText className="text-terminal-dim">
-              {item.roundsFired} rounds
-            </TerminalText>
+            <TerminalText>{item.roundsFired} rounds</TerminalText>
           </View>
           <View className="w-1/2 pr-2 mt-1">
-            <TerminalText className="text-terminal-dim text-xs">
+            <TerminalText>
               Added: {new Date(item.createdAt).toLocaleDateString()}
             </TerminalText>
           </View>
@@ -160,12 +158,10 @@ export default function HomeScreen() {
             <TerminalText className="text-lg">{item.location}</TerminalText>
           </View>
           <View className="w-1/2 items-end">
-            <TerminalText className="text-terminal-dim">
-              {totalRounds} rounds
-            </TerminalText>
+            <TerminalText>{totalRounds} rounds</TerminalText>
           </View>
           <View className="w-1/2 pr-2 mt-1">
-            <TerminalText className="text-terminal-dim">
+            <TerminalText>
               {new Date(item.date).toLocaleDateString()}
             </TerminalText>
           </View>
@@ -189,12 +185,10 @@ export default function HomeScreen() {
           </TerminalText>
         </View>
         <View className="w-1/2 items-end">
-          <TerminalText className="text-terminal-dim">
-            {item.quantity} rounds
-          </TerminalText>
+          <TerminalText>{item.quantity} rounds</TerminalText>
         </View>
         <View className="w-1/2 pr-2 mt-1">
-          <TerminalText className="text-terminal-dim">
+          <TerminalText>
             {item.pricePerRound && `$${item.pricePerRound.toFixed(2)}/rd`}
           </TerminalText>
         </View>
@@ -255,9 +249,7 @@ export default function HomeScreen() {
             refreshing={false}
             ListEmptyComponent={
               <View className="flex-1 justify-center items-center mt-8">
-                <TerminalText className="text-terminal-dim">
-                  NO FIREARMS FOUND
-                </TerminalText>
+                <TerminalText>NO FIREARMS FOUND</TerminalText>
               </View>
             }
           />
@@ -272,9 +264,7 @@ export default function HomeScreen() {
             refreshing={false}
             ListEmptyComponent={
               <View className="flex-1 justify-center items-center mt-8">
-                <TerminalText className="text-terminal-dim">
-                  NO RANGE VISITS FOUND
-                </TerminalText>
+                <TerminalText>NO RANGE VISITS FOUND</TerminalText>
               </View>
             }
           />
@@ -289,9 +279,7 @@ export default function HomeScreen() {
             refreshing={false}
             ListEmptyComponent={
               <View className="flex-1 justify-center items-center mt-8">
-                <TerminalText className="text-terminal-dim">
-                  NO AMMUNITION FOUND
-                </TerminalText>
+                <TerminalText>NO AMMUNITION FOUND</TerminalText>
               </View>
             }
           />

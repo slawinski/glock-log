@@ -274,23 +274,19 @@ export default function StatsScreen() {
 
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">TOTAL VISITS: </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg">
-            {visitStats.totalVisits}
-          </TerminalText>
+          <TerminalText>{visitStats.totalVisits}</TerminalText>
         </View>
 
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">TOTAL ROUNDS FIRED: </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg">
-            {visitStats.totalRoundsFired}
-          </TerminalText>
+          <TerminalText>{visitStats.totalRoundsFired}</TerminalText>
         </View>
 
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">
             MOST VISITED LOCATION:{" "}
           </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg flex-shrink">
+          <TerminalText className=" flex-shrink">
             {visitStats.mostVisitedLocation}
           </TerminalText>
         </View>
@@ -299,14 +295,14 @@ export default function StatsScreen() {
           <TerminalText className="text-lg">
             AVERAGE ROUNDS PER VISIT:{" "}
           </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg">
+          <TerminalText>
             {visitStats.averageRoundsPerVisit.toFixed(1)}
           </TerminalText>
         </View>
 
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">BUSIEST MONTH: </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg flex-shrink">
+          <TerminalText className=" flex-shrink">
             {visitStats.busiestMonth}
           </TerminalText>
         </View>
@@ -322,28 +318,24 @@ export default function StatsScreen() {
       <ScrollView className="flex-1">
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">TOTAL FIREARMS: </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg">
-            {firearms.length}
-          </TerminalText>
+          <TerminalText>{firearms.length}</TerminalText>
         </View>
 
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">TOTAL VALUE: </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg">
-            ${firearmStats.totalValue.toFixed(2)}
-          </TerminalText>
+          <TerminalText>${firearmStats.totalValue.toFixed(2)}</TerminalText>
         </View>
 
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">MOST COMMON CALIBER: </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg flex-shrink">
+          <TerminalText className=" flex-shrink">
             {firearmStats.mostCommonCaliber}
           </TerminalText>
         </View>
 
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">MOST USED FIREARM: </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg flex-shrink">
+          <TerminalText className=" flex-shrink">
             {firearmStats.mostUsedFirearm?.modelName} (
             {firearmStats.mostUsedFirearm?.roundsFired} rounds)
           </TerminalText>
@@ -395,7 +387,7 @@ export default function StatsScreen() {
             />
             <View className="mt-2">
               <TouchableOpacity onPress={toggleAllFirearms} className="mb-2">
-                <TerminalText className="text-terminal-dim">
+                <TerminalText>
                   {isAllSelected ? "[✓] ALL" : "[ ] ALL"}
                 </TerminalText>
               </TouchableOpacity>
@@ -405,7 +397,7 @@ export default function StatsScreen() {
                   onPress={() => toggleFirearm(firearm.id)}
                   className="mb-1"
                 >
-                  <TerminalText className="text-terminal-dim">
+                  <TerminalText>
                     {visibleFirearms.has(firearm.id) ? "[✓] " : "[ ] "}
                     {firearm.modelName}
                   </TerminalText>
@@ -424,30 +416,24 @@ export default function StatsScreen() {
       <ScrollView className="flex-1">
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">TOTAL ROUNDS: </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg">
-            {ammoStats.totalRounds}
-          </TerminalText>
+          <TerminalText>{ammoStats.totalRounds}</TerminalText>
         </View>
 
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">TOTAL SPENT: </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg">
-            ${ammoStats.totalSpent.toFixed(2)}
-          </TerminalText>
+          <TerminalText>${ammoStats.totalSpent.toFixed(2)}</TerminalText>
         </View>
 
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">COST PER ROUND: </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg">
-            ${ammoStats.costPerRound.toFixed(2)}
-          </TerminalText>
+          <TerminalText>${ammoStats.costPerRound.toFixed(2)}</TerminalText>
         </View>
 
         <View className="mb-4 flex-row">
           <TerminalText className="text-lg">
             MOST STOCKED CALIBER:{" "}
           </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg flex-shrink">
+          <TerminalText className=" flex-shrink">
             {ammoStats.mostStockedCaliber}
           </TerminalText>
         </View>

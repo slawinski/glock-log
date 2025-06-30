@@ -135,17 +135,13 @@ export default function RangeVisitDetailsScreen() {
   return (
     <ScrollView className="flex-1 bg-terminal-bg p-4">
       <View className="mb-4 flex-row">
-        <TerminalText className="text-lg">LOCATION: </TerminalText>
-        <TerminalText className="text-terminal-dim text-lg">
-          {visit.location}
-        </TerminalText>
+        <TerminalText>LOCATION: </TerminalText>
+        <TerminalText>{visit.location}</TerminalText>
       </View>
 
       <View className="mb-4 flex-row">
-        <TerminalText className="text-lg">DATE: </TerminalText>
-        <TerminalText className="text-terminal-dim text-lg">
-          {new Date(visit.date).toLocaleDateString()}
-        </TerminalText>
+        <TerminalText>DATE: </TerminalText>
+        <TerminalText>{new Date(visit.date).toLocaleDateString()}</TerminalText>
       </View>
 
       <View className="mb-4">
@@ -161,7 +157,7 @@ export default function RangeVisitDetailsScreen() {
                 {firearm?.modelName} ({firearm?.caliber}){" "}
               </TerminalText>
               {usage && ammo && (
-                <TerminalText className="text-terminal-dim">
+                <TerminalText>
                   {usage.rounds} rounds of {ammo.brand} {ammo.caliber}{" "}
                   {ammo.grain}gr
                 </TerminalText>
@@ -170,18 +166,14 @@ export default function RangeVisitDetailsScreen() {
           );
         })}
         <View className="mt-4">
-          <TerminalText className="text-lg">
-            TOTAL ROUNDS FIRED: {totalRounds}
-          </TerminalText>
+          <TerminalText>TOTAL ROUNDS FIRED: {totalRounds}</TerminalText>
         </View>
       </View>
 
       {visit.notes && (
         <View className="mb-4 flex-row">
-          <TerminalText className="text-lg">NOTES: </TerminalText>
-          <TerminalText className="text-terminal-dim text-lg flex-shrink">
-            {visit.notes}
-          </TerminalText>
+          <TerminalText>NOTES: </TerminalText>
+          <TerminalText className="flex-shrink">{visit.notes}</TerminalText>
         </View>
       )}
 
