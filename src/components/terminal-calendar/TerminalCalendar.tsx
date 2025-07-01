@@ -47,20 +47,18 @@ export const TerminalCalendar: React.FC<TerminalCalendarProps> = ({
     const isCurrentMonth = day.getMonth() === currentDate.getMonth();
     const isHighlighted = highlightedDates.some((d) => isSameDay(d, day));
 
-    const props: { className?: string; style?: { color: string } } = {};
-
+    let viewClass = "flex-1 items-center justify-center aspect-square";
+    let textClass = "";
     if (isHighlighted) {
-      props.className = "bg-terminal-green text-terminal-bg";
+      textClass =
+        "bg-terminal-green text-terminal-bg px-1 min-w-[23px] text-center";
     } else if (!isCurrentMonth) {
-      props.style = { color: "#666666" };
+      textClass = "text-terminal-border";
     }
 
     return (
-      <View
-        key={index}
-        className="flex-1 items-center justify-center aspect-square"
-      >
-        <TerminalText {...props}>{format(day, "d")}</TerminalText>
+      <View key={index} className={viewClass}>
+        <TerminalText className={textClass}>{format(day, "d")}</TerminalText>
       </View>
     );
   };
