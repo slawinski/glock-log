@@ -60,6 +60,7 @@ export default function EditRangeVisitScreen() {
         // Convert storage data to input data
         const { photos, firearmsUsed, notes, ammunitionUsed } = visit;
         setFormData({
+          id: visit.id,
           date: visit.date,
           location: visit.location,
           photos: photos ?? [],
