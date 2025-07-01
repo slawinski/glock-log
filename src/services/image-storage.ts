@@ -1,178 +1,156 @@
 import * as FileSystem from "expo-file-system";
-import { MMKV } from "react-native-mmkv";
+import { StorageFactory } from "./storage-factory";
 
-// Create MMKV instance for storing image paths with error handling
-let imageStorage: MMKV | null = null;
+const IMAGE_PATHS_KEY = "image_paths";
 
-try {
-  imageStorage = new MMKV({
-    id: "glock-log-images",
-  });
-} catch (error) {
-  console.warn("MMKV initialization failed for image storage:", error);
-  // Fallback to using AsyncStorage or other storage method
-}
-
-// Constants
-const IMAGE_DIRECTORY = `${FileSystem.documentDirectory}images/`;
-
-// Ensure image directory exists
-const ensureImageDirectory = async (): Promise<void> => {
-  const dirInfo = await FileSystem.getInfoAsync(IMAGE_DIRECTORY);
-  if (!dirInfo.exists) {
-    await FileSystem.makeDirectoryAsync(IMAGE_DIRECTORY, {
-      intermediates: true,
-    });
-  }
-};
-
-// Generate unique filename for image
-const generateImageFilename = (
-  entityType: string,
-  entityId: string,
-  index: number
-): string => {
-  const timestamp = Date.now();
-  const randomSuffix = Math.random().toString(36).substring(2, 8);
-  return `${entityType}-${entityId}-${index}-${timestamp}-${randomSuffix}.jpg`;
-};
-
-// Save image to file system and return the file path
+/**
+ * Save image to file system and return the file path
+ * @param uri - The image URI to save
+ * @param entityType - The type of entity (firearm, ammunition, range-visit)
+ * @param entityId - The ID of the entity
+ * @returns Promise<string> - The saved file path
+ */
 export const saveImageToFileSystem = async (
-  imageUri: string,
-  entityType: "firearm" | "range-visit" | "ammunition",
-  entityId: string,
-  imageIndex: number
+  uri: string,
+  entityType: string,
+  entityId: string
 ): Promise<string> => {
   try {
-    await ensureImageDirectory();
+    const fileName = `${entityType}_${entityId}_${Date.now()}.jpg`;
+    const filePath = `${FileSystem.documentDirectory}images/${fileName}`;
 
-    const filename = generateImageFilename(entityType, entityId, imageIndex);
-    const destinationUri = `${IMAGE_DIRECTORY}${filename}`;
+    // Ensure images directory exists
+    const imagesDir = `${FileSystem.documentDirectory}images/`;
+    const dirInfo = await FileSystem.getInfoAsync(imagesDir);
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(imagesDir, { intermediates: true });
+    }
 
-    // Copy image to app's document directory
+    // Copy image to file system
     await FileSystem.copyAsync({
-      from: imageUri,
-      to: destinationUri,
+      from: uri,
+      to: filePath,
     });
 
-    return destinationUri;
+    return filePath;
   } catch (error) {
     console.error("Error saving image to file system:", error);
-    throw new Error("Failed to save image");
+    throw error;
   }
 };
 
-// Store image paths in MMKV
-export const storeImagePaths = (
-  entityType: "firearm" | "range-visit" | "ammunition",
+/**
+ * Store image paths for an entity
+ * @param entityType - The type of entity
+ * @param entityId - The ID of the entity
+ * @param imagePaths - Array of image paths
+ */
+export const storeImagePaths = async (
+  entityType: string,
   entityId: string,
   imagePaths: string[]
-): void => {
-  if (!imageStorage) {
-    console.warn("Image storage not available, skipping path storage");
-    return;
-  }
-
+): Promise<void> => {
   try {
-    const key = `${entityType}-${entityId}`;
-    imageStorage.set(key, JSON.stringify(imagePaths));
+    const storage = StorageFactory.getStorage();
+    const key = `${IMAGE_PATHS_KEY}_${entityType}_${entityId}`;
+    await storage.setItem(key, JSON.stringify(imagePaths));
   } catch (error) {
     console.error("Error storing image paths:", error);
+    throw error;
   }
 };
 
-// Get image paths from MMKV
-export const getImagePaths = (
-  entityType: "firearm" | "range-visit" | "ammunition",
+/**
+ * Get image paths for an entity
+ * @param entityType - The type of entity
+ * @param entityId - The ID of the entity
+ * @returns Promise<string[]> - Array of image paths
+ */
+export const getImagePaths = async (
+  entityType: string,
   entityId: string
-): string[] => {
-  if (!imageStorage) {
-    console.warn("Image storage not available, returning empty paths");
-    return [];
-  }
-
+): Promise<string[]> => {
   try {
-    const key = `${entityType}-${entityId}`;
-    const pathsJson = imageStorage.getString(key);
-    return pathsJson ? JSON.parse(pathsJson) : [];
+    const storage = StorageFactory.getStorage();
+    const key = `${IMAGE_PATHS_KEY}_${entityType}_${entityId}`;
+    const data = await storage.getItem(key);
+    return data ? JSON.parse(data) : [];
   } catch (error) {
     console.error("Error getting image paths:", error);
     return [];
   }
 };
 
-// Delete images from file system
+/**
+ * Delete images for an entity
+ * @param entityType - The type of entity
+ * @param entityId - The ID of the entity
+ */
 export const deleteImages = async (
-  entityType: "firearm" | "range-visit" | "ammunition",
+  entityType: string,
   entityId: string
 ): Promise<void> => {
   try {
-    const imagePaths = getImagePaths(entityType, entityId);
+    const imagePaths = await getImagePaths(entityType, entityId);
 
-    // Filter out placeholder images and delete only actual files
-    const filePathsToDelete = imagePaths.filter(
-      (path) => !path.startsWith("placeholder:")
-    );
-
-    // Delete each image file
-    for (const path of filePathsToDelete) {
-      const fileInfo = await FileSystem.getInfoAsync(path);
-      if (fileInfo.exists) {
-        await FileSystem.deleteAsync(path);
+    // Delete image files
+    for (const imagePath of imagePaths) {
+      try {
+        await FileSystem.deleteAsync(imagePath);
+      } catch (error) {
+        console.warn(`Failed to delete image: ${imagePath}`, error);
       }
     }
 
-    // Remove from MMKV storage
-    if (imageStorage) {
-      const key = `${entityType}-${entityId}`;
-      imageStorage.delete(key);
-    }
+    // Remove image paths from storage
+    const storage = StorageFactory.getStorage();
+    const key = `${IMAGE_PATHS_KEY}_${entityType}_${entityId}`;
+    await storage.removeItem(key);
   } catch (error) {
     console.error("Error deleting images:", error);
-    throw new Error("Failed to delete images");
+    throw error;
   }
 };
 
-// Get image info (size, exists, etc.)
-export const getImageInfo = async (imagePath: string) => {
-  try {
-    return await FileSystem.getInfoAsync(imagePath);
-  } catch (error) {
-    console.error("Error getting image info:", error);
-    return null;
-  }
-};
-
-// Clean up orphaned images (images that exist in file system but not in MMKV)
+/**
+ * Clean up orphaned images
+ * This function removes image files that are no longer referenced in storage
+ */
 export const cleanupOrphanedImages = async (): Promise<void> => {
   try {
-    await ensureImageDirectory();
+    const storage = StorageFactory.getStorage();
+    const allKeys = await storage.getAllKeys();
+    const imagePathKeys = allKeys.filter((key) =>
+      key.startsWith(IMAGE_PATHS_KEY)
+    );
 
-    const allFiles = await FileSystem.readDirectoryAsync(IMAGE_DIRECTORY);
-
-    if (!imageStorage) {
-      console.warn("Image storage not available, skipping cleanup");
-      return;
-    }
-
-    const allKeys = imageStorage.getAllKeys();
-
-    // Get all stored image paths from MMKV
-    const storedPaths = new Set<string>();
-    for (const key of allKeys) {
-      const pathsJson = imageStorage.getString(key);
-      if (pathsJson) {
-        const paths = JSON.parse(pathsJson);
-        paths.forEach((path: string) => storedPaths.add(path));
+    // Get all referenced image paths
+    const referencedPaths = new Set<string>();
+    for (const key of imagePathKeys) {
+      const data = await storage.getItem(key);
+      if (data) {
+        const paths = JSON.parse(data);
+        paths.forEach((path: string) => referencedPaths.add(path));
       }
     }
 
-    // Delete files that don't have corresponding MMKV entries
-    for (const file of allFiles) {
-      const filePath = `${IMAGE_DIRECTORY}${file}`;
-      if (!storedPaths.has(filePath)) {
-        await FileSystem.deleteAsync(filePath);
+    // Get all image files in the images directory
+    const imagesDir = `${FileSystem.documentDirectory}images/`;
+    const dirInfo = await FileSystem.getInfoAsync(imagesDir);
+    if (!dirInfo.exists) return;
+
+    const files = await FileSystem.readDirectoryAsync(imagesDir);
+
+    // Delete orphaned files
+    for (const file of files) {
+      const filePath = `${imagesDir}${file}`;
+      if (!referencedPaths.has(filePath)) {
+        try {
+          await FileSystem.deleteAsync(filePath);
+          console.log(`Deleted orphaned image: ${filePath}`);
+        } catch (error) {
+          console.warn(`Failed to delete orphaned image: ${filePath}`, error);
+        }
       }
     }
   } catch (error) {
@@ -180,16 +158,21 @@ export const cleanupOrphanedImages = async (): Promise<void> => {
   }
 };
 
-// Get total storage size
+/**
+ * Get total storage size used by images
+ * @returns Promise<number> - Total size in bytes
+ */
 export const getImageStorageSize = async (): Promise<number> => {
   try {
-    await ensureImageDirectory();
+    const imagesDir = `${FileSystem.documentDirectory}images/`;
+    const dirInfo = await FileSystem.getInfoAsync(imagesDir);
+    if (!dirInfo.exists) return 0;
 
-    const allFiles = await FileSystem.readDirectoryAsync(IMAGE_DIRECTORY);
+    const files = await FileSystem.readDirectoryAsync(imagesDir);
     let totalSize = 0;
 
-    for (const file of allFiles) {
-      const filePath = `${IMAGE_DIRECTORY}${file}`;
+    for (const file of files) {
+      const filePath = `${imagesDir}${file}`;
       const fileInfo = await FileSystem.getInfoAsync(filePath);
       if (fileInfo.exists && fileInfo.size) {
         totalSize += fileInfo.size;
@@ -198,7 +181,7 @@ export const getImageStorageSize = async (): Promise<number> => {
 
     return totalSize;
   } catch (error) {
-    console.error("Error calculating storage size:", error);
+    console.error("Error calculating image storage size:", error);
     return 0;
   }
 };

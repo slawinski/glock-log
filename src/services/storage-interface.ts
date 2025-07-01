@@ -7,7 +7,7 @@ export interface StorageInterface {
 }
 
 export interface StorageConfig {
-  type: "asyncstorage" | "mmkv";
+  type: "mmkv";
   encryptionKey?: string;
   id?: string;
 }

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text } from "react-native";
 import { StorageFactory } from "./storage-factory";
-import { getStorageConfig } from "./storage-config";
-import { StorageMigration } from "./storage-migration";
+import { STORAGE_CONFIG } from "./storage-config";
 
 interface StorageInitProps {
   children: React.ReactNode;
@@ -10,43 +9,42 @@ interface StorageInitProps {
 
 export const StorageInit: React.FC<StorageInitProps> = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isMigrating, setIsMigrating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeStorage = async () => {
       try {
+        console.log("Initializing storage...");
+
         // Configure storage factory
-        StorageFactory.configure(getStorageConfig());
+        StorageFactory.configure(STORAGE_CONFIG);
 
-        // Check if migration is needed
-        const needsMigration = await StorageMigration.checkMigrationNeeded();
-
-        if (needsMigration) {
-          setIsMigrating(true);
-          await StorageMigration.migrateFromAsyncStorageToMMKV();
-          // Optionally clear AsyncStorage after successful migration
-          // await StorageMigration.clearAsyncStorage();
-        }
+        // Test storage by getting an instance
+        StorageFactory.getStorage();
+        console.log("Storage initialized successfully");
 
         setIsInitialized(true);
       } catch (error) {
-        console.error("Storage initialization failed:", error);
-        // Fallback to AsyncStorage if MMKV fails
-        StorageFactory.configure({ type: "asyncstorage" });
-        setIsInitialized(true);
+        console.error("Failed to initialize storage:", error);
+        setError(error instanceof Error ? error.message : "Unknown error");
       }
     };
 
     initializeStorage();
   }, []);
 
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Failed to initialize storage: {error}</Text>
+      </View>
+    );
+  }
+
   if (!isInitialized) {
     return (
-      <View className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#00ff00" />
-        <Text className="text-green-500 mt-2 font-mono">
-          {isMigrating ? "Migrating data..." : "Initializing storage..."}
-        </Text>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Initializing storage...</Text>
       </View>
     );
   }

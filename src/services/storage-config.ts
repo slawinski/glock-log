@@ -2,10 +2,9 @@ import { StorageConfig } from "./storage-interface";
 
 // Storage configuration
 export const STORAGE_CONFIG: StorageConfig = {
-  type: "mmkv", // Change to 'asyncstorage' to fallback to AsyncStorage
-  // Optional: Add encryption for sensitive data
-  // encryptionKey: 'your-secret-key-here',
+  type: "mmkv",
   id: "glock-log-storage",
+  encryptionKey: "your-encryption-key-here", // Optional: Add encryption key for sensitive data
 };
 
 // Get storage configuration
