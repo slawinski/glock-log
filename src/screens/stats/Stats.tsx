@@ -45,9 +45,6 @@ export default function StatsScreen() {
   const toggleFirearm = (firearmId: string) => {
     setVisibleFirearms((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(firearmId) && newSet.size === 1) {
-        return new Set(firearms.map((f) => f.id));
-      }
       if (newSet.has(firearmId)) {
         newSet.delete(firearmId);
       } else {
@@ -347,7 +344,6 @@ export default function StatsScreen() {
                           strokeWidth: 0,
                         },
                       ],
-                legend: timelineData.legend,
               }}
               width={Dimensions.get("window").width - 32}
               height={220}
