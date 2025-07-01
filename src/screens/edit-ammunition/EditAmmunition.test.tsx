@@ -29,7 +29,7 @@ jest.mock("@react-navigation/native", () => {
       goBack: mockGoBack,
     }),
     useRoute: () => ({
-      params: { id: "test-id" },
+      params: { id: "ammo-1" },
     }),
   };
 });

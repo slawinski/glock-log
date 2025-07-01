@@ -7,6 +7,7 @@ import {
   getImageStorageSize,
 } from "../image-storage";
 import * as FileSystem from "expo-file-system";
+import { StorageFactory } from "../storage-factory";
 
 // Mock expo-file-system
 jest.mock("expo-file-system", () => ({
@@ -45,22 +46,16 @@ describe("Image Storage", () => {
       const mockUri = "file://mock/image.jpg";
       const entityType = "firearm";
       const entityId = "test-firearm-123";
-      const imageIndex = 0;
 
-      const result = await saveImageToFileSystem(
-        mockUri,
-        entityType,
-        entityId,
-        imageIndex
-      );
+      const result = await saveImageToFileSystem(mockUri, entityType, entityId);
 
       expect(FileSystem.makeDirectoryAsync).toHaveBeenCalled();
       expect(FileSystem.copyAsync).toHaveBeenCalledWith({
         from: mockUri,
-        to: expect.stringContaining(`${entityType}-${entityId}-${imageIndex}`),
+        to: expect.stringContaining(`${entityType}_${entityId}`),
       });
       expect(result).toMatch(
-        new RegExp(`${entityType}-${entityId}-${imageIndex}-\\d+-\\w+\\.jpg`)
+        new RegExp(`${entityType}_${entityId}_\\d+\\.jpg`)
       );
     });
 
@@ -70,8 +65,8 @@ describe("Image Storage", () => {
       );
 
       await expect(
-        saveImageToFileSystem("file://mock/image.jpg", "firearm", "test-id", 0)
-      ).rejects.toThrow("Failed to save image");
+        saveImageToFileSystem("file://mock/image.jpg", "firearm", "test-id")
+      ).rejects.toThrow("Copy failed");
     });
   });
 
@@ -94,14 +89,43 @@ describe("Image Storage", () => {
       const entityType = "firearm";
       const entityId = "test-firearm-123";
 
+      // Mock the storage and getImagePaths
+      const mockStorage = {
+        getItem: jest
+          .fn()
+          .mockResolvedValue(JSON.stringify(["/path/to/image.jpg"])),
+        removeItem: jest.fn().mockResolvedValue(undefined),
+        setItem: jest.fn().mockResolvedValue(undefined),
+        clear: jest.fn().mockResolvedValue(undefined),
+        getAllKeys: jest.fn().mockResolvedValue([]),
+      };
+      jest.spyOn(StorageFactory, "getStorage").mockReturnValue(mockStorage);
+
       await deleteImages(entityType, entityId);
 
-      expect(FileSystem.deleteAsync).toHaveBeenCalled();
+      expect(FileSystem.deleteAsync).toHaveBeenCalledWith("/path/to/image.jpg");
+      expect(mockStorage.removeItem).toHaveBeenCalled();
     });
   });
 
   describe("cleanupOrphanedImages", () => {
     it("should clean up orphaned images", async () => {
+      // Mock the storage
+      const mockStorage = {
+        getAllKeys: jest.fn().mockResolvedValue([]),
+        getItem: jest.fn().mockResolvedValue(null),
+        setItem: jest.fn().mockResolvedValue(undefined),
+        removeItem: jest.fn().mockResolvedValue(undefined),
+        clear: jest.fn().mockResolvedValue(undefined),
+      };
+      jest.spyOn(StorageFactory, "getStorage").mockReturnValue(mockStorage);
+
+      // Mock directory exists
+      (FileSystem.getInfoAsync as jest.Mock).mockResolvedValue({
+        exists: true,
+      });
+      (FileSystem.readDirectoryAsync as jest.Mock).mockResolvedValue([]);
+
       await cleanupOrphanedImages();
 
       expect(FileSystem.readDirectoryAsync).toHaveBeenCalled();

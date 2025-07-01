@@ -177,9 +177,9 @@ describe("EditRangeVisitScreen", () => {
     await waitFor(() => {
       const firearmButton = screen.getByText("AR-15");
       fireEvent.press(firearmButton);
-      const roundsInput = screen.getAllByPlaceholderText("Rounds used")[0];
-      fireEvent.changeText(roundsInput, "100");
-      expect(screen.getByDisplayValue("100")).toBeTruthy();
+      const roundsInput = screen.getAllByTestId("rounds-input")[0];
+      fireEvent.changeText(roundsInput, "123");
+      expect(roundsInput.props.value).toBe("123");
     });
   });
 

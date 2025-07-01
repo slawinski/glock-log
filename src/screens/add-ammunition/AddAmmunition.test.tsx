@@ -64,12 +64,12 @@ describe("AddAmmunitionScreen", () => {
   it("handles form input changes", () => {
     renderScreen();
 
-    const caliberInput = screen.getByPlaceholderText(/e.g., 9mm/);
-    const brandInput = screen.getByPlaceholderText(/e.g., Federal/);
-    const grainInput = screen.getByPlaceholderText(/e.g., 115/);
-    const quantityInput = screen.getByPlaceholderText(/e.g., 1000/);
-    const amountPaidInput = screen.getByPlaceholderText(/e.g., 299.99/);
-    const notesInput = screen.getByPlaceholderText(/Optional notes/);
+    const caliberInput = screen.getByTestId("caliber-input");
+    const brandInput = screen.getByTestId("brand-input");
+    const grainInput = screen.getByTestId("grain-input");
+    const quantityInput = screen.getByTestId("quantity-input");
+    const amountPaidInput = screen.getByTestId("amount-paid-input");
+    const notesInput = screen.getByTestId("notes-input");
 
     fireEvent.changeText(caliberInput, "9mm");
     fireEvent.changeText(brandInput, "Federal");
@@ -102,23 +102,16 @@ describe("AddAmmunitionScreen", () => {
   });
 
   it("saves ammunition when form is valid", async () => {
-    (storage.saveAmmunition as jest.Mock).mockResolvedValue(undefined);
+    (storage.saveAmmunition as jest.Mock).mockResolvedValueOnce({});
     renderScreen();
 
-    const caliberInput = screen.getByPlaceholderText(/e.g., 9mm/);
-    const brandInput = screen.getByPlaceholderText(/e.g., Federal/);
-    const grainInput = screen.getByPlaceholderText(/e.g., 115/);
-    const quantityInput = screen.getByPlaceholderText(/e.g., 1000/);
-    const amountPaidInput = screen.getByPlaceholderText(/e.g., 299.99/);
+    fireEvent.changeText(screen.getByTestId("caliber-input"), "9mm");
+    fireEvent.changeText(screen.getByTestId("brand-input"), "Federal");
+    fireEvent.changeText(screen.getByTestId("grain-input"), "115");
+    fireEvent.changeText(screen.getByTestId("quantity-input"), "1000");
+    fireEvent.changeText(screen.getByTestId("amount-paid-input"), "299.99");
 
-    fireEvent.changeText(caliberInput, "9mm");
-    fireEvent.changeText(brandInput, "Federal");
-    fireEvent.changeText(grainInput, "115");
-    fireEvent.changeText(quantityInput, "1000");
-    fireEvent.changeText(amountPaidInput, "299.99");
-
-    const saveButton = screen.getByText(/SAVE AMMUNITION/);
-    fireEvent.press(saveButton);
+    fireEvent.press(screen.getByText(/SAVE AMMUNITION/));
 
     await waitFor(() => {
       expect(storage.saveAmmunition).toHaveBeenCalledWith(
@@ -135,25 +128,18 @@ describe("AddAmmunitionScreen", () => {
   });
 
   it("shows error alert when saving fails", async () => {
-    (storage.saveAmmunition as jest.Mock).mockRejectedValue(
+    (storage.saveAmmunition as jest.Mock).mockRejectedValueOnce(
       new Error("Save failed")
     );
     renderScreen();
 
-    const caliberInput = screen.getByPlaceholderText(/e.g., 9mm/);
-    const brandInput = screen.getByPlaceholderText(/e.g., Federal/);
-    const grainInput = screen.getByPlaceholderText(/e.g., 115/);
-    const quantityInput = screen.getByPlaceholderText(/e.g., 1000/);
-    const amountPaidInput = screen.getByPlaceholderText(/e.g., 299.99/);
+    fireEvent.changeText(screen.getByTestId("caliber-input"), "9mm");
+    fireEvent.changeText(screen.getByTestId("brand-input"), "Federal");
+    fireEvent.changeText(screen.getByTestId("grain-input"), "115");
+    fireEvent.changeText(screen.getByTestId("quantity-input"), "1000");
+    fireEvent.changeText(screen.getByTestId("amount-paid-input"), "299.99");
 
-    fireEvent.changeText(caliberInput, "9mm");
-    fireEvent.changeText(brandInput, "Federal");
-    fireEvent.changeText(grainInput, "115");
-    fireEvent.changeText(quantityInput, "1000");
-    fireEvent.changeText(amountPaidInput, "299.99");
-
-    const saveButton = screen.getByText(/SAVE AMMUNITION/);
-    fireEvent.press(saveButton);
+    fireEvent.press(screen.getByText(/SAVE AMMUNITION/));
 
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(

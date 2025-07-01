@@ -203,6 +203,7 @@ export default function AddRangeVisitScreen() {
             setFormData((prev) => ({ ...prev, location: text }))
           }
           placeholder="Enter range location"
+          testID="location-input"
         />
       </View>
 
@@ -269,6 +270,7 @@ export default function AddRangeVisitScreen() {
                       }}
                       placeholder="Rounds used"
                       keyboardType="numeric"
+                      testID="rounds-input"
                     />
                   </View>
                   <View className="flex-1">
@@ -373,6 +375,7 @@ export default function AddRangeVisitScreen() {
                   }}
                   placeholder="Rounds used"
                   keyboardType="numeric"
+                  testID="rounds-input"
                 />
               </View>
             );

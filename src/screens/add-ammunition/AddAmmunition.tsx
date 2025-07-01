@@ -103,6 +103,7 @@ export default function AddAmmunitionScreen() {
             setFormData((prev) => ({ ...prev, caliber: text }))
           }
           placeholder="e.g., 9mm"
+          testID="caliber-input"
         />
       </View>
 
@@ -114,6 +115,7 @@ export default function AddAmmunitionScreen() {
             setFormData((prev) => ({ ...prev, brand: text }))
           }
           placeholder="e.g., Federal"
+          testID="brand-input"
         />
       </View>
 
@@ -126,6 +128,7 @@ export default function AddAmmunitionScreen() {
           }
           placeholder="e.g., 115"
           keyboardType="numeric"
+          testID="grain-input"
         />
       </View>
 
@@ -158,6 +161,7 @@ export default function AddAmmunitionScreen() {
           }}
           placeholder="e.g., 1000"
           keyboardType="numeric"
+          testID="quantity-input"
         />
       </View>
 
@@ -174,6 +178,7 @@ export default function AddAmmunitionScreen() {
           }}
           placeholder="e.g., 299.99"
           keyboardType="numeric"
+          testID="amount-paid-input"
         />
       </View>
 
@@ -194,6 +199,7 @@ export default function AddAmmunitionScreen() {
           }
           placeholder="Optional notes"
           multiline
+          testID="notes-input"
         />
       </View>
 

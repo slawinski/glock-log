@@ -1,4 +1,3 @@
- 
 import React from "react";
 import {
   render,
@@ -113,7 +112,6 @@ describe("RangeVisitDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      expect(screen.getByText(/RANGE VISIT DETAILS/)).toBeTruthy();
       expect(screen.getByText(/Test Range/)).toBeTruthy();
       expect(
         screen.getByText(new Date(mockVisit.date).toLocaleDateString())

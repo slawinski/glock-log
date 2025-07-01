@@ -162,7 +162,7 @@ describe("AddRangeVisitScreen", () => {
   it("handles form input changes", async () => {
     await renderScreen();
 
-    const locationInput = screen.getByPlaceholderText(/Enter range location/);
+    const locationInput = screen.getByTestId("location-input");
     fireEvent.changeText(locationInput, "Test Range");
     expect(locationInput.props.value).toBe("Test Range");
   });
@@ -171,7 +171,7 @@ describe("AddRangeVisitScreen", () => {
     await renderScreen();
 
     // Enter location first (required field)
-    const locationInput = screen.getByPlaceholderText(/Enter range location/);
+    const locationInput = screen.getByTestId("location-input");
     fireEvent.changeText(locationInput, "Test Range");
 
     // Select firearm
@@ -179,7 +179,7 @@ describe("AddRangeVisitScreen", () => {
     fireEvent.press(glock19Button);
 
     // Enter rounds
-    const roundsInput = screen.getByPlaceholderText(/Rounds used/);
+    const roundsInput = screen.getAllByTestId("rounds-input")[0];
     fireEvent.changeText(roundsInput, "100");
     fireEvent(roundsInput, "blur");
 
@@ -255,14 +255,14 @@ describe("AddRangeVisitScreen", () => {
   it("saves range visit when form is valid", async () => {
     await renderScreen();
 
-    const locationInput = screen.getByPlaceholderText(/Enter range location/);
+    const locationInput = screen.getByTestId("location-input");
     fireEvent.changeText(locationInput, "Test Range");
 
     // Select firearm
     const glock19Button = screen.getByText("Glock 19");
     fireEvent.press(glock19Button);
 
-    const roundsInput = screen.getByPlaceholderText(/Rounds used/);
+    const roundsInput = screen.getAllByTestId("rounds-input")[0];
     fireEvent.changeText(roundsInput, "100");
 
     // Select ammunition for the firearm
@@ -298,13 +298,13 @@ describe("AddRangeVisitScreen", () => {
     );
     await renderScreen();
 
-    const locationInput = screen.getByPlaceholderText(/Enter range location/);
+    const locationInput = screen.getByTestId("location-input");
     fireEvent.changeText(locationInput, "Test Range");
 
     const glock19Button = screen.getByText("Glock 19");
     fireEvent.press(glock19Button);
 
-    const roundsInput = screen.getByPlaceholderText(/Rounds used/);
+    const roundsInput = screen.getAllByTestId("rounds-input")[0];
     fireEvent.changeText(roundsInput, "100");
 
     // Select ammunition
@@ -352,7 +352,7 @@ describe("AddRangeVisitScreen", () => {
   it("adds a range visit with a borrowed firearm", async () => {
     await renderScreen();
 
-    const locationInput = screen.getByPlaceholderText(/Enter range location/);
+    const locationInput = screen.getByTestId("location-input");
     fireEvent.changeText(locationInput, "Test Range");
 
     const addBorrowedButton = screen.getByText(
@@ -368,9 +368,19 @@ describe("AddRangeVisitScreen", () => {
       );
     });
 
-    // After alert selection, a new input should appear.
-    const roundsInput = screen.getByPlaceholderText(/Rounds used/);
-    fireEvent.changeText(roundsInput, "50");
+    // Simulate user selecting the first ammunition option
+    const alertMock = Alert.alert as jest.Mock;
+    const alertButtons = alertMock.mock.calls[0][2];
+    alertButtons[0].onPress();
+
+    // Wait for the borrowed rounds input to appear
+    await waitFor(() =>
+      expect(screen.getAllByTestId("rounds-input").length).toBe(2)
+    );
+
+    // Fill in rounds for borrowed firearm
+    const borrowedRoundsInput = screen.getAllByTestId("rounds-input")[1];
+    fireEvent.changeText(borrowedRoundsInput, "50");
 
     const saveButton = screen.getByText(/SAVE/);
     fireEvent.press(saveButton);

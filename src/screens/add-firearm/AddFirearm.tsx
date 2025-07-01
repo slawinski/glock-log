@@ -151,6 +151,7 @@ export default function AddFirearmScreen() {
             setFormData((prev) => ({ ...prev, modelName: text }))
           }
           placeholder="e.g., Glock 19"
+          testID="model-name-input"
         />
       </View>
 
@@ -162,6 +163,7 @@ export default function AddFirearmScreen() {
             setFormData((prev) => ({ ...prev, caliber: text }))
           }
           placeholder="e.g., 9mm"
+          testID="caliber-input"
         />
       </View>
 
@@ -178,6 +180,7 @@ export default function AddFirearmScreen() {
           }}
           placeholder="Enter amount paid"
           keyboardType="numeric"
+          testID="amount-paid-input"
         />
       </View>
 
@@ -194,6 +197,7 @@ export default function AddFirearmScreen() {
           }}
           placeholder="e.g., 500"
           keyboardType="numeric"
+          testID="initial-rounds-input"
         />
       </View>
 

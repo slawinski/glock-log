@@ -129,7 +129,7 @@ describe("Storage Abstraction", () => {
 
     it("should handle errors gracefully", async () => {
       const error = new Error("MMKV error");
-      mockMMKV.setItem.mockImplementation(() => {
+      mockMMKV.set.mockImplementation(() => {
         throw error;
       });
 

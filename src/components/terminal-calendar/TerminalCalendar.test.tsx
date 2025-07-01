@@ -25,12 +25,8 @@ describe("TerminalCalendar", () => {
     const day10 = getByText("10");
     const day20 = getByText("20");
 
-    expect(day10.props.style).toContainEqual({
-      backgroundColor: "rgba(0, 255, 0, 1)",
-    });
-    expect(day20.props.style).toContainEqual({
-      backgroundColor: "rgba(0, 255, 0, 1)",
-    });
+    expect(day10.props.className).toContain("bg-terminal-green");
+    expect(day20.props.className).toContain("bg-terminal-green");
   });
 
   it("navigates to the next month", () => {

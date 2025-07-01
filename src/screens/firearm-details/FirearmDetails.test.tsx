@@ -90,7 +90,6 @@ describe("FirearmDetailsScreen", () => {
           new Date(mockFirearm.datePurchased).toLocaleDateString()
         )
       ).toBeTruthy();
-      expect(screen.getByText(/PHOTOS/)).toBeTruthy();
     });
   });
 

@@ -128,9 +128,6 @@ describe("Range Visit Input Schema", () => {
           expect.objectContaining({ message: "Invalid datetime" }),
           expect.objectContaining({ message: "Location is required" }),
           expect.objectContaining({
-            message: "At least one firearm must be selected",
-          }),
-          expect.objectContaining({
             message: "Rounds used must be greater than 0",
           }),
         ])

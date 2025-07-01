@@ -22,14 +22,14 @@ describe("TerminalInput", () => {
 
   it("renders with placeholder text", () => {
     const placeholder = "Enter text here";
-    const { getByPlaceholderText } = render(
+    const { getByText } = render(
       <TerminalInput
         value=""
         onChangeText={mockOnChangeText}
         placeholder={placeholder}
       />
     );
-    expect(getByPlaceholderText(placeholder)).toBeTruthy();
+    expect(getByText(placeholder)).toBeTruthy();
   });
 
   it("handles text input correctly", () => {
@@ -73,15 +73,14 @@ describe("TerminalInput", () => {
 
   it("applies custom className correctly", () => {
     const customClass = "custom-class";
-    const { getByTestId } = render(
+    const { getByText } = render(
       <TerminalInput
-        value=""
+        value="test value"
         onChangeText={mockOnChangeText}
         className={customClass}
-        testID="terminal-input"
       />
     );
-    const input = getByTestId("terminal-input");
-    expect(input.props.className).toContain(customClass);
+    const textElement = getByText("test value");
+    expect(textElement.props.className).toContain(customClass);
   });
 });

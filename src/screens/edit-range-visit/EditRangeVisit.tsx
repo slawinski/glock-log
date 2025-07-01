@@ -300,6 +300,7 @@ export default function EditRangeVisitScreen() {
                       }}
                       placeholder="Rounds used"
                       keyboardType="numeric"
+                      testID="rounds-input"
                     />
                   </View>
                   <View className="flex-1">

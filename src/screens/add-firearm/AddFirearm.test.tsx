@@ -58,7 +58,7 @@ describe("AddFirearmScreen", () => {
     expect(screen.getByText(/MODEL NAME/)).toBeTruthy();
     expect(screen.getByText(/CALIBER/)).toBeTruthy();
     expect(screen.getByText(/AMOUNT PAID/)).toBeTruthy();
-    expect(screen.getByText(/DATE PURCHASED/)).toBeTruthy();
+    expect(screen.getByText(/PURCHASE DATE/)).toBeTruthy();
     expect(screen.getByText(/ADD PHOTO/)).toBeTruthy();
     expect(screen.getByText(/CANCEL/)).toBeTruthy();
     expect(screen.getByText(/SAVE FIREARM/)).toBeTruthy();
@@ -67,9 +67,9 @@ describe("AddFirearmScreen", () => {
   it("handles form input changes", () => {
     renderScreen();
 
-    const modelNameInput = screen.getByPlaceholderText(/e.g., Glock 19/);
-    const caliberInput = screen.getByPlaceholderText(/e.g., 9mm/);
-    const amountPaidInput = screen.getByPlaceholderText(/Enter amount paid/);
+    const modelNameInput = screen.getByTestId("model-name-input");
+    const caliberInput = screen.getByTestId("caliber-input");
+    const amountPaidInput = screen.getByTestId("amount-paid-input");
 
     fireEvent.changeText(modelNameInput, "Glock 19");
     fireEvent.changeText(caliberInput, "9mm");
@@ -120,9 +120,9 @@ describe("AddFirearmScreen", () => {
     (storage.saveFirearm as jest.Mock).mockResolvedValue(undefined);
     renderScreen();
 
-    const modelNameInput = screen.getByPlaceholderText(/e.g., Glock 19/);
-    const caliberInput = screen.getByPlaceholderText(/e.g., 9mm/);
-    const amountPaidInput = screen.getByPlaceholderText(/Enter amount paid/);
+    const modelNameInput = screen.getByTestId("model-name-input");
+    const caliberInput = screen.getByTestId("caliber-input");
+    const amountPaidInput = screen.getByTestId("amount-paid-input");
 
     fireEvent.changeText(modelNameInput, "Glock 19");
     fireEvent.changeText(caliberInput, "9mm");
@@ -149,9 +149,9 @@ describe("AddFirearmScreen", () => {
     );
     renderScreen();
 
-    const modelNameInput = screen.getByPlaceholderText(/e.g., Glock 19/);
-    const caliberInput = screen.getByPlaceholderText(/e.g., 9mm/);
-    const amountPaidInput = screen.getByPlaceholderText(/Enter amount paid/);
+    const modelNameInput = screen.getByTestId("model-name-input");
+    const caliberInput = screen.getByTestId("caliber-input");
+    const amountPaidInput = screen.getByTestId("amount-paid-input");
 
     fireEvent.changeText(modelNameInput, "Glock 19");
     fireEvent.changeText(caliberInput, "9mm");
