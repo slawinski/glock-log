@@ -1,5 +1,5 @@
 import React from "react";
-import { render, fireEvent } from "@testing-library/react-native";
+import { render, fireEvent, act } from "@testing-library/react-native";
 import TerminalDatePicker from "../terminal-date-picker/TerminalDatePicker";
 
 describe("TerminalDatePicker", () => {
@@ -20,10 +20,10 @@ describe("TerminalDatePicker", () => {
     );
 
     expect(getByText("TEST DATE")).toBeTruthy();
-    expect(getByText("Mar 20, 2024")).toBeTruthy();
+    expect(getByText("20 mar 2024")).toBeTruthy();
   });
 
-  it("shows date picker when pressed", () => {
+  it("shows date picker when pressed", async () => {
     const { getByText } = render(
       <TerminalDatePicker
         value={mockDate}
@@ -32,7 +32,10 @@ describe("TerminalDatePicker", () => {
       />
     );
 
-    fireEvent.press(getByText("Mar 20, 2024"));
+    await act(async () => {
+      fireEvent.press(getByText("20 mar 2024"));
+    });
+
     // Note: We can't test the actual DateTimePicker as it's platform-specific
     // But we can verify the press handler was called
   });

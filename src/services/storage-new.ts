@@ -80,12 +80,11 @@ export const storage = {
 
         if (imageUrisToSave.length > 0) {
           const newImagePaths = await Promise.all(
-            imageUrisToSave.map(async (imageUri, index) => {
+            imageUrisToSave.map(async (imageUri) => {
               return await saveImageToFileSystem(
                 imageUri,
                 "firearm",
-                firearmId,
-                index
+                firearmId
               );
             })
           );
@@ -251,12 +250,11 @@ export const storage = {
       let savedImagePaths: string[] = [];
       if (visit.photos && visit.photos.length > 0) {
         savedImagePaths = await Promise.all(
-          visit.photos.map(async (imageUri, index) => {
+          visit.photos.map(async (imageUri) => {
             return await saveImageToFileSystem(
               imageUri,
               "range-visit",
-              visitId,
-              index
+              visitId
             );
           })
         );
