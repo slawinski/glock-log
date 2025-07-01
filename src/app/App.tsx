@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { View } from "react-native";
 import { useFonts, VT323_400Regular } from "@expo-google-fonts/vt323";
-import { ScanlinesOverlay } from "../components/scanlines-overlay";
+import { ScanlinesOverlay } from "../components";
 
 // Import screens
 import HomeScreen from "../screens/home/Home";

@@ -14,10 +14,12 @@ import {
   AmmunitionStorage,
 } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
-import { TerminalText } from "../../components/terminal-text/TerminalText";
-import FirearmImage from "../../components/firearm-image/FirearmImage";
-import { HeaderButton } from "../../components/terminal-button";
-import { TerminalTabs } from "../../components/terminal-tabs";
+import {
+  TerminalText,
+  HeaderButton,
+  TerminalTabs,
+  FirearmImage,
+} from "../../components";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

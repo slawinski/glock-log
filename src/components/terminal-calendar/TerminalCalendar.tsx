@@ -11,8 +11,7 @@ import {
   add,
   sub,
 } from "date-fns";
-import { TerminalText } from "../terminal-text/TerminalText";
-import { TerminalCalendarHeader } from "../terminal-calendar-header";
+import { TerminalText, TerminalCalendarHeader } from "../../components";
 
 interface TerminalCalendarProps {
   highlightedDates: Date[];

@@ -5,10 +5,12 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
 import { storage } from "../../services/storage-new";
-import { TerminalText } from "../../components/terminal-text/TerminalText";
-import { TerminalInput } from "../../components/terminal-input/TerminalInput";
-import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
-import { ImageGallery } from "../../components/image-gallery";
+import {
+  TerminalText,
+  TerminalInput,
+  TerminalDatePicker,
+  ImageGallery,
+} from "../../components";
 import {
   rangeVisitInputSchema,
   RangeVisitInput,

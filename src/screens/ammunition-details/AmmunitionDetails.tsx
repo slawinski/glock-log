@@ -6,8 +6,7 @@ import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
-import { TerminalText } from "../../components/terminal-text/TerminalText";
-import { TerminalButton } from "../../components/terminal-button/TerminalButton";
+import { TerminalText, TerminalButton } from "../../components";
 
 type AmmunitionDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { View, ActivityIndicator, ScrollView, Dimensions } from "react-native";
 import { LineChart, BarChart } from "react-native-chart-kit";
-import { TerminalText } from "../../components/terminal-text/TerminalText";
+import {
+  TerminalText,
+  TerminalTabs,
+  TerminalButton,
+  TerminalCalendar,
+  ChartToggles,
+} from "../../components";
 import {
   FirearmStorage,
   RangeVisitStorage,
   AmmunitionStorage,
 } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
-import { TerminalTabs } from "../../components/terminal-tabs";
-import { TerminalButton } from "../../components/terminal-button";
-import { TerminalCalendar } from "../../components/terminal-calendar";
-import { ChartToggles } from "../../components/chart-toggles";
 
 type TabType = "visits" | "firearms" | "ammunition";
 

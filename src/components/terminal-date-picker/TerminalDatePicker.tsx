@@ -15,7 +15,7 @@ type TerminalDatePickerProps = {
   allowClear?: boolean;
 };
 
-export default function TerminalDatePicker({
+export function TerminalDatePicker({
   value,
   onChange,
   label,
@@ -101,3 +101,5 @@ export default function TerminalDatePicker({
     </View>
   );
 }
+
+export default TerminalDatePicker;

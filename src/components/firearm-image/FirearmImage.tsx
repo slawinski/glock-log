@@ -9,7 +9,7 @@ interface FirearmImageProps {
   testID?: string;
 }
 
-export default function FirearmImage({
+export function FirearmImage({
   size = 120,
   className = "",
   photoUri,
@@ -41,3 +41,5 @@ export default function FirearmImage({
     </View>
   );
 }
+
+export default FirearmImage;

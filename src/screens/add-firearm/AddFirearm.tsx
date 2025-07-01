@@ -5,17 +5,19 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
 import { storage } from "../../services/storage-new";
-import { TerminalText } from "../../components/terminal-text/TerminalText";
-import { TerminalInput } from "../../components/terminal-input/TerminalInput";
-import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
-import { ImageGallery } from "../../components/image-gallery";
-import { PlaceholderImagePicker } from "../../components/placeholder-image-picker/PlaceholderImagePicker";
+import {
+  TerminalText,
+  TerminalInput,
+  TerminalDatePicker,
+  ImageGallery,
+  PlaceholderImagePicker,
+  TerminalButton,
+} from "../../components";
 import { PlaceholderImageKey } from "../../services/image-source-manager";
 import {
   firearmInputSchema,
   FirearmInput,
 } from "../../validation/inputSchemas";
-import { TerminalButton } from "../../components/terminal-button/TerminalButton";
 
 type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

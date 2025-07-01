@@ -12,15 +12,17 @@ import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
 import { storage } from "../../services/storage-new";
-import FirearmImage from "../../components/firearm-image/FirearmImage";
-import { TerminalText } from "../../components/terminal-text/TerminalText";
-import { TerminalInput } from "../../components/terminal-input/TerminalInput";
-import TerminalDatePicker from "../../components/terminal-date-picker/TerminalDatePicker";
+import {
+  FirearmImage,
+  TerminalText,
+  TerminalInput,
+  TerminalDatePicker,
+  TerminalButton,
+} from "../../components";
 import {
   firearmInputSchema,
   FirearmInput,
 } from "../../validation/inputSchemas";
-import { TerminalButton } from "../../components/terminal-button/TerminalButton";
 
 type EditFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,

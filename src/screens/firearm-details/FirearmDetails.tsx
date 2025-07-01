@@ -5,10 +5,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { storage } from "../../services/storage-new";
-import { TerminalText } from "../../components/terminal-text/TerminalText";
-import { ImageGallery } from "../../components/image-gallery";
+import { TerminalText, ImageGallery, TerminalButton } from "../../components";
 import { FirearmStorage } from "../../validation/storageSchemas";
-import { TerminalButton } from "../../components/terminal-button/TerminalButton";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
