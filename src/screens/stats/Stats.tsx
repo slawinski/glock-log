@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  ActivityIndicator,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
+import { View, ActivityIndicator, ScrollView, Dimensions } from "react-native";
 import { LineChart, BarChart } from "react-native-chart-kit";
 import { TerminalText } from "../../components/terminal-text/TerminalText";
 import {
@@ -17,6 +11,7 @@ import { storage } from "../../services/storage-new";
 import { TerminalTabs } from "../../components/terminal-tabs";
 import { TerminalButton } from "../../components/terminal-button";
 import { TerminalCalendar } from "../../components/terminal-calendar";
+import { ChartToggles } from "../../components/chart-toggles";
 
 type TabType = "visits" | "firearms" | "ammunition";
 
@@ -386,23 +381,16 @@ export default function StatsScreen() {
               }}
             />
             <View className="mt-2">
-              <TouchableOpacity onPress={toggleAllFirearms} className="mb-2">
-                <TerminalText>
-                  {isAllSelected ? "[✓] ALL" : "[ ] ALL"}
-                </TerminalText>
-              </TouchableOpacity>
-              {firearms.map((firearm) => (
-                <TouchableOpacity
-                  key={firearm.id}
-                  onPress={() => toggleFirearm(firearm.id)}
-                  className="mb-1"
-                >
-                  <TerminalText>
-                    {visibleFirearms.has(firearm.id) ? "[✓] " : "[ ] "}
-                    {firearm.modelName}
-                  </TerminalText>
-                </TouchableOpacity>
-              ))}
+              <ChartToggles
+                items={firearms.map((f) => ({
+                  id: f.id,
+                  title: f.modelName,
+                }))}
+                visibleItems={visibleFirearms}
+                onToggleItem={toggleFirearm}
+                onToggleAll={toggleAllFirearms}
+                isAllSelected={isAllSelected}
+              />
             </View>
           </View>
         )}
