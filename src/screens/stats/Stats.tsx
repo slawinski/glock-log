@@ -334,31 +334,6 @@ export default function StatsScreen() {
 
     return (
       <ScrollView className="flex-1">
-        <View className="mb-4 flex-row">
-          <TerminalText className="text-lg">TOTAL FIREARMS: </TerminalText>
-          <TerminalText>{firearms.length}</TerminalText>
-        </View>
-
-        <View className="mb-4 flex-row">
-          <TerminalText className="text-lg">TOTAL VALUE: </TerminalText>
-          <TerminalText>${firearmStats.totalValue.toFixed(2)}</TerminalText>
-        </View>
-
-        <View className="mb-4 flex-row">
-          <TerminalText className="text-lg">MOST COMMON CALIBER: </TerminalText>
-          <TerminalText className=" flex-shrink">
-            {firearmStats.mostCommonCaliber}
-          </TerminalText>
-        </View>
-
-        <View className="mb-4 flex-row">
-          <TerminalText className="text-lg">MOST USED FIREARM: </TerminalText>
-          <TerminalText className=" flex-shrink">
-            {firearmStats.mostUsedFirearm?.modelName} (
-            {firearmStats.mostUsedFirearm?.roundsFired} rounds)
-          </TerminalText>
-        </View>
-
         {timelineData.labels.length > 0 && (
           <View className="mb-4">
             <TerminalText className="text-lg mb-2">
@@ -431,6 +406,31 @@ export default function StatsScreen() {
             </View>
           </View>
         )}
+
+        <View className="mb-4 flex-row">
+          <TerminalText className="text-lg">TOTAL FIREARMS: </TerminalText>
+          <TerminalText>{firearms.length}</TerminalText>
+        </View>
+
+        <View className="mb-4 flex-row">
+          <TerminalText className="text-lg">TOTAL VALUE: </TerminalText>
+          <TerminalText>${firearmStats.totalValue.toFixed(2)}</TerminalText>
+        </View>
+
+        <View className="mb-4 flex-row">
+          <TerminalText className="text-lg">MOST COMMON CALIBER: </TerminalText>
+          <TerminalText className=" flex-shrink">
+            {firearmStats.mostCommonCaliber}
+          </TerminalText>
+        </View>
+
+        <View className="mb-4 flex-row">
+          <TerminalText className="text-lg">MOST USED FIREARM: </TerminalText>
+          <TerminalText className=" flex-shrink">
+            {firearmStats.mostUsedFirearm?.modelName} (
+            {firearmStats.mostUsedFirearm?.roundsFired} rounds)
+          </TerminalText>
+        </View>
       </ScrollView>
     );
   };
