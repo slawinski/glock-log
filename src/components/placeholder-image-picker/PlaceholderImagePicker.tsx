@@ -7,7 +7,7 @@ import {
 } from "../../services/image-source-manager";
 
 interface PlaceholderImagePickerProps {
-  onSelect: (imageName: PlaceholderImageKey) => void;
+  onSelect: (key: PlaceholderImageKey) => void;
 }
 
 export const PlaceholderImagePicker: React.FC<PlaceholderImagePickerProps> = ({

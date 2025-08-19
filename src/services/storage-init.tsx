@@ -14,14 +14,11 @@ export const StorageInit: React.FC<StorageInitProps> = ({ children }) => {
   useEffect(() => {
     const initializeStorage = async () => {
       try {
-        console.log("Initializing storage...");
-
         // Configure storage factory
         StorageFactory.configure(STORAGE_CONFIG);
 
         // Test storage by getting an instance
         StorageFactory.getStorage();
-        console.log("Storage initialized successfully");
 
         setIsInitialized(true);
       } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Alert, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -7,6 +7,7 @@ import { RootStackParamList } from "../../app/App";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
 import { TerminalText, TerminalButton } from "../../components";
+import { logAndGetUserError } from "../../services/error-handler";
 
 type AmmunitionDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -25,11 +26,7 @@ export default function AmmunitionDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchAmmunition();
-  }, [route.params?.id]);
-
-  const fetchAmmunition = async () => {
+  const fetchAmmunition = useCallback(async () => {
     try {
       setLoading(true);
       const ammunitionList = await storage.getAmmunition();
@@ -42,12 +39,20 @@ export default function AmmunitionDetailsScreen() {
         setError("Ammunition not found");
       }
     } catch (error) {
-      console.error("Error fetching ammunition:", error);
-      setError("Failed to load ammunition details");
+      const userMessage = logAndGetUserError(
+        error,
+        "AmmunitionDetails.fetchAmmunition",
+        "Failed to load ammunition details. Please try again."
+      );
+      setError(userMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [route.params?.id]);
+
+  useEffect(() => {
+    fetchAmmunition();
+  }, [fetchAmmunition]);
 
   const handleDelete = async () => {
     if (!ammunition) return;
@@ -68,11 +73,12 @@ export default function AmmunitionDetailsScreen() {
               await storage.deleteAmmunition(ammunition.id);
               navigation.goBack();
             } catch (error) {
-              console.error("Error deleting ammunition:", error);
-              Alert.alert(
-                "Error",
+              const userMessage = logAndGetUserError(
+                error,
+                "AmmunitionDetails.handleDelete",
                 "Failed to delete ammunition. Please try again."
               );
+              Alert.alert("Error", userMessage);
             }
           },
         },

@@ -32,7 +32,7 @@ const ChartToggle: React.FC<ChartToggleProps> = ({
 interface ChartTogglesProps {
   items: ChartToggleConfig[];
   visibleItems: Set<string>;
-  onToggleItem: (itemId: string) => void;
+  onToggleItem: (id: string) => void;
   onToggleAll: () => void;
   isAllSelected: boolean;
 }

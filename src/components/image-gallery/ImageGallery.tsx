@@ -6,7 +6,7 @@ import { resolveImageSource } from "../../services/image-source-manager";
 
 interface ImageGalleryProps {
   images: string[];
-  onDeleteImage?: (imageIndex: number) => void;
+  onDeleteImage?: (index: number) => void;
   size?: "small" | "medium" | "large";
   showDeleteButton?: boolean;
 }
@@ -63,7 +63,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             placeholderContentFit="cover"
             transition={200}
             onError={() => {
-              console.error(`Failed to load image: ${imageIdentifier}`);
+              // Image failed to load - this is handled by the Image component's placeholder
             }}
           />
           {showDeleteButton && onDeleteImage && (

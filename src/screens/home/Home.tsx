@@ -81,17 +81,12 @@ export default function HomeScreen() {
         setLoading(true);
       }
       setError(null);
-      console.log("Fetching data...");
 
       const [firearmsData, visitsData, ammunitionData] = await Promise.all([
         storage.getFirearms(),
         storage.getRangeVisits(),
         storage.getAmmunition(),
       ]);
-
-      console.log("Received firearms data:", firearmsData);
-      console.log("Received visits data:", visitsData);
-      console.log("Received ammunition data:", ammunitionData);
 
       setFirearms(firearmsData);
       setRangeVisits(visitsData);

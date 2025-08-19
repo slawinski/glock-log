@@ -19,6 +19,7 @@ import {
   deleteImages,
   getImagePaths,
 } from "./image-storage";
+import { handleStorageError, logAndGetUserError } from "./error-handler";
 
 const STORAGE_KEYS = {
   FIREARMS: "@glock-log:firearms",
@@ -52,7 +53,15 @@ function validateBeforeSave<T>(data: T, schema: z.ZodSchema<T>): T {
 
 // Helper function to generate a unique ID
 function generateId(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  // Generate a more secure random ID using crypto.getRandomValues if available
+  const timestamp = Date.now();
+  const randomPart = typeof crypto !== 'undefined' && crypto.getRandomValues
+    ? Array.from(crypto.getRandomValues(new Uint8Array(6)))
+        .map(b => b.toString(36))
+        .join('')
+    : Math.random().toString(36).slice(2, 11);
+  
+  return `${prefix}-${timestamp}-${randomPart}`;
 }
 
 export const storage = {
@@ -128,8 +137,8 @@ export const storage = {
       const storage = StorageFactory.getStorage();
       await storage.setItem(STORAGE_KEYS.FIREARMS, JSON.stringify(firearms));
     } catch (error) {
-      console.error("Error saving firearm:", error);
-      throw error;
+      const appError = handleStorageError(error, "save firearm");
+      throw new Error(appError.userMessage);
     }
   },
 
@@ -140,8 +149,8 @@ export const storage = {
       if (!data) return [];
       return validateAndParse(data, z.array(firearmStorageSchema));
     } catch (error) {
-      console.error("Error getting firearms:", error);
-      throw error;
+      const appError = handleStorageError(error, "load firearms");
+      throw new Error(appError.userMessage);
     }
   },
 
@@ -158,8 +167,8 @@ export const storage = {
         JSON.stringify(filteredFirearms)
       );
     } catch (error) {
-      console.error("Error deleting firearm:", error);
-      throw error;
+      const appError = handleStorageError(error, "delete firearm");
+      throw new Error(appError.userMessage);
     }
   },
 
@@ -202,8 +211,8 @@ export const storage = {
         JSON.stringify(ammunitionList)
       );
     } catch (error) {
-      console.error("Error saving ammunition:", error);
-      throw error;
+      const appError = handleStorageError(error, "save ammunition");
+      throw new Error(appError.userMessage);
     }
   },
 
@@ -214,8 +223,8 @@ export const storage = {
       if (!data) return [];
       return validateAndParse(data, z.array(ammunitionStorageSchema));
     } catch (error) {
-      console.error("Error getting ammunition:", error);
-      throw error;
+      const appError = handleStorageError(error, "load ammunition");
+      throw new Error(appError.userMessage);
     }
   },
 
@@ -229,8 +238,8 @@ export const storage = {
         JSON.stringify(filteredAmmunition)
       );
     } catch (error) {
-      console.error("Error deleting ammunition:", error);
-      throw error;
+      const appError = handleStorageError(error, "delete ammunition");
+      throw new Error(appError.userMessage);
     }
   },
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   TouchableOpacity,
@@ -42,13 +42,7 @@ export default function EditFirearmScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (route.params?.id) {
-      fetchFirearm();
-    }
-  }, [route.params?.id]);
-
-  const fetchFirearm = async () => {
+  const fetchFirearm = useCallback(async () => {
     try {
       setLoading(true);
       const firearms = await storage.getFirearms();
@@ -67,7 +61,13 @@ export default function EditFirearmScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [route.params?.id]);
+
+  useEffect(() => {
+    if (route.params?.id) {
+      fetchFirearm();
+    }
+  }, [route.params?.id, fetchFirearm]);
 
   const handleImagePick = () => {
     ImagePicker.launchImageLibrary(

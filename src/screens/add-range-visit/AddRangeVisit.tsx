@@ -84,7 +84,13 @@ export default function AddRangeVisitScreen() {
         ...availableAmmo.map((ammo) => ({
           text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
           onPress: () => {
-            const borrowedKey = `borrowed-${Date.now()}`;
+            const timestamp = Date.now();
+            const randomSuffix = typeof crypto !== 'undefined' && crypto.getRandomValues
+              ? Array.from(crypto.getRandomValues(new Uint8Array(2)))
+                  .map(b => b.toString(36))
+                  .join('')
+              : Math.random().toString(36).slice(2, 4);
+            const borrowedKey = `borrowed-${timestamp}-${randomSuffix}`;
             setAmmunitionUsed((prev) => ({
               ...prev,
               [borrowedKey]: {

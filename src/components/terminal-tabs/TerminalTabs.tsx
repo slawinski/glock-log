@@ -30,7 +30,7 @@ const Tab: React.FC<TabProps> = ({ title, active, onPress }) => (
 interface TerminalTabsProps {
   tabs: TabConfig[];
   activeTab: TabId;
-  onTabPress: (tabId: TabId) => void;
+  onTabPress: (id: TabId) => void;
 }
 
 export const TerminalTabs: React.FC<TerminalTabsProps> = ({

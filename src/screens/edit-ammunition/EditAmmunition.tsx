@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   ScrollView,
@@ -48,13 +48,7 @@ export default function EditAmmunitionScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (route.params?.id) {
-      fetchAmmunition();
-    }
-  }, [route.params?.id]);
-
-  const fetchAmmunition = async () => {
+  const fetchAmmunition = useCallback(async () => {
     try {
       setLoading(true);
       const ammunitionList = await storage.getAmmunition();
@@ -74,7 +68,13 @@ export default function EditAmmunitionScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [route.params?.id]);
+
+  useEffect(() => {
+    if (route.params?.id) {
+      fetchAmmunition();
+    }
+  }, [route.params?.id, fetchAmmunition]);
 
   const handleSubmit = async () => {
     if (!formData) return;

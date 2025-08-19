@@ -16,7 +16,13 @@ export const saveImageToFileSystem = async (
   entityId: string
 ): Promise<string> => {
   try {
-    const fileName = `${entityType}_${entityId}_${Date.now()}.jpg`;
+    const timestamp = Date.now();
+    const randomSuffix = typeof crypto !== 'undefined' && crypto.getRandomValues
+      ? Array.from(crypto.getRandomValues(new Uint8Array(3)))
+          .map(b => b.toString(36))
+          .join('')
+      : Math.random().toString(36).slice(2, 5);
+    const fileName = `${entityType}_${entityId}_${timestamp}_${randomSuffix}.jpg`;
     const filePath = `${FileSystem.documentDirectory}images/${fileName}`;
 
     // Ensure images directory exists
@@ -147,7 +153,7 @@ export const cleanupOrphanedImages = async (): Promise<void> => {
       if (!referencedPaths.has(filePath)) {
         try {
           await FileSystem.deleteAsync(filePath);
-          console.log(`Deleted orphaned image: ${filePath}`);
+          // Image cleanup - keep logging for maintenance purposes
         } catch (error) {
           console.warn(`Failed to delete orphaned image: ${filePath}`, error);
         }
