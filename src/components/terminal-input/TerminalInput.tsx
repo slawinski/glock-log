@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TextInput, Pressable, NativeSyntheticEvent, TextInputSelectionChangeEventData } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  NativeSyntheticEvent,
+  TextInputSelectionChangeEventData,
+} from "react-native";
 import { COLORS } from "../../services/constants";
 
 interface TerminalInputProps {
@@ -49,31 +56,20 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
   const displayValue =
     value === null || value === undefined ? "" : value.toString();
 
-  // Initialize cursor position when component mounts or when value is set from outside
+  // Update cursor position when text changes
   useEffect(() => {
-    // Only update cursor position when not focused (external value change)
-    if (!isFocused) {
-      setCursorPosition(displayValue.length);
-    }
-  }, [displayValue, isFocused]);
+    setCursorPosition(displayValue.length);
+  }, [displayValue]);
 
-  const handleSelectionChange = (event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+  const handleSelectionChange = (
+    event: NativeSyntheticEvent<TextInputSelectionChangeEventData>
+  ) => {
     const { start } = event.nativeEvent.selection;
-    // Ensure cursor position is within valid range
-    const validPosition = Math.max(0, Math.min(start, displayValue.length));
-    setCursorPosition(validPosition);
+    setCursorPosition(start);
     // Make cursor immediately visible when position changes
     if (isFocused) {
       setShowCursor(true);
     }
-  };
-
-  const handleFocus = () => {
-    setIsFocused(true);
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
   };
 
   return (
@@ -106,7 +102,7 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
               {placeholder}
             </Text>
           )}
-          
+
           {/* Show text content with cursor positioned correctly */}
           {isFocused || displayValue ? (
             <View className="flex-row items-baseline">
@@ -119,43 +115,28 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
                   {displayValue.slice(0, cursorPosition)}
                 </Text>
               )}
-              
-              {/* Character at cursor position (with inverted colors when focused) */}
-              {cursorPosition < displayValue.length ? (
+
+              {/* Cursor */}
+              {isFocused && (
                 <Text
-                  className={`font-terminal ${className}`}
+                  className="text-terminal-green font-terminal"
                   style={{
                     fontSize: 18,
                     lineHeight: 20,
-                    backgroundColor: isFocused && showCursor ? COLORS.TERMINAL_GREEN : COLORS.TRANSPARENT,
-                    color: isFocused && showCursor ? COLORS.TERMINAL_BG : COLORS.TERMINAL_GREEN,
+                    opacity: showCursor ? 1 : 0,
                   }}
                 >
-                  {displayValue[cursorPosition]}
+                  ▋
                 </Text>
-              ) : (
-                /* Cursor at end of text (traditional block cursor) */
-                isFocused && (
-                  <Text
-                    className="text-terminal-green font-terminal"
-                    style={{
-                      fontSize: 18,
-                      lineHeight: 20,
-                      opacity: showCursor ? 1 : 0,
-                    }}
-                  >
-                    ▋
-                  </Text>
-                )
               )}
-              
+
               {/* Text after cursor */}
-              {cursorPosition < displayValue.length - 1 && (
+              {cursorPosition < displayValue.length && (
                 <Text
                   className={`text-terminal-green font-terminal ${className}`}
                   style={{ fontSize: 18, lineHeight: 20 }}
                 >
-                  {displayValue.slice(cursorPosition + 1)}
+                  {displayValue.slice(cursorPosition)}
                 </Text>
               )}
             </View>
@@ -170,8 +151,8 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
           placeholder=""
           keyboardType={keyboardType}
           multiline={multiline}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           caretHidden
           style={{
             position: "absolute",
