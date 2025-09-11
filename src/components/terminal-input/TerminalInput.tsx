@@ -56,9 +56,16 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
   const displayValue =
     value === null || value === undefined ? "" : value.toString();
 
-  // Update cursor position when text changes
+  // Initialize cursor position when component first mounts
   useEffect(() => {
     setCursorPosition(displayValue.length);
+  }, []); // Only run on mount
+
+  // Reset cursor to start when value becomes empty
+  useEffect(() => {
+    if (displayValue.length === 0) {
+      setCursorPosition(0);
+    }
   }, [displayValue]);
 
   const handleSelectionChange = (
@@ -116,27 +123,45 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
                 </Text>
               )}
 
-              {/* Cursor */}
-              {isFocused && (
+              {/* Character at cursor position - highlighted when focused */}
+              {cursorPosition < displayValue.length ? (
                 <Text
                   className="text-terminal-green font-terminal"
-                  style={{
-                    fontSize: 18,
-                    lineHeight: 20,
-                    opacity: showCursor ? 1 : 0,
-                  }}
+                  style={
+                    {
+                      fontSize: 18,
+                      lineHeight: 20,
+                      backgroundColor:
+                        isFocused && showCursor ? "#00ff00" : "transparent",
+                      color: isFocused && showCursor ? "#0a0a0a" : "#00ff00",
+                    } as any
+                  }
                 >
-                  ▋
+                  {displayValue.charAt(cursorPosition)}
                 </Text>
+              ) : (
+                /* Show cursor at end of text when no character to highlight */
+                isFocused && (
+                  <Text
+                    className="text-terminal-green font-terminal"
+                    style={{
+                      fontSize: 18,
+                      lineHeight: 20,
+                      opacity: showCursor ? 1 : 0,
+                    }}
+                  >
+                    ▋
+                  </Text>
+                )
               )}
 
               {/* Text after cursor */}
-              {cursorPosition < displayValue.length && (
+              {cursorPosition < displayValue.length - 1 && (
                 <Text
                   className={`text-terminal-green font-terminal ${className}`}
                   style={{ fontSize: 18, lineHeight: 20 }}
                 >
-                  {displayValue.slice(cursorPosition)}
+                  {displayValue.slice(cursorPosition + 1)}
                 </Text>
               )}
             </View>
