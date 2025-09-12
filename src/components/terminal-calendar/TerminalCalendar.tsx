@@ -52,7 +52,7 @@ export const TerminalCalendar: React.FC<TerminalCalendarProps> = ({
       textClass =
         "bg-terminal-green text-terminal-bg px-1 min-w-[23px] text-center";
     } else if (!isCurrentMonth) {
-      textClass = "text-terminal-border";
+      textClass = "text-terminal-muted";
     }
 
     return (
