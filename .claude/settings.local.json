@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npx eslint:*)",
       "Bash(npx jest:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []
