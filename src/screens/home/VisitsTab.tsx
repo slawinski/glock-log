@@ -17,11 +17,11 @@ type Props = {
   refreshing: boolean;
 };
 
-export const VisitsTab: React.FC<Props> = ({
+export const VisitsTab = ({
   rangeVisits,
   onRefresh,
   refreshing,
-}) => {
+}: Props) => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
   const renderVisitItem = ({ item }: { item: RangeVisitStorage }) => {

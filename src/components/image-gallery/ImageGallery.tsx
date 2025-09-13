@@ -4,19 +4,19 @@ import { Image } from "expo-image";
 import { TerminalText } from "../terminal-text/TerminalText";
 import { resolveImageSource } from "../../services/image-source-manager";
 
-interface ImageGalleryProps {
+type Props = {
   images: string[];
   onDeleteImage?: (index: number) => void;
   size?: "small" | "medium" | "large";
   showDeleteButton?: boolean;
-}
+};
 
-export const ImageGallery: React.FC<ImageGalleryProps> = ({
+export const ImageGallery = ({
   images,
   onDeleteImage,
   size = "medium",
   showDeleteButton = false,
-}) => {
+}: Props) => {
   const getImageSize = () => {
     switch (size) {
       case "small":

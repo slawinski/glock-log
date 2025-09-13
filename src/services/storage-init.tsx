@@ -3,11 +3,11 @@ import { View, Text } from "react-native";
 import { StorageFactory } from "./storage-factory";
 import { STORAGE_CONFIG } from "./storage-config";
 
-interface StorageInitProps {
+type Props = {
   children: React.ReactNode;
-}
+};
 
-export const StorageInit: React.FC<StorageInitProps> = ({ children }) => {
+export const StorageInit = ({ children }: Props) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

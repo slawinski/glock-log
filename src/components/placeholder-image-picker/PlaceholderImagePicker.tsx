@@ -6,13 +6,13 @@ import {
   PlaceholderImageKey,
 } from "../../services/image-source-manager";
 
-interface PlaceholderImagePickerProps {
+type Props = {
   onSelect: (key: PlaceholderImageKey) => void;
-}
+};
 
-export const PlaceholderImagePicker: React.FC<PlaceholderImagePickerProps> = ({
+export const PlaceholderImagePicker = ({
   onSelect,
-}) => {
+}: Props) => {
   const imageKeys = Object.keys(placeholderImages) as PlaceholderImageKey[];
 
   return (

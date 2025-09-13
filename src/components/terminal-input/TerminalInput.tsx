@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { COLORS } from "../../services/constants";
 
-interface TerminalInputProps {
+type Props = {
   value: string | number | null | undefined;
   onChangeText: (text: string) => void;
   placeholder?: string;
@@ -17,9 +17,9 @@ interface TerminalInputProps {
   multiline?: boolean;
   className?: string;
   testID?: string;
-}
+};
 
-export const TerminalInput: React.FC<TerminalInputProps> = ({
+export const TerminalInput = ({
   value,
   onChangeText,
   placeholder,
@@ -27,7 +27,7 @@ export const TerminalInput: React.FC<TerminalInputProps> = ({
   multiline = false,
   className = "",
   testID,
-}) => {
+}: Props) => {
   const [isFocused, setIsFocused] = useState(false);
   const [showCursor, setShowCursor] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);

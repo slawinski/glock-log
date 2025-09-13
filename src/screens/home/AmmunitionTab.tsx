@@ -17,11 +17,11 @@ type Props = {
   refreshing: boolean;
 };
 
-export const AmmunitionTab: React.FC<Props> = ({
+export const AmmunitionTab = ({
   ammunition,
   onRefresh,
   refreshing,
-}) => {
+}: Props) => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
   const renderAmmunitionItem = ({ item }: { item: AmmunitionStorage }) => (

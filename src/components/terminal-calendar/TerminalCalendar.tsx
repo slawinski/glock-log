@@ -13,17 +13,17 @@ import {
 } from "date-fns";
 import { TerminalText, TerminalCalendarHeader } from "../../components";
 
-interface TerminalCalendarProps {
+type Props = {
   highlightedDates: Date[];
   initialDate?: Date;
-}
+};
 
 const WEEK_DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
-export const TerminalCalendar: React.FC<TerminalCalendarProps> = ({
+export const TerminalCalendar = ({
   highlightedDates,
   initialDate = new Date(),
-}) => {
+}: Props) => {
   const [currentDate, setCurrentDate] = useState(initialDate);
 
   const handlePrevMonth = () => {

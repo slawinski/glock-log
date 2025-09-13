@@ -7,7 +7,7 @@ type Props = {
   rangeVisits: RangeVisitStorage[];
 };
 
-export const VisitsTab: React.FC<Props> = ({ rangeVisits }) => {
+export const VisitsTab = ({ rangeVisits }: Props) => {
   const calculateVisitStats = () => {
     const visitsByMonth = rangeVisits.reduce((acc, visit) => {
       const month = new Date(visit.date).toLocaleString("default", {

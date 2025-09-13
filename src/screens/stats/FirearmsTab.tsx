@@ -13,14 +13,14 @@ type Props = {
   isAllSelected: boolean;
 };
 
-export const FirearmsTab: React.FC<Props> = ({
+export const FirearmsTab = ({
   firearms,
   rangeVisits,
   visibleFirearms,
   onToggleFirearm,
   onToggleAllFirearms,
   isAllSelected,
-}) => {
+}: Props) => {
   const calculateFirearmStats = () => {
     const totalValue = firearms.reduce(
       (sum, firearm) => sum + firearm.amountPaid,

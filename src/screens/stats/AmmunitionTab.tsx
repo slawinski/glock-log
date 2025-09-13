@@ -9,7 +9,7 @@ type Props = {
   rangeVisits: RangeVisitStorage[];
 };
 
-export const AmmunitionTab: React.FC<Props> = ({ ammunition, rangeVisits }) => {
+export const AmmunitionTab = ({ ammunition, rangeVisits }: Props) => {
   const calculateAmmunitionStats = () => {
     const totalRounds = ammunition.reduce(
       (sum, ammo) => sum + ammo.quantity,

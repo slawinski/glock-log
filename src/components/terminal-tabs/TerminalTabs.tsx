@@ -9,13 +9,13 @@ export interface TabConfig {
   title: string;
 }
 
-interface TabProps {
+type TabProps = {
   title: string;
   active: boolean;
   onPress: () => void;
-}
+};
 
-const Tab: React.FC<TabProps> = ({ title, active, onPress }) => (
+const Tab = ({ title, active, onPress }: TabProps) => (
   <TouchableOpacity onPress={onPress} className="flex-1 items-center py-3">
     {active ? (
       <TerminalText className="bg-terminal-green text-terminal-bg px-1">
@@ -27,17 +27,17 @@ const Tab: React.FC<TabProps> = ({ title, active, onPress }) => (
   </TouchableOpacity>
 );
 
-interface TerminalTabsProps {
+type Props = {
   tabs: TabConfig[];
   activeTab: TabId;
   onTabPress: (id: TabId) => void;
-}
+};
 
-export const TerminalTabs: React.FC<TerminalTabsProps> = ({
+export const TerminalTabs = ({
   tabs,
   activeTab,
   onTabPress,
-}) => (
+}: Props) => (
   <View className="flex-row justify-around mb-4 bg-terminal-bg border-b border-terminal-border">
     {tabs.map((tab) => (
       <Tab

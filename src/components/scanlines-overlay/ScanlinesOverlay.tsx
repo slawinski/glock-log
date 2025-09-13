@@ -1,4 +1,3 @@
-import { FC } from "react";
 import { View } from "react-native";
 import Svg, {
   Defs,
@@ -8,7 +7,7 @@ import Svg, {
   Stop,
 } from "react-native-svg";
 
-export const ScanlinesOverlay: FC = () => {
+export const ScanlinesOverlay = () => {
   return (
     <View
       style={{

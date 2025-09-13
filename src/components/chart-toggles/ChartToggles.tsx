@@ -7,17 +7,17 @@ export interface ChartToggleConfig {
   title: string;
 }
 
-interface ChartToggleProps {
+type ChartToggleProps = {
   title: string;
   active: boolean;
   onPress: () => void;
-}
+};
 
-const ChartToggle: React.FC<ChartToggleProps> = ({
+const ChartToggle = ({
   title,
   active,
   onPress,
-}) => (
+}: ChartToggleProps) => (
   <TouchableOpacity onPress={onPress} className="mr-2 mb-2">
     {active ? (
       <TerminalText className="bg-terminal-green text-terminal-bg px-1">
@@ -29,21 +29,21 @@ const ChartToggle: React.FC<ChartToggleProps> = ({
   </TouchableOpacity>
 );
 
-interface ChartTogglesProps {
+type Props = {
   items: ChartToggleConfig[];
   visibleItems: Set<string>;
   onToggleItem: (id: string) => void;
   onToggleAll: () => void;
   isAllSelected: boolean;
-}
+};
 
-export const ChartToggles: React.FC<ChartTogglesProps> = ({
+export const ChartToggles = ({
   items,
   visibleItems,
   onToggleItem,
   onToggleAll,
   isAllSelected,
-}) => (
+}: Props) => (
   <View className="flex-row flex-wrap">
     <ChartToggle title="ALL" active={isAllSelected} onPress={onToggleAll} />
     {items.map((item) => (
