@@ -23,7 +23,7 @@ const TABS = [
   { id: "ammunition", title: "AMMUNITION" },
 ];
 
-export default function StatsScreen() {
+export const Stats = () => {
   const [firearms, setFirearms] = useState<FirearmStorage[]>([]);
   const [ammunition, setAmmunition] = useState<AmmunitionStorage[]>([]);
   const [rangeVisits, setRangeVisits] = useState<RangeVisitStorage[]>([]);

@@ -34,7 +34,7 @@ type FirearmFormData = Omit<FirearmInput, "amountPaid"> & {
   amountPaid: number | null;
 };
 
-export default function EditFirearmScreen() {
+export const EditFirearm = () => {
   const navigation = useNavigation<EditFirearmScreenNavigationProp>();
   const route = useRoute<EditFirearmScreenRouteProp>();
   const [formData, setFormData] = useState<FirearmFormData | null>(null);

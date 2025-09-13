@@ -34,7 +34,7 @@ const TABS = [
   { id: "ammunition", title: "AMMUNITION" },
 ];
 
-export default function HomeScreen() {
+export const Home = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [firearms, setFirearms] = useState<FirearmStorage[]>([]);
   const [rangeVisits, setRangeVisits] = useState<RangeVisitStorage[]>([]);

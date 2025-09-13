@@ -25,7 +25,7 @@ type AddRangeVisitScreenNavigationProp = NativeStackNavigationProp<
   "AddRangeVisit"
 >;
 
-export default function AddRangeVisitScreen() {
+export const AddRangeVisit = () => {
   const navigation = useNavigation<AddRangeVisitScreenNavigationProp>();
   const [firearms, setFirearms] = useState<
     { id: string; modelName: string; caliber: string }[]

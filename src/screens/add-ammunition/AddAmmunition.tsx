@@ -29,7 +29,7 @@ type AmmunitionFormData = Omit<
   grain: string | null;
 };
 
-export default function AddAmmunitionScreen() {
+export const AddAmmunition = () => {
   const navigation = useNavigation<AddAmmunitionScreenNavigationProp>();
   const [formData, setFormData] = useState<AmmunitionFormData>({
     caliber: "",

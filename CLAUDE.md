@@ -98,6 +98,27 @@ Implementing the screens:
 - Whenever there are input fields in the screen, make sure to use keyboard avoiding scroll views to allow the screen to adjust according to the keyboard visibility
 - Always use react-hook-form and zod for data inputs and validations
 
+Exports and Imports:
+- Always use named exports instead of default exports for components and utilities
+- Create barrel files (index.ts) in directories to consolidate exports for easier imports
+- Barrel files should export all public components/functions from their respective files
+- Example of a barrel file:
+  ```ts
+  export { Button } from "./button/Button";
+  export { Input } from "./input/Input";
+  export { Modal } from "./modal/Modal";
+  ```
+- Use named imports with barrel files for better brevity:
+  ```ts
+  // Good - using barrel file
+  import { Button, Input, Modal } from "./components";
+  
+  // Avoid - individual imports when barrel file exists
+  import { Button } from "./components/button/Button";
+  import { Input } from "./components/input/Input";
+  import { Modal } from "./components/modal/Modal";
+  ```
+
 Naming Conventions:
 - Use camelCase for variable and function names (e.g., `onClick`, `handleSubmit`).
 - Use PascalCase for component names in react and react native (e.g., `UserProfile`, `ChatScreen`).

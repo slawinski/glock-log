@@ -40,7 +40,7 @@ type AmmunitionFormData = Omit<
   grain: string | null;
 };
 
-export default function EditAmmunitionScreen() {
+export const EditAmmunition = () => {
   const navigation = useNavigation<EditAmmunitionScreenNavigationProp>();
   const route = useRoute<EditAmmunitionScreenRouteProp>();
   const [formData, setFormData] = useState<AmmunitionFormData | null>(null);

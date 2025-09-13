@@ -34,7 +34,7 @@ type EditRangeVisitScreenRouteProp = RouteProp<
   "EditRangeVisit"
 >;
 
-export default function EditRangeVisitScreen() {
+export const EditRangeVisit = () => {
   const navigation = useNavigation<EditRangeVisitScreenNavigationProp>();
   const route = useRoute<EditRangeVisitScreenRouteProp>();
   const [formData, setFormData] = useState<RangeVisitInput>({

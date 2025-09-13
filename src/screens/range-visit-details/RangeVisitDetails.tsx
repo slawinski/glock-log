@@ -22,7 +22,7 @@ type RangeVisitDetailsScreenRouteProp = RouteProp<
   "RangeVisitDetails"
 >;
 
-export default function RangeVisitDetailsScreen() {
+export const RangeVisitDetails = () => {
   const navigation = useNavigation<RangeVisitDetailsScreenNavigationProp>();
   const route = useRoute<RangeVisitDetailsScreenRouteProp>();
   const [visit, setVisit] = useState<RangeVisitStorage | null>(null);

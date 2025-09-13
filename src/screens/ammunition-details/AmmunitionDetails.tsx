@@ -19,7 +19,7 @@ type AmmunitionDetailsScreenRouteProp = RouteProp<
   "AmmunitionDetails"
 >;
 
-export default function AmmunitionDetailsScreen() {
+export const AmmunitionDetails = () => {
   const navigation = useNavigation<AmmunitionDetailsScreenNavigationProp>();
   const route = useRoute<AmmunitionDetailsScreenRouteProp>();
   const [ammunition, setAmmunition] = useState<AmmunitionStorage | null>(null);

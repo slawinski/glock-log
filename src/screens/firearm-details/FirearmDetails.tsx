@@ -17,7 +17,7 @@ type FirearmDetailsScreenRouteProp = RouteProp<
   "FirearmDetails"
 >;
 
-export default function FirearmDetailsScreen() {
+export const FirearmDetails = () => {
   const navigation = useNavigation<FirearmDetailsScreenNavigationProp>();
   const route = useRoute<FirearmDetailsScreenRouteProp>();
   const [firearm, setFirearm] = useState<FirearmStorage | null>(null);
