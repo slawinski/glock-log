@@ -11,7 +11,6 @@ import { COLORS } from "../../services/constants";
 
 interface TerminalInputProps {
   value: string | number | null | undefined;
-  // eslint-disable-next-line
   onChangeText: (text: string) => void;
   placeholder?: string;
   keyboardType?: "default" | "numeric" | "email-address" | "phone-pad";

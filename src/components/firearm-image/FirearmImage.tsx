@@ -22,7 +22,6 @@ export function FirearmImage({
   return (
     <View
       className={`justify-center items-center ${className}`}
-      // TODO: why not tailwind?
       style={{
         width: size,
         height: size,

@@ -62,9 +62,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             placeholder="Loading..."
             placeholderContentFit="cover"
             transition={200}
-            onError={() => {
-              // Image failed to load - this is handled by the Image component's placeholder
-            }}
+            onError={() => {}}
           />
           {showDeleteButton && onDeleteImage && (
             <TouchableOpacity
