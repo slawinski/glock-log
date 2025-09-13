@@ -60,7 +60,6 @@ export const AddAmmunition = () => {
       setError(null);
       setDateError(null);
 
-      // Validate date is not in the future
       const purchaseDate = new Date(formData.datePurchased);
       if (purchaseDate > new Date()) {
         setDateError("Purchase date cannot be in the future");
@@ -75,7 +74,6 @@ export const AddAmmunition = () => {
         pricePerRound: pricePerRound,
       };
 
-      // Validate form data using Zod
       const validationResult = ammunitionInputSchema.safeParse(dataToValidate);
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0].message;
@@ -219,4 +217,4 @@ export const AddAmmunition = () => {
       </View>
     </ScrollView>
   );
-}
+};

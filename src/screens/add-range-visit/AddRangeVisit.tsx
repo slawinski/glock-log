@@ -85,17 +85,18 @@ export const AddRangeVisit = () => {
           text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
           onPress: () => {
             const timestamp = Date.now();
-            const randomSuffix = typeof crypto !== 'undefined' && crypto.getRandomValues
-              ? Array.from(crypto.getRandomValues(new Uint8Array(2)))
-                  .map(b => b.toString(36))
-                  .join('')
-              : Math.random().toString(36).slice(2, 4);
+            const randomSuffix =
+              typeof crypto !== "undefined" && crypto.getRandomValues
+                ? Array.from(crypto.getRandomValues(new Uint8Array(2)))
+                    .map((b) => b.toString(36))
+                    .join("")
+                : Math.random().toString(36).slice(2, 4);
             const borrowedKey = `borrowed-${timestamp}-${randomSuffix}`;
             setAmmunitionUsed((prev) => ({
               ...prev,
               [borrowedKey]: {
                 ammunitionId: ammo.id,
-                rounds: null, // User can edit this
+                rounds: null,
               },
             }));
           },
@@ -110,7 +111,7 @@ export const AddRangeVisit = () => {
       {
         mediaType: "photo",
         quality: 0.8,
-        selectionLimit: 10, // Allow multiple images
+        selectionLimit: 10,
       },
       (response) => {
         if (response.assets && response.assets.length > 0) {
@@ -149,14 +150,12 @@ export const AddRangeVisit = () => {
         }
       }
 
-      // Prepare the data for validation
       const visitData: RangeVisitInput = {
         ...formData,
         firearmsUsed: selectedFirearms,
         ammunitionUsed: finalAmmunitionUsed,
       };
 
-      // Validate form data using Zod
       const validationResult = rangeVisitInputSchema.safeParse(visitData);
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0].message;
@@ -164,7 +163,6 @@ export const AddRangeVisit = () => {
         return;
       }
 
-      // Validate ammunition quantities
       if (finalAmmunitionUsed) {
         for (const [firearmId, usage] of Object.entries(finalAmmunitionUsed)) {
           const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
@@ -440,4 +438,4 @@ export const AddRangeVisit = () => {
       </View>
     </ScrollView>
   );
-}
+};

@@ -123,7 +123,6 @@ export const AddFirearm = () => {
           caption="ADD PHOTOS"
         />
 
-        {/* Image Gallery */}
         {formData.photos && formData.photos.length > 0 && (
           <View className="w-full mb-4">
             <TerminalText className="mb-2">SELECTED PHOTOS</TerminalText>
@@ -244,4 +243,4 @@ export const AddFirearm = () => {
       </View>
     </ScrollView>
   );
-}
+};

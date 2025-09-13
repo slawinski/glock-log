@@ -45,11 +45,6 @@ export default function App() {
     return null;
   }
 
-  // TODO: Remove this once the migration is no longer needed
-  // useEffect(() => {
-  //   runMigrations().catch(console.error);
-  // }, []);
-
   return (
     <SafeAreaProvider>
       <View className="flex-1 bg-terminal-bg">

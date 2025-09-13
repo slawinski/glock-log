@@ -59,7 +59,6 @@ export const EditRangeVisit = () => {
       const visits = await storage.getRangeVisits();
       const visit = visits.find((v) => v.id === route.params!.id);
       if (visit) {
-        // Convert storage data to input data
         const { photos, firearmsUsed, notes, ammunitionUsed } = visit;
         setFormData({
           id: visit.id,
@@ -128,7 +127,6 @@ export const EditRangeVisit = () => {
     try {
       setSaving(true);
 
-      // Validate form data using Zod
       const validationResult = rangeVisitInputSchema.safeParse(formData);
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0].message;
@@ -136,7 +134,6 @@ export const EditRangeVisit = () => {
         return;
       }
 
-      // Validate ammunition quantities
       if (formData.ammunitionUsed) {
         for (const [firearmId, usage] of Object.entries(
           formData.ammunitionUsed
@@ -399,4 +396,4 @@ export const EditRangeVisit = () => {
       </View>
     </ScrollView>
   );
-}
+};
