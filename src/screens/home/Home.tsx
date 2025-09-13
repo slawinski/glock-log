@@ -64,13 +64,12 @@ export const Home = () => {
     });
   }, [navigation, activeTab]);
 
-  // Fetch data when the screen is focused
   useFocusEffect(
     useCallback(() => {
       if (isInitialLoad) {
-        fetchData(false); // Show spinner for initial load
+        fetchData(false);
       } else {
-        fetchData(true); // Don't show spinner for subsequent loads
+        fetchData(true);
       }
     }, [isInitialLoad])
   );
@@ -104,7 +103,6 @@ export const Home = () => {
     }
   };
 
-  // Add refresh control to FlatList
   const onRefresh = () => {
     fetchData(true);
   };
@@ -294,4 +292,4 @@ export const Home = () => {
       {renderContent()}
     </View>
   );
-}
+};
