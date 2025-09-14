@@ -1,8 +1,9 @@
 import React from "react";
-import { View, TouchableOpacity, Alert } from "react-native";
+import { View } from "react-native";
 import { Image } from "expo-image";
 import { TerminalText } from "../terminal-text/TerminalText";
 import { resolveImageSource } from "../../services/image-source-manager";
+import { DeleteButton } from "./DeleteButton";
 
 type Props = {
   images: string[];
@@ -28,16 +29,6 @@ export const ImageGallery = ({
     }
   };
 
-  const handleDeleteImage = (imageIndex: number) => {
-    Alert.alert("Delete Image", "Are you sure you want to delete this image?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => onDeleteImage?.(imageIndex),
-      },
-    ]);
-  };
 
   if (!images || images.length === 0) {
     return (
@@ -65,12 +56,7 @@ export const ImageGallery = ({
             onError={() => {}}
           />
           {showDeleteButton && onDeleteImage && (
-            <TouchableOpacity
-              onPress={() => handleDeleteImage(imageIndex)}
-              className="absolute -top-2 -right-2 bg-terminal-error rounded-full w-6 h-6 items-center justify-center"
-            >
-              <TerminalText className="text-white text-xs">×</TerminalText>
-            </TouchableOpacity>
+            <DeleteButton onDelete={() => onDeleteImage(imageIndex)} />
           )}
         </View>
       ))}
