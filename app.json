@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "glock-log",
-    "slug": "glock-log",
+    "name": "TriggerNote",
+    "slug": "triggernote",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pietrucha.glocklog",
+      "bundleIdentifier": "com.pietrucha.triggernote",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -24,7 +24,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.pietrucha.glocklog"
+      "package": "com.pietrucha.triggernote"
     },
     "web": {
       "favicon": "./assets/favicon.png"

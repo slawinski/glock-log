@@ -7,7 +7,7 @@ export class MMKVAdapter implements StorageInterface {
   constructor(config: StorageConfig) {
     try {
       this.mmkv = new MMKV({
-        id: config.id || "glock-log-storage",
+        id: config.id || "storage",
         encryptionKey: config.encryptionKey,
       });
     } catch (error) {

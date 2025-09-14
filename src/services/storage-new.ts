@@ -22,9 +22,9 @@ import {
 import { handleStorageError, logAndGetUserError } from "./error-handler";
 
 const STORAGE_KEYS = {
-  FIREARMS: "@glock-log:firearms",
-  AMMUNITION: "@glock-log:ammunition",
-  RANGE_VISITS: "@glock-log:range-visits",
+  FIREARMS: "@storage:firearms",
+  AMMUNITION: "@storage:ammunition",
+  RANGE_VISITS: "@storage:range-visits",
 };
 
 // Helper function to validate and parse data

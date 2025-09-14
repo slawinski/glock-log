@@ -1,6 +1,6 @@
 # Storage Migration: AsyncStorage → MMKV
 
-This document outlines the migration from AsyncStorage to MMKV in the Glock Log app, providing a flexible abstraction layer that allows easy switching between storage backends.
+This document outlines the migration from AsyncStorage to MMKV in the TriggerNote app, providing a flexible abstraction layer that allows easy switching between storage backends.
 
 ## 🚀 Benefits of MMKV
 

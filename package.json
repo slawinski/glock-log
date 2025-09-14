@@ -1,5 +1,5 @@
 {
-  "name": "glock-log",
+  "name": "triggernote",
   "version": "1.0.0",
   "type": "module",
   "main": "index.ts",

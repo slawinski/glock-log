@@ -3,7 +3,7 @@ import { StorageConfig } from "./storage-interface";
 // Storage configuration
 export const STORAGE_CONFIG: StorageConfig = {
   type: "mmkv",
-  id: "glock-log-storage",
+  id: "storage",
   encryptionKey: "your-encryption-key-here", // Optional: Add encryption key for sensitive data
 };
 
