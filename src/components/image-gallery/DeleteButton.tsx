@@ -21,9 +21,9 @@ export const DeleteButton = ({ onDelete }: Props) => {
   return (
     <TouchableOpacity
       onPress={handleDelete}
-      className="absolute -top-2 -right-2 bg-terminal-error rounded-full w-6 h-6 items-center justify-center"
+      className="absolute -top-1 -right-1 bg-terminal-green border border-terminal-green w-5 h-5 items-center justify-center"
     >
-      <TerminalText className="text-white text-xs">×</TerminalText>
+      <TerminalText className="text-terminal-bg text-xs">X</TerminalText>
     </TouchableOpacity>
   );
 };
