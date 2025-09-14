@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// Storage schemas for backend validation
 export const firearmStorageSchema = z.object({
   id: z.string(),
   modelName: z.string(),
@@ -37,7 +36,7 @@ export const rangeVisitStorageSchema = z.object({
   firearmsUsed: z.array(z.string()),
   ammunitionUsed: z
     .record(
-      z.string(), // firearmId
+      z.string(),
       z.object({
         ammunitionId: z.string(),
         rounds: z.number(),
@@ -49,7 +48,6 @@ export const rangeVisitStorageSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
-// Type inference for TypeScript
 export type FirearmStorage = z.infer<typeof firearmStorageSchema>;
 export type AmmunitionStorage = z.infer<typeof ammunitionStorageSchema>;
 export type RangeVisitStorage = z.infer<typeof rangeVisitStorageSchema>;

@@ -60,7 +60,7 @@ export const Home = () => {
           className="text-3xl"
         />
       ),
-      title: "GLOCK LOG",
+      title: "TriggerNote",
     });
   }, [navigation, activeTab]);
 

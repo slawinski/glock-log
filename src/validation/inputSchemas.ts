@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// Input schemas for frontend validation
 export const firearmInputSchema = z.object({
   id: z.string().optional(),
   modelName: z.string().min(1, "Model name is required"),
@@ -40,7 +39,7 @@ export const rangeVisitInputSchema = z.object({
   firearmsUsed: z.array(z.string()),
   ammunitionUsed: z
     .record(
-      z.string(), // firearmId
+      z.string(),
       z.object({
         ammunitionId: z.string(),
         rounds: z.number().min(1, "Rounds used must be greater than 0"),
@@ -50,7 +49,6 @@ export const rangeVisitInputSchema = z.object({
   photos: z.array(z.string()).optional(),
 });
 
-// Type inference for TypeScript
 export type FirearmInput = z.infer<typeof firearmInputSchema>;
 export type AmmunitionInput = z.infer<typeof ammunitionInputSchema>;
 export type RangeVisitInput = z.infer<typeof rangeVisitInputSchema>;
