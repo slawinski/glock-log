@@ -60,7 +60,7 @@ export const Home = () => {
           className="text-3xl"
         />
       ),
-      title: "TriggerNote",
+      title: "TRIGGERNOTE",
     });
   }, [navigation, activeTab]);
 
