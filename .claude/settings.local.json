@@ -5,7 +5,12 @@
       "Bash(npx jest:*)",
       "Bash(npx tsc:*)",
       "Bash(mv:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(for file in src/screens/*/EditRangeVisit.test.tsx)",
+      "Bash(do sed -i '' 's/import EditRangeVisitScreen from/import { EditRangeVisit as EditRangeVisitScreen } from/g' \"$file\")",
+      "Bash(done)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "ask": []

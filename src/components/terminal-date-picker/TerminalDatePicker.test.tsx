@@ -20,7 +20,7 @@ describe("TerminalDatePicker", () => {
     );
 
     expect(getByText("TEST DATE")).toBeTruthy();
-    expect(getByText("20 mar 2024")).toBeTruthy();
+    expect(getByText("Mar 20, 2024")).toBeTruthy();
   });
 
   it("shows date picker when pressed", async () => {
@@ -33,7 +33,7 @@ describe("TerminalDatePicker", () => {
     );
 
     await act(async () => {
-      fireEvent.press(getByText("20 mar 2024"));
+      fireEvent.press(getByText("Mar 20, 2024"));
     });
 
     // Note: We can't test the actual DateTimePicker as it's platform-specific

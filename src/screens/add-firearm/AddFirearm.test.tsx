@@ -8,7 +8,7 @@ import {
 import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import AddFirearmScreen from "./AddFirearm";
+import { AddFirearm as AddFirearmScreen } from "./AddFirearm";
 import { storage } from "../../services/storage-new";
 import * as ImagePicker from "react-native-image-picker";
 

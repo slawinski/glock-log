@@ -8,7 +8,7 @@ import {
 import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import EditAmmunitionScreen from "./EditAmmunition";
+import { EditAmmunition as EditAmmunitionScreen } from "./EditAmmunition";
 import { storage } from "../../services/storage-new";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { AmmunitionStorage } from "../../validation/storageSchemas";

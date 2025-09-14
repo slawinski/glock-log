@@ -55,7 +55,7 @@ describe("Image Storage", () => {
         to: expect.stringContaining(`${entityType}_${entityId}`),
       });
       expect(result).toMatch(
-        new RegExp(`${entityType}_${entityId}_\\d+\\.jpg`)
+        new RegExp(`${entityType}_${entityId}_\\d+_[a-z0-9]+\\.jpg`)
       );
     });
 

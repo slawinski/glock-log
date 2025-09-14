@@ -9,7 +9,7 @@ import {
 import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import AmmunitionDetailsScreen from "./AmmunitionDetails";
+import { AmmunitionDetails as AmmunitionDetailsScreen } from "./AmmunitionDetails";
 import { storage } from "../../services/storage-new";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 
@@ -103,7 +103,7 @@ describe("AmmunitionDetailsScreen", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Failed to load ammunition details")
+        screen.getByText("Failed to load ammunition details. Please try again.")
       ).toBeTruthy();
     });
   });

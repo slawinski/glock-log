@@ -6,7 +6,7 @@ import {
   waitFor,
 } from "@testing-library/react-native";
 import { Alert } from "react-native";
-import StatsScreen from "./Stats";
+import { Stats as StatsScreen } from "./Stats";
 import { storage } from "../../services/storage-new";
 import {
   FirearmStorage,

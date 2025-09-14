@@ -8,7 +8,7 @@ import {
 import { Alert } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import AddRangeVisitScreen from "./AddRangeVisit";
+import { AddRangeVisit as AddRangeVisitScreen } from "./AddRangeVisit";
 import { storage } from "../../services/storage-new";
 import * as ImagePicker from "react-native-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
