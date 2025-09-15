@@ -13,11 +13,11 @@ import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
 import { storage } from "../../services/storage-new";
 import {
-  FirearmImage,
   TerminalText,
   TerminalInput,
   TerminalDatePicker,
   TerminalButton,
+  ImageGallery,
 } from "../../components";
 import {
   firearmInputSchema,
@@ -205,19 +205,14 @@ export const EditFirearm = () => {
           className="p-3 mb-2"
           caption="ADD PHOTO"
         />
-        <ScrollView horizontal className="flex-row">
-          {formData.photos?.map((photo, index) => (
-            <View key={index} className="relative">
-              <FirearmImage photoUri={photo} size={160} className="m-1" />
-              <TouchableOpacity
-                onPress={() => handleDeletePhoto(index)}
-                className="absolute top-0 right-0 bg-terminal-error p-1"
-              >
-                <TerminalText className="text-xs">X</TerminalText>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
+        {formData.photos && formData.photos.length > 0 && (
+          <ImageGallery
+            images={formData.photos}
+            onDeleteImage={handleDeletePhoto}
+            size="medium"
+            showDeleteButton={true}
+          />
+        )}
       </View>
 
       <View className="flex-row justify-between">

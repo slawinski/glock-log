@@ -3,7 +3,6 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
-  Image,
   Alert,
   ActivityIndicator,
 } from "react-native";
@@ -17,6 +16,7 @@ import {
   TerminalText,
   TerminalInput,
   TerminalDatePicker,
+  ImageGallery,
 } from "../../components";
 import {
   rangeVisitInputSchema,
@@ -364,19 +364,14 @@ export const EditRangeVisit = () => {
         >
           <TerminalText>ADD PHOTO</TerminalText>
         </TouchableOpacity>
-        <ScrollView horizontal className="flex-row">
-          {formData.photos?.map((photo, index) => (
-            <View key={index} className="relative">
-              <Image source={{ uri: photo }} className="w-40 h-40 m-1" />
-              <TouchableOpacity
-                onPress={() => handleDeletePhoto(index)}
-                className="absolute top-0 right-0 bg-terminal-error p-1"
-              >
-                <TerminalText className="text-xs">X</TerminalText>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
+        {formData.photos && formData.photos.length > 0 && (
+          <ImageGallery
+            images={formData.photos}
+            onDeleteImage={handleDeletePhoto}
+            size="medium"
+            showDeleteButton={true}
+          />
+        )}
       </View>
 
       <View className="flex-row justify-between">
