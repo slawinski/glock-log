@@ -209,7 +209,7 @@ describe("FirearmImage", () => {
       mockResolveImageSource.mockReturnValue(mockPlaceholderSource);
       
       const { getByTestId } = render(
-        <FirearmImage photoUri={null} testID="firearm-image" />
+        <FirearmImage photoUri={undefined} testID="firearm-image" />
       );
       
       // null should trigger placeholder logic

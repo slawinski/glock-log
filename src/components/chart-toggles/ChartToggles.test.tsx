@@ -324,7 +324,7 @@ describe("ChartToggles", () => {
       const { getByText } = render(
         <ChartToggles
           items={mockItems}
-          visibleItems={largeSet}
+          visibleItems={largeSet as Set<string>}
           onToggleItem={mockOnToggleItem}
           onToggleAll={mockOnToggleAll}
           isAllSelected={false}
