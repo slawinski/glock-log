@@ -113,8 +113,8 @@ describe("App", () => {
         Navigator: ({ children }: { children: React.ReactNode }) => {
           // Capture screen names for testing
           React.Children.forEach(children, (child) => {
-            if (React.isValidElement(child) && child.props.name) {
-              mockScreens.push(child.props.name);
+            if (React.isValidElement(child) && child.props && typeof child.props === 'object' && child.props !== null && 'name' in child.props) {
+              mockScreens.push((child.props as any).name);
             }
           });
           return children;

@@ -58,7 +58,7 @@ describe("StorageInit", () => {
     const TestChild = () => <></>;
     const { getByTestId, queryByText } = render(
       <StorageInit>
-        <div testID="test-child">Test Content</div>
+        <div data-testid="test-child">Test Content</div>
       </StorageInit>
     );
 
@@ -187,9 +187,16 @@ describe("StorageInit", () => {
 
     const { getByTestId } = render(
       <StorageInit>
-        <div testID="child-1">Child 1</div>
-        <div testID="child-2">Child 2</div>
-        <div testID="child-3">Child 3</div>
+        {(() => {
+          const { View, Text } = require("react-native");
+          return (
+            <>
+              <View testID="child-1"><Text>Child 1</Text></View>
+              <View testID="child-2"><Text>Child 2</Text></View>
+              <View testID="child-3"><Text>Child 3</Text></View>
+            </>
+          );
+        })()}
       </StorageInit>
     );
 
@@ -257,7 +264,7 @@ describe("StorageInit", () => {
     // Re-render the component
     rerender(
       <StorageInit>
-        <div testID="new-child">New Child</div>
+        <div data-testid="new-child">New Child</div>
       </StorageInit>
     );
 
@@ -272,7 +279,14 @@ describe("StorageInit", () => {
     });
     mockStorageFactory.getStorage.mockImplementation(() => ({} as any));
 
-    const TestChild = () => <div testID="test-child">Test Content</div>;
+    const TestChild = () => {
+      const { View, Text } = require("react-native");
+      return (
+        <View testID="test-child">
+          <Text>Test Content</Text>
+        </View>
+      );
+    };
     const { getByTestId } = render(
       <StorageInit>
         <TestChild />
@@ -303,7 +317,14 @@ describe("StorageInit", () => {
     // Re-render with different children
     rerender(
       <StorageInit>
-        <div testID="different-child">Different Child</div>
+        {(() => {
+          const { View, Text } = require("react-native");
+          return (
+            <View testID="different-child">
+              <Text>Different Child</Text>
+            </View>
+          );
+        })()}
       </StorageInit>
     );
 

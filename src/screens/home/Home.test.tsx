@@ -81,8 +81,11 @@ const mockFirearm = {
   id: "1",
   modelName: "Glock 19",
   caliber: "9mm",
+  datePurchased: "2023-01-01T00:00:00.000Z",
+  amountPaid: 500,
   roundsFired: 500,
   createdAt: "2023-01-01T00:00:00.000Z",
+  updatedAt: "2023-01-01T00:00:00.000Z",
   photos: ["photo1.jpg"],
 };
 
@@ -90,9 +93,12 @@ const mockRangeVisit = {
   id: "1",
   location: "Test Range",
   date: "2023-01-01T00:00:00.000Z",
+  createdAt: "2023-01-01T00:00:00.000Z",
+  updatedAt: "2023-01-01T00:00:00.000Z",
+  firearmsUsed: ["1"],
   ammunitionUsed: {
-    "ammo1": { rounds: 50 },
-    "ammo2": { rounds: 25 },
+    "ammo1": { ammunitionId: "ammo1", rounds: 50 },
+    "ammo2": { ammunitionId: "ammo2", rounds: 25 },
   },
 };
 
@@ -100,8 +106,13 @@ const mockAmmunition = {
   id: "1",
   brand: "Federal",
   caliber: "9mm",
+  grain: "115",
   quantity: 500,
+  datePurchased: "2023-01-01T00:00:00.000Z",
+  amountPaid: 175,
   pricePerRound: 0.35,
+  createdAt: "2023-01-01T00:00:00.000Z",
+  updatedAt: "2023-01-01T00:00:00.000Z",
 };
 
 describe("Home", () => {

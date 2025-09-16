@@ -64,7 +64,7 @@ jest.mock("./terminal-text/TerminalText", () => ({
 describe("components/index.ts", () => {
   it("exports ChartToggles components", () => {
     expect(ComponentIndex.ChartToggles).toBe("ChartToggles");
-    expect(ComponentIndex.ToggleButton).toBe("ToggleButton");
+    expect((ComponentIndex as any).ToggleButton).toBe("ToggleButton");
   });
 
   it("exports FirearmImage component", () => {
@@ -73,7 +73,7 @@ describe("components/index.ts", () => {
 
   it("exports ImageGallery components", () => {
     expect(ComponentIndex.ImageGallery).toBe("ImageGallery");
-    expect(ComponentIndex.DeleteButton).toBe("DeleteButton");
+    expect((ComponentIndex as any).DeleteButton).toBe("DeleteButton");
   });
 
   it("exports PlaceholderImagePicker component", () => {

@@ -3,6 +3,7 @@ import { render, fireEvent } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { VisitsTab } from "./VisitsTab";
+import { RangeVisitStorage } from "../../validation/storageSchemas";
 
 // Mock components
 jest.mock("../../components", () => ({
@@ -31,28 +32,37 @@ const renderWithNavigation = (component: React.ReactElement) => {
   );
 };
 
-const mockRangeVisits = [
+const mockRangeVisits: RangeVisitStorage[] = [
   {
     id: "1",
     location: "Local Range",
     date: "2023-01-15T00:00:00.000Z",
+    createdAt: "2023-01-15T00:00:00.000Z",
+    updatedAt: "2023-01-15T00:00:00.000Z",
+    firearmsUsed: ["firearm1"],
     ammunitionUsed: {
-      "ammo1": { rounds: 50 },
-      "ammo2": { rounds: 25 },
+      "ammo1": { ammunitionId: "ammo1", rounds: 50 },
+      "ammo2": { ammunitionId: "ammo2", rounds: 25 },
     },
   },
   {
     id: "2",
     location: "Outdoor Range",
     date: "2023-02-10T00:00:00.000Z",
+    createdAt: "2023-02-10T00:00:00.000Z",
+    updatedAt: "2023-02-10T00:00:00.000Z",
+    firearmsUsed: ["firearm2"],
     ammunitionUsed: {
-      "ammo3": { rounds: 100 },
+      "ammo3": { ammunitionId: "ammo3", rounds: 100 },
     },
   },
   {
     id: "3",
     location: "Indoor Range",
     date: "2023-03-05T00:00:00.000Z",
+    createdAt: "2023-03-05T00:00:00.000Z",
+    updatedAt: "2023-03-05T00:00:00.000Z",
+    firearmsUsed: ["firearm1"],
     ammunitionUsed: {},
   },
 ];
@@ -149,11 +159,13 @@ describe("VisitsTab", () => {
   });
 
   it("handles visit without ammunition used", () => {
-    const visitWithoutAmmo = {
+    const visitWithoutAmmo: RangeVisitStorage = {
       id: "4",
       location: "Test Range",
       date: "2023-04-01T00:00:00.000Z",
-      ammunitionUsed: undefined,
+      createdAt: "2023-04-01T00:00:00.000Z",
+      updatedAt: "2023-04-01T00:00:00.000Z",
+      firearmsUsed: ["firearm1"],
     };
 
     const { getByText } = renderWithNavigation(
@@ -168,12 +180,15 @@ describe("VisitsTab", () => {
     expect(getByText("0 rounds")).toBeTruthy();
   });
 
-  it("handles visit with null ammunition used", () => {
-    const visitWithNullAmmo = {
+  it("handles visit with empty ammunition used", () => {
+    const visitWithNullAmmo: RangeVisitStorage = {
       id: "5",
       location: "Another Range",
       date: "2023-05-01T00:00:00.000Z",
-      ammunitionUsed: null,
+      createdAt: "2023-05-01T00:00:00.000Z",
+      updatedAt: "2023-05-01T00:00:00.000Z",
+      firearmsUsed: ["firearm2"],
+      ammunitionUsed: {},
     };
 
     const { getByText } = renderWithNavigation(
@@ -213,15 +228,18 @@ describe("VisitsTab", () => {
   });
 
   it("handles complex ammunition usage calculation", () => {
-    const complexVisit = {
+    const complexVisit: RangeVisitStorage = {
       id: "6",
       location: "Complex Range",
       date: "2023-06-01T00:00:00.000Z",
+      createdAt: "2023-06-01T00:00:00.000Z",
+      updatedAt: "2023-06-01T00:00:00.000Z",
+      firearmsUsed: ["firearm1", "firearm2"],
       ammunitionUsed: {
-        "ammo1": { rounds: 150 },
-        "ammo2": { rounds: 75 },
-        "ammo3": { rounds: 25 },
-        "ammo4": { rounds: 0 },
+        "ammo1": { ammunitionId: "ammo1", rounds: 150 },
+        "ammo2": { ammunitionId: "ammo2", rounds: 75 },
+        "ammo3": { ammunitionId: "ammo3", rounds: 25 },
+        "ammo4": { ammunitionId: "ammo4", rounds: 0 },
       },
     };
 

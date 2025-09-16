@@ -36,22 +36,36 @@ const mockAmmunition = [
     id: "1",
     brand: "Federal",
     caliber: "9mm",
+    grain: "124",
     quantity: 500,
+    datePurchased: "2023-01-01T00:00:00.000Z",
+    amountPaid: 175,
     pricePerRound: 0.35,
+    createdAt: "2023-01-01T00:00:00.000Z",
+    updatedAt: "2023-01-01T00:00:00.000Z",
   },
   {
     id: "2",
     brand: "Winchester",
     caliber: ".40 S&W",
+    grain: "180",
     quantity: 250,
+    datePurchased: "2023-01-02T00:00:00.000Z",
+    amountPaid: 105,
     pricePerRound: 0.42,
+    createdAt: "2023-01-02T00:00:00.000Z",
+    updatedAt: "2023-01-02T00:00:00.000Z",
   },
   {
     id: "3",
     brand: "Remington",
     caliber: ".45 ACP",
+    grain: "230",
     quantity: 100,
-    pricePerRound: undefined,
+    datePurchased: "2023-01-03T00:00:00.000Z",
+    amountPaid: 50,
+    createdAt: "2023-01-03T00:00:00.000Z",
+    updatedAt: "2023-01-03T00:00:00.000Z",
   },
 ];
 
@@ -111,8 +125,13 @@ describe("AmmunitionTab", () => {
       id: "4",
       brand: "Hornady",
       caliber: "9mm",
+      grain: "115",
       quantity: 20,
+      datePurchased: "2023-01-04T00:00:00.000Z",
+      amountPaid: 24.69,
       pricePerRound: 1.2345,
+      createdAt: "2023-01-04T00:00:00.000Z",
+      updatedAt: "2023-01-04T00:00:00.000Z",
     };
 
     const { getByText } = renderWithNavigation(
@@ -159,8 +178,13 @@ describe("AmmunitionTab", () => {
       id: "5",
       brand: "Very Long Ammunition Brand Name That Should Be Truncated",
       caliber: "9mm",
+      grain: "124",
       quantity: 50,
+      datePurchased: "2023-01-05T00:00:00.000Z",
+      amountPaid: 15,
       pricePerRound: 0.30,
+      createdAt: "2023-01-05T00:00:00.000Z",
+      updatedAt: "2023-01-05T00:00:00.000Z",
     };
 
     const { getByText } = renderWithNavigation(
@@ -204,8 +228,13 @@ describe("AmmunitionTab", () => {
       id: "6",
       brand: "Free Sample",
       caliber: "9mm",
+      grain: "115",
       quantity: 10,
+      datePurchased: "2023-01-06T00:00:00.000Z",
+      amountPaid: 0,
       pricePerRound: 0,
+      createdAt: "2023-01-06T00:00:00.000Z",
+      updatedAt: "2023-01-06T00:00:00.000Z",
     };
 
     const { getByText, queryByText } = renderWithNavigation(
@@ -227,8 +256,12 @@ describe("AmmunitionTab", () => {
       id: "7",
       brand: "Unknown Price",
       caliber: "9mm",
+      grain: "124",
       quantity: 25,
-      pricePerRound: null,
+      datePurchased: "2023-01-07T00:00:00.000Z",
+      amountPaid: 10,
+      createdAt: "2023-01-07T00:00:00.000Z",
+      updatedAt: "2023-01-07T00:00:00.000Z",
     };
 
     const { getByText, queryByText } = renderWithNavigation(
@@ -247,9 +280,42 @@ describe("AmmunitionTab", () => {
 
   it("displays different calibers correctly", () => {
     const differentCaliberAmmo = [
-      { id: "8", brand: "Test", caliber: "22LR", quantity: 1000, pricePerRound: 0.05 },
-      { id: "9", brand: "Test", caliber: "308 Win", quantity: 20, pricePerRound: 2.50 },
-      { id: "10", brand: "Test", caliber: "12 Gauge", quantity: 25, pricePerRound: 1.00 },
+      { 
+        id: "8", 
+        brand: "Test", 
+        caliber: "22LR", 
+        grain: "40",
+        quantity: 1000, 
+        datePurchased: "2023-01-08T00:00:00.000Z",
+        amountPaid: 50,
+        pricePerRound: 0.05,
+        createdAt: "2023-01-08T00:00:00.000Z",
+        updatedAt: "2023-01-08T00:00:00.000Z",
+      },
+      { 
+        id: "9", 
+        brand: "Test", 
+        caliber: "308 Win", 
+        grain: "150",
+        quantity: 20, 
+        datePurchased: "2023-01-09T00:00:00.000Z",
+        amountPaid: 50,
+        pricePerRound: 2.50,
+        createdAt: "2023-01-09T00:00:00.000Z",
+        updatedAt: "2023-01-09T00:00:00.000Z",
+      },
+      { 
+        id: "10", 
+        brand: "Test", 
+        caliber: "12 Gauge", 
+        grain: "00",
+        quantity: 25, 
+        datePurchased: "2023-01-10T00:00:00.000Z",
+        amountPaid: 25,
+        pricePerRound: 1.00,
+        createdAt: "2023-01-10T00:00:00.000Z",
+        updatedAt: "2023-01-10T00:00:00.000Z",
+      },
     ];
 
     const { getByText } = renderWithNavigation(

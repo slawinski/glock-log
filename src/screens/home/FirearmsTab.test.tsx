@@ -44,16 +44,22 @@ const mockFirearms = [
     id: "1",
     modelName: "Glock 19",
     caliber: "9mm",
+    datePurchased: "2023-01-01T00:00:00.000Z",
+    amountPaid: 500,
     roundsFired: 500,
     createdAt: "2023-01-01T00:00:00.000Z",
+    updatedAt: "2023-01-01T00:00:00.000Z",
     photos: ["photo1.jpg"],
   },
   {
     id: "2",
     modelName: "Smith & Wesson M&P",
     caliber: ".40 S&W",
+    datePurchased: "2023-02-01T00:00:00.000Z",
+    amountPaid: 400,
     roundsFired: 300,
     createdAt: "2023-02-01T00:00:00.000Z",
+    updatedAt: "2023-02-01T00:00:00.000Z",
     photos: [],
   },
 ];
@@ -177,9 +183,11 @@ describe("FirearmsTab", () => {
       id: "3",
       modelName: "Beretta 92FS",
       caliber: "9mm",
+      datePurchased: "2023-03-01T00:00:00.000Z",
+      amountPaid: 600,
       roundsFired: 200,
       createdAt: "2023-03-01T00:00:00.000Z",
-      photos: undefined,
+      updatedAt: "2023-03-01T00:00:00.000Z",
     };
 
     const { getByText, getByTestId } = renderWithNavigation(
@@ -199,8 +207,11 @@ describe("FirearmsTab", () => {
       id: "4",
       modelName: "Very Long Firearm Model Name That Should Be Truncated",
       caliber: "9mm",
+      datePurchased: "2023-04-01T00:00:00.000Z",
+      amountPaid: 700,
       roundsFired: 100,
       createdAt: "2023-04-01T00:00:00.000Z",
+      updatedAt: "2023-04-01T00:00:00.000Z",
       photos: [],
     };
 
