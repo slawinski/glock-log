@@ -6,7 +6,7 @@ import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
-import { TerminalText, TerminalButton } from "../../components";
+import { TerminalText, BottomButtonGroup } from "../../components";
 import { logAndGetUserError } from "../../services/error-handler";
 
 type AmmunitionDetailsScreenNavigationProp = NativeStackNavigationProp<
@@ -153,16 +153,23 @@ export const AmmunitionDetails = () => {
         </View>
       )}
 
-      <View className="flex-row justify-between mt-4">
-        <TerminalButton
-          onPress={() =>
-            navigation.navigate("EditAmmunition", { id: ammunition.id })
-          }
-          caption="EDIT"
-        />
-        <TerminalButton onPress={handleDelete} caption="DELETE" />
-        <TerminalButton onPress={() => navigation.goBack()} caption="BACK" />
-      </View>
+      <BottomButtonGroup
+        className="mt-4"
+        buttons={[
+          {
+            caption: "EDIT",
+            onPress: () => navigation.navigate("EditAmmunition", { id: ammunition.id }),
+          },
+          {
+            caption: "DELETE",
+            onPress: handleDelete,
+          },
+          {
+            caption: "BACK",
+            onPress: () => navigation.goBack(),
+          },
+        ]}
+      />
     </View>
   );
 }

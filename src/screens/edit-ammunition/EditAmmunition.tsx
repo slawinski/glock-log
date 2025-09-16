@@ -14,6 +14,7 @@ import {
   TerminalText,
   TerminalInput,
   TerminalDatePicker,
+  BottomButtonGroup,
 } from "../../components";
 import { storage } from "../../services/storage-new";
 import {
@@ -217,21 +218,19 @@ export const EditAmmunition = () => {
         />
       </View>
 
-      <View className="flex-row justify-between">
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>CANCEL</TerminalText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleSubmit}
-          disabled={saving}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>{saving ? "SAVING..." : "SAVE CHANGES"}</TerminalText>
-        </TouchableOpacity>
-      </View>
+      <BottomButtonGroup
+        buttons={[
+          {
+            caption: "CANCEL",
+            onPress: () => navigation.goBack(),
+          },
+          {
+            caption: saving ? "SAVING..." : "SAVE CHANGES",
+            onPress: handleSubmit,
+            disabled: saving,
+          },
+        ]}
+      />
     </ScrollView>
   );
 }

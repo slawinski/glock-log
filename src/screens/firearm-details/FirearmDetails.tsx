@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { storage } from "../../services/storage-new";
-import { TerminalText, ImageGallery, TerminalButton } from "../../components";
+import { TerminalText, ImageGallery, BottomButtonGroup } from "../../components";
 import { FirearmStorage } from "../../validation/storageSchemas";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
@@ -148,16 +148,23 @@ export const FirearmDetails = () => {
           </View>
         )}
 
-        <View className="flex-row justify-between mt-4">
-          <TerminalButton
-            onPress={() =>
-              navigation.navigate("EditFirearm", { id: firearm.id })
-            }
-            caption="EDIT"
-          />
-          <TerminalButton onPress={handleDelete} caption="DELETE" />
-          <TerminalButton onPress={() => navigation.goBack()} caption="BACK" />
-        </View>
+        <BottomButtonGroup
+          className="mt-4"
+          buttons={[
+            {
+              caption: "EDIT",
+              onPress: () => navigation.navigate("EditFirearm", { id: firearm.id }),
+            },
+            {
+              caption: "DELETE",
+              onPress: handleDelete,
+            },
+            {
+              caption: "BACK",
+              onPress: () => navigation.goBack(),
+            },
+          ]}
+        />
       </View>
     </ScrollView>
   );

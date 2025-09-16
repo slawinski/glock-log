@@ -1,3 +1,4 @@
+export * from "./bottom-button-group/BottomButtonGroup";
 export * from "./chart-toggles/ChartToggles";
 export * from "./firearm-image/FirearmImage";
 export * from "./image-gallery/ImageGallery";

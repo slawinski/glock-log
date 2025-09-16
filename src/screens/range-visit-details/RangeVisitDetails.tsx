@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { storage } from "../../services/storage-new";
-import { TerminalText, ImageGallery, TerminalButton } from "../../components";
+import { TerminalText, ImageGallery, BottomButtonGroup } from "../../components";
 import {
   FirearmStorage,
   RangeVisitStorage,
@@ -188,16 +188,23 @@ export const RangeVisitDetails = () => {
         </View>
       )}
 
-      <View className="flex-row justify-between mb-4">
-        <TerminalButton
-          onPress={() =>
-            navigation.navigate("EditRangeVisit", { id: visit.id })
-          }
-          caption="EDIT"
-        />
-        <TerminalButton onPress={handleDelete} caption="DELETE" />
-        <TerminalButton onPress={() => navigation.goBack()} caption="BACK" />
-      </View>
+      <BottomButtonGroup
+        className="mb-4"
+        buttons={[
+          {
+            caption: "EDIT",
+            onPress: () => navigation.navigate("EditRangeVisit", { id: visit.id }),
+          },
+          {
+            caption: "DELETE",
+            onPress: handleDelete,
+          },
+          {
+            caption: "BACK",
+            onPress: () => navigation.goBack(),
+          },
+        ]}
+      />
     </ScrollView>
   );
 };

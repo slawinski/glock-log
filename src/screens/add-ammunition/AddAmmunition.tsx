@@ -7,7 +7,7 @@ import {
   TerminalText,
   TerminalInput,
   TerminalDatePicker,
-  TerminalButton,
+  BottomButtonGroup,
 } from "../../components";
 import { storage } from "../../services/storage-new";
 import {
@@ -207,14 +207,19 @@ export const AddAmmunition = () => {
         </View>
       )}
 
-      <View className="flex-row justify-between">
-        <TerminalButton onPress={() => navigation.goBack()} caption="CANCEL" />
-        <TerminalButton
-          onPress={handleSubmit}
-          disabled={saving}
-          caption={saving ? "SAVING..." : "SAVE AMMUNITION"}
-        />
-      </View>
+      <BottomButtonGroup
+        buttons={[
+          {
+            caption: "CANCEL",
+            onPress: () => navigation.goBack(),
+          },
+          {
+            caption: saving ? "SAVING..." : "SAVE AMMUNITION",
+            onPress: handleSubmit,
+            disabled: saving,
+          },
+        ]}
+      />
     </ScrollView>
   );
 };

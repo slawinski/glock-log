@@ -10,6 +10,7 @@ import {
   TerminalInput,
   TerminalDatePicker,
   ImageGallery,
+  BottomButtonGroup,
 } from "../../components";
 import {
   rangeVisitInputSchema,
@@ -421,21 +422,19 @@ export const AddRangeVisit = () => {
         />
       </View>
 
-      <View className="flex-row justify-between">
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>CANCEL</TerminalText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleSubmit}
-          disabled={saving}
-          className="border border-terminal-border px-4 py-2"
-        >
-          <TerminalText>{saving ? "SAVING..." : "SAVE"}</TerminalText>
-        </TouchableOpacity>
-      </View>
+      <BottomButtonGroup
+        buttons={[
+          {
+            caption: "CANCEL",
+            onPress: () => navigation.goBack(),
+          },
+          {
+            caption: saving ? "SAVING..." : "SAVE",
+            onPress: handleSubmit,
+            disabled: saving,
+          },
+        ]}
+      />
     </ScrollView>
   );
 };

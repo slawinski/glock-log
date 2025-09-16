@@ -16,7 +16,7 @@ import {
   TerminalText,
   TerminalInput,
   TerminalDatePicker,
-  TerminalButton,
+  BottomButtonGroup,
   ImageGallery,
 } from "../../components";
 import {
@@ -244,14 +244,19 @@ export const EditFirearm = () => {
         )}
       </View>
 
-      <View className="flex-row justify-between">
-        <TerminalButton onPress={() => navigation.goBack()} caption="CANCEL" />
-        <TerminalButton
-          onPress={handleSubmit}
-          disabled={saving}
-          caption={saving ? "SAVING..." : "SAVE CHANGES"}
-        />
-      </View>
+      <BottomButtonGroup
+        buttons={[
+          {
+            caption: "CANCEL",
+            onPress: () => navigation.goBack(),
+          },
+          {
+            caption: saving ? "SAVING..." : "SAVE CHANGES",
+            onPress: handleSubmit,
+            disabled: saving,
+          },
+        ]}
+      />
     </ScrollView>
   );
 };

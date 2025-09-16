@@ -11,7 +11,7 @@ import {
   TerminalDatePicker,
   ImageGallery,
   PlaceholderImagePicker,
-  TerminalButton,
+  BottomButtonGroup,
 } from "../../components";
 import { PlaceholderImageKey } from "../../services/image-source-manager";
 import {
@@ -233,14 +233,19 @@ export const AddFirearm = () => {
         </View>
       )}
 
-      <View className="flex-row justify-between">
-        <TerminalButton onPress={() => navigation.goBack()} caption="CANCEL" />
-        <TerminalButton
-          onPress={handleSubmit}
-          disabled={saving}
-          caption={saving ? "SAVING..." : "SAVE FIREARM"}
-        />
-      </View>
+      <BottomButtonGroup
+        buttons={[
+          {
+            caption: "CANCEL",
+            onPress: () => navigation.goBack(),
+          },
+          {
+            caption: saving ? "SAVING..." : "SAVE FIREARM",
+            onPress: handleSubmit,
+            disabled: saving,
+          },
+        ]}
+      />
     </ScrollView>
   );
 };
