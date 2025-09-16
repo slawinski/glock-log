@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
@@ -33,11 +33,7 @@ export const RangeVisitDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchVisit();
-  }, [route.params?.id]);
-
-  const fetchVisit = async () => {
+  const fetchVisit = useCallback(async () => {
     try {
       setLoading(true);
       const visits = await storage.getRangeVisits();
@@ -81,7 +77,13 @@ export const RangeVisitDetails = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [route.params?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchVisit();
+    }, [fetchVisit])
+  );
 
   const handleDelete = async () => {
     Alert.alert(
