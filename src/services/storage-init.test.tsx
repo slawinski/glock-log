@@ -58,7 +58,14 @@ describe("StorageInit", () => {
     const TestChild = () => <></>;
     const { getByTestId, queryByText } = render(
       <StorageInit>
-        <div data-testid="test-child">Test Content</div>
+        {(() => {
+          const { View, Text } = require("react-native");
+          return (
+            <View testID="test-child">
+              <Text>Test Content</Text>
+            </View>
+          );
+        })()}
       </StorageInit>
     );
 
@@ -264,7 +271,14 @@ describe("StorageInit", () => {
     // Re-render the component
     rerender(
       <StorageInit>
-        <div data-testid="new-child">New Child</div>
+        {(() => {
+          const { View, Text } = require("react-native");
+          return (
+            <View testID="new-child">
+              <Text>New Child</Text>
+            </View>
+          );
+        })()}
       </StorageInit>
     );
 
