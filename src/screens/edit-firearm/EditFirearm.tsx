@@ -176,15 +176,17 @@ export const EditFirearm = () => {
   }
 
   return (
-    <ScrollView className="flex-1 bg-terminal-bg p-4">
-      <View className="mb-4">
-        <TerminalText>MODEL NAME</TerminalText>
-        <TerminalInput
-          value={formData.modelName}
-          onChangeText={(text) => handleFormChange("modelName", text)}
-          placeholder="e.g., Glock 19"
-        />
-      </View>
+    <View className="flex-1 bg-terminal-bg">
+      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
+        <View className="flex-1">
+          <View className="mb-4">
+            <TerminalText>MODEL NAME</TerminalText>
+            <TerminalInput
+              value={formData.modelName}
+              onChangeText={(text) => handleFormChange("modelName", text)}
+              placeholder="e.g., Glock 19"
+            />
+          </View>
 
       <View className="mb-4">
         <TerminalText>CALIBER</TerminalText>
@@ -244,19 +246,23 @@ export const EditFirearm = () => {
         )}
       </View>
 
-      <BottomButtonGroup
-        buttons={[
-          {
-            caption: "CANCEL",
-            onPress: () => navigation.goBack(),
-          },
-          {
-            caption: saving ? "SAVING..." : "SAVE CHANGES",
-            onPress: handleSubmit,
-            disabled: saving,
-          },
-        ]}
-      />
-    </ScrollView>
+          <View className="flex-1" />
+
+          <BottomButtonGroup
+            buttons={[
+              {
+                caption: "CANCEL",
+                onPress: () => navigation.goBack(),
+              },
+              {
+                caption: saving ? "SAVING..." : "SAVE CHANGES",
+                onPress: handleSubmit,
+                disabled: saving,
+              },
+            ]}
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 };

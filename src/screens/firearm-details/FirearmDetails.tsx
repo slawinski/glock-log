@@ -1,11 +1,19 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
-import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
+import {
+  useNavigation,
+  useRoute,
+  useFocusEffect,
+} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { storage } from "../../services/storage-new";
-import { TerminalText, ImageGallery, BottomButtonGroup } from "../../components";
+import {
+  TerminalText,
+  ImageGallery,
+  BottomButtonGroup,
+} from "../../components";
 import { FirearmStorage } from "../../validation/storageSchemas";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
@@ -100,72 +108,81 @@ export const FirearmDetails = () => {
   }
 
   return (
-    <ScrollView className="flex-1 bg-terminal-bg">
-      <View className="p-4">
-        <View className="mb-4">
-          <View className="flex-row items-center">
-            <TerminalText className="text-lg">MODEL: </TerminalText>
-            <TerminalText className="text-lg">{firearm.modelName}</TerminalText>
-          </View>
-          <View className="flex-row items-center">
-            <TerminalText>CALIBER: </TerminalText>
-            <TerminalText>{firearm.caliber}</TerminalText>
-          </View>
-        </View>
-
-        <View className="mb-4 flex-row">
-          <TerminalText>ROUNDS FIRED: </TerminalText>
-          <TerminalText>{firearm.roundsFired} rounds</TerminalText>
-        </View>
-
-        <View className="mb-4 flex-row">
-          <TerminalText>DATE PURCHASED: </TerminalText>
-          <TerminalText>
-            {new Date(firearm.datePurchased).toLocaleDateString()}
-          </TerminalText>
-        </View>
-
-        <View className="mb-4 flex-row">
-          <TerminalText>AMOUNT PAID: </TerminalText>
-          <TerminalText>${firearm.amountPaid.toFixed(2)}</TerminalText>
-        </View>
-
-        {firearm.notes && (
-          <View className="mb-4 flex-row">
-            <TerminalText>NOTES: </TerminalText>
-            <TerminalText className="flex-shrink">{firearm.notes}</TerminalText>
-          </View>
-        )}
-
-        {firearm.photos && firearm.photos.length > 0 && (
+    <View className="flex-1 bg-terminal-bg">
+      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
+        <View className="flex-1">
           <View className="mb-4">
-            <TerminalText className="text-lg mb-2">PHOTOS:</TerminalText>
-            <ImageGallery
-              images={firearm.photos}
-              size="large"
-              showDeleteButton={false}
-            />
+            <View className="flex-row items-center">
+              <TerminalText className="text-lg">MODEL: </TerminalText>
+              <TerminalText className="text-lg">
+                {firearm.modelName}
+              </TerminalText>
+            </View>
+            <View className="flex-row items-center">
+              <TerminalText>CALIBER: </TerminalText>
+              <TerminalText>{firearm.caliber}</TerminalText>
+            </View>
           </View>
-        )}
 
-        <BottomButtonGroup
-          className="mt-4"
-          buttons={[
-            {
-              caption: "EDIT",
-              onPress: () => navigation.navigate("EditFirearm", { id: firearm.id }),
-            },
-            {
-              caption: "DELETE",
-              onPress: handleDelete,
-            },
-            {
-              caption: "BACK",
-              onPress: () => navigation.goBack(),
-            },
-          ]}
-        />
-      </View>
-    </ScrollView>
+          <View className="mb-4 flex-row">
+            <TerminalText>ROUNDS FIRED: </TerminalText>
+            <TerminalText>{firearm.roundsFired} rounds</TerminalText>
+          </View>
+
+          <View className="mb-4 flex-row">
+            <TerminalText>DATE PURCHASED: </TerminalText>
+            <TerminalText>
+              {new Date(firearm.datePurchased).toLocaleDateString()}
+            </TerminalText>
+          </View>
+
+          <View className="mb-4 flex-row">
+            <TerminalText>AMOUNT PAID: </TerminalText>
+            <TerminalText>${firearm.amountPaid.toFixed(2)}</TerminalText>
+          </View>
+
+          {firearm.notes && (
+            <View className="mb-4 flex-row">
+              <TerminalText>NOTES: </TerminalText>
+              <TerminalText className="flex-shrink">
+                {firearm.notes}
+              </TerminalText>
+            </View>
+          )}
+
+          {firearm.photos && firearm.photos.length > 0 && (
+            <View className="mb-4">
+              <TerminalText className="text-lg mb-2">PHOTOS:</TerminalText>
+              <ImageGallery
+                images={firearm.photos}
+                size="large"
+                showDeleteButton={false}
+              />
+            </View>
+          )}
+
+          <View className="flex-1" />
+
+          <BottomButtonGroup
+            className="mt-4"
+            buttons={[
+              {
+                caption: "EDIT",
+                onPress: () =>
+                  navigation.navigate("EditFirearm", { id: firearm.id }),
+              },
+              {
+                caption: "DELETE",
+                onPress: handleDelete,
+              },
+              {
+                caption: "BACK",
+                onPress: () => navigation.goBack(),
+              },
+            ]}
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 };

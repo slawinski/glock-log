@@ -212,17 +212,19 @@ export const EditRangeVisit = () => {
   }
 
   return (
-    <ScrollView className="flex-1 bg-terminal-bg p-4">
-      <View className="mb-4">
-        <TerminalText>LOCATION</TerminalText>
-        <TerminalInput
-          value={formData.location}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, location: text }))
-          }
-          placeholder="e.g., Local Range"
-        />
-      </View>
+    <View className="flex-1 bg-terminal-bg">
+      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
+        <View className="flex-1">
+          <View className="mb-4">
+            <TerminalText>LOCATION</TerminalText>
+            <TerminalInput
+              value={formData.location}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, location: text }))
+              }
+              placeholder="e.g., Local Range"
+            />
+          </View>
 
       <View className="mb-4">
         <TerminalText>DATE</TerminalText>
@@ -375,19 +377,23 @@ export const EditRangeVisit = () => {
         )}
       </View>
 
-      <BottomButtonGroup
-        buttons={[
-          {
-            caption: "CANCEL",
-            onPress: () => navigation.goBack(),
-          },
-          {
-            caption: saving ? "SAVING..." : "SAVE",
-            onPress: handleSubmit,
-            disabled: saving,
-          },
-        ]}
-      />
-    </ScrollView>
+          <View className="flex-1" />
+
+          <BottomButtonGroup
+            buttons={[
+              {
+                caption: "CANCEL",
+                onPress: () => navigation.goBack(),
+              },
+              {
+                caption: saving ? "SAVING..." : "SAVE",
+                onPress: handleSubmit,
+                disabled: saving,
+              },
+            ]}
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 };

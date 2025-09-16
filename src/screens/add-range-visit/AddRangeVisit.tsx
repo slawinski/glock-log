@@ -199,18 +199,20 @@ export const AddRangeVisit = () => {
   }
 
   return (
-    <ScrollView className="flex-1 bg-terminal-bg p-4">
-      <View className="mb-4">
-        <TerminalText>LOCATION</TerminalText>
-        <TerminalInput
-          value={formData.location}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, location: text }))
-          }
-          placeholder="Enter range location"
-          testID="location-input"
-        />
-      </View>
+    <View className="flex-1 bg-terminal-bg">
+      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
+        <View className="flex-1">
+          <View className="mb-4">
+            <TerminalText>LOCATION</TerminalText>
+            <TerminalInput
+              value={formData.location}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, location: text }))
+              }
+              placeholder="Enter range location"
+              testID="location-input"
+            />
+          </View>
 
       <View className="mb-4">
         <TerminalDatePicker
@@ -422,19 +424,23 @@ export const AddRangeVisit = () => {
         />
       </View>
 
-      <BottomButtonGroup
-        buttons={[
-          {
-            caption: "CANCEL",
-            onPress: () => navigation.goBack(),
-          },
-          {
-            caption: saving ? "SAVING..." : "SAVE",
-            onPress: handleSubmit,
-            disabled: saving,
-          },
-        ]}
-      />
-    </ScrollView>
+          <View className="flex-1" />
+
+          <BottomButtonGroup
+            buttons={[
+              {
+                caption: "CANCEL",
+                onPress: () => navigation.goBack(),
+              },
+              {
+                caption: saving ? "SAVING..." : "SAVE",
+                onPress: handleSubmit,
+                disabled: saving,
+              },
+            ]}
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 };

@@ -283,7 +283,7 @@ export const Home = () => {
   };
 
   return (
-    <View className="flex-1 p-4 bg-terminal-bg">
+    <View className="flex-1 bg-terminal-bg">
       <TerminalTabs
         tabs={TABS}
         activeTab={activeTab}

@@ -106,70 +106,76 @@ export const AmmunitionDetails = () => {
   }
 
   return (
-    <View className="flex-1 bg-terminal-bg p-4">
-      <View className="mb-4">
-        <View className="flex-row">
-          <TerminalText className="text-lg">BRAND: </TerminalText>
-          <TerminalText className="text-lg">{ammunition.brand}</TerminalText>
+    <View className="flex-1 bg-terminal-bg">
+      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
+        <View className="flex-1">
+          <View className="mb-4">
+            <View className="flex-row">
+              <TerminalText className="text-lg">BRAND: </TerminalText>
+              <TerminalText className="text-lg">{ammunition.brand}</TerminalText>
+            </View>
+            <View className="flex-row">
+              <TerminalText>DETAILS: </TerminalText>
+              <TerminalText>
+                {ammunition.caliber} - {ammunition.grain}gr
+              </TerminalText>
+            </View>
+          </View>
+
+          <View className="mb-4 flex-row">
+            <TerminalText>QUANTITY: </TerminalText>
+            <TerminalText>{ammunition.quantity} rounds</TerminalText>
+          </View>
+
+          <View className="mb-4 flex-row">
+            <TerminalText>AMOUNT PAID: </TerminalText>
+            <TerminalText>${ammunition.amountPaid.toFixed(2)}</TerminalText>
+          </View>
+
+          {ammunition.pricePerRound && (
+            <View className="mb-4 flex-row">
+              <TerminalText>PRICE PER ROUND: </TerminalText>
+              <TerminalText>${ammunition.pricePerRound.toFixed(2)}</TerminalText>
+            </View>
+          )}
+
+          <View className="mb-4 flex-row">
+            <TerminalText>DATE PURCHASED: </TerminalText>
+            <TerminalText>
+              {new Date(ammunition.datePurchased).toLocaleDateString()}
+            </TerminalText>
+          </View>
+
+          {ammunition.notes && (
+            <View className="mb-4 flex-row">
+              <TerminalText>NOTES: </TerminalText>
+              <TerminalText className="flex-shrink">
+                {ammunition.notes}
+              </TerminalText>
+            </View>
+          )}
+
+          <View className="flex-1" />
+
+          <BottomButtonGroup
+            className="mt-4"
+            buttons={[
+              {
+                caption: "EDIT",
+                onPress: () => navigation.navigate("EditAmmunition", { id: ammunition.id }),
+              },
+              {
+                caption: "DELETE",
+                onPress: handleDelete,
+              },
+              {
+                caption: "BACK",
+                onPress: () => navigation.goBack(),
+              },
+            ]}
+          />
         </View>
-        <View className="flex-row">
-          <TerminalText>DETAILS: </TerminalText>
-          <TerminalText>
-            {ammunition.caliber} - {ammunition.grain}gr
-          </TerminalText>
-        </View>
-      </View>
-
-      <View className="mb-4 flex-row">
-        <TerminalText>QUANTITY: </TerminalText>
-        <TerminalText>{ammunition.quantity} rounds</TerminalText>
-      </View>
-
-      <View className="mb-4 flex-row">
-        <TerminalText>AMOUNT PAID: </TerminalText>
-        <TerminalText>${ammunition.amountPaid.toFixed(2)}</TerminalText>
-      </View>
-
-      {ammunition.pricePerRound && (
-        <View className="mb-4 flex-row">
-          <TerminalText>PRICE PER ROUND: </TerminalText>
-          <TerminalText>${ammunition.pricePerRound.toFixed(2)}</TerminalText>
-        </View>
-      )}
-
-      <View className="mb-4 flex-row">
-        <TerminalText>DATE PURCHASED: </TerminalText>
-        <TerminalText>
-          {new Date(ammunition.datePurchased).toLocaleDateString()}
-        </TerminalText>
-      </View>
-
-      {ammunition.notes && (
-        <View className="mb-4 flex-row">
-          <TerminalText>NOTES: </TerminalText>
-          <TerminalText className="flex-shrink">
-            {ammunition.notes}
-          </TerminalText>
-        </View>
-      )}
-
-      <BottomButtonGroup
-        className="mt-4"
-        buttons={[
-          {
-            caption: "EDIT",
-            onPress: () => navigation.navigate("EditAmmunition", { id: ammunition.id }),
-          },
-          {
-            caption: "DELETE",
-            onPress: handleDelete,
-          },
-          {
-            caption: "BACK",
-            onPress: () => navigation.goBack(),
-          },
-        ]}
-      />
+      </ScrollView>
     </View>
   );
 }

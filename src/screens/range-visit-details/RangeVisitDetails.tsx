@@ -133,78 +133,84 @@ export const RangeVisitDetails = () => {
   );
 
   return (
-    <ScrollView className="flex-1 bg-terminal-bg p-4">
-      <View className="mb-4 flex-row">
-        <TerminalText>LOCATION: </TerminalText>
-        <TerminalText>{visit.location}</TerminalText>
-      </View>
+    <View className="flex-1 bg-terminal-bg">
+      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
+        <View className="flex-1">
+          <View className="mb-4 flex-row">
+            <TerminalText>LOCATION: </TerminalText>
+            <TerminalText>{visit.location}</TerminalText>
+          </View>
 
-      <View className="mb-4 flex-row">
-        <TerminalText>DATE: </TerminalText>
-        <TerminalText>{new Date(visit.date).toLocaleDateString()}</TerminalText>
-      </View>
+          <View className="mb-4 flex-row">
+            <TerminalText>DATE: </TerminalText>
+            <TerminalText>{new Date(visit.date).toLocaleDateString()}</TerminalText>
+          </View>
 
-      <View className="mb-4">
-        <TerminalText className="text-lg mb-2">FIREARMS USED:</TerminalText>
-        {visit.firearmsUsed.map((firearmId) => {
-          const firearm = firearms[firearmId];
-          const usage = visit.ammunitionUsed?.[firearmId];
-          const ammo = usage ? ammunition[usage.ammunitionId] : null;
+          <View className="mb-4">
+            <TerminalText className="text-lg mb-2">FIREARMS USED:</TerminalText>
+            {visit.firearmsUsed.map((firearmId) => {
+              const firearm = firearms[firearmId];
+              const usage = visit.ammunitionUsed?.[firearmId];
+              const ammo = usage ? ammunition[usage.ammunitionId] : null;
 
-          return (
-            <View key={firearmId} className="mb-2 flex-row">
-              <TerminalText>
-                {firearm?.modelName} ({firearm?.caliber}){" "}
-              </TerminalText>
-              {usage && ammo && (
-                <TerminalText>
-                  {usage.rounds} rounds of {ammo.brand} {ammo.caliber}{" "}
-                  {ammo.grain}gr
-                </TerminalText>
-              )}
+              return (
+                <View key={firearmId} className="mb-2 flex-row">
+                  <TerminalText>
+                    {firearm?.modelName} ({firearm?.caliber}){" "}
+                  </TerminalText>
+                  {usage && ammo && (
+                    <TerminalText>
+                      {usage.rounds} rounds of {ammo.brand} {ammo.caliber}{" "}
+                      {ammo.grain}gr
+                    </TerminalText>
+                  )}
+                </View>
+              );
+            })}
+            <View className="mt-4">
+              <TerminalText>TOTAL ROUNDS FIRED: {totalRounds}</TerminalText>
             </View>
-          );
-        })}
-        <View className="mt-4">
-          <TerminalText>TOTAL ROUNDS FIRED: {totalRounds}</TerminalText>
-        </View>
-      </View>
+          </View>
 
-      {visit.notes && (
-        <View className="mb-4 flex-row">
-          <TerminalText>NOTES: </TerminalText>
-          <TerminalText className="flex-shrink">{visit.notes}</TerminalText>
-        </View>
-      )}
+          {visit.notes && (
+            <View className="mb-4 flex-row">
+              <TerminalText>NOTES: </TerminalText>
+              <TerminalText className="flex-shrink">{visit.notes}</TerminalText>
+            </View>
+          )}
 
-      {visit.photos && visit.photos.length > 0 && (
-        <View className="mb-4">
-          <TerminalText className="text-lg mb-2">PHOTOS:</TerminalText>
-          <ImageGallery
-            images={visit.photos}
-            size="large"
-            showDeleteButton={false}
+          {visit.photos && visit.photos.length > 0 && (
+            <View className="mb-4">
+              <TerminalText className="text-lg mb-2">PHOTOS:</TerminalText>
+              <ImageGallery
+                images={visit.photos}
+                size="large"
+                showDeleteButton={false}
+              />
+            </View>
+          )}
+
+          <View className="flex-1" />
+
+          <BottomButtonGroup
+            className="mb-4"
+            buttons={[
+              {
+                caption: "EDIT",
+                onPress: () => navigation.navigate("EditRangeVisit", { id: visit.id }),
+              },
+              {
+                caption: "DELETE",
+                onPress: handleDelete,
+              },
+              {
+                caption: "BACK",
+                onPress: () => navigation.goBack(),
+              },
+            ]}
           />
         </View>
-      )}
-
-      <BottomButtonGroup
-        className="mb-4"
-        buttons={[
-          {
-            caption: "EDIT",
-            onPress: () => navigation.navigate("EditRangeVisit", { id: visit.id }),
-          },
-          {
-            caption: "DELETE",
-            onPress: handleDelete,
-          },
-          {
-            caption: "BACK",
-            onPress: () => navigation.goBack(),
-          },
-        ]}
-      />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };

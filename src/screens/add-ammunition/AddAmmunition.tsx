@@ -92,18 +92,20 @@ export const AddAmmunition = () => {
   };
 
   return (
-    <ScrollView className="flex-1 bg-terminal-bg p-4">
-      <View className="mb-4">
-        <TerminalText>CALIBER</TerminalText>
-        <TerminalInput
-          value={formData.caliber}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, caliber: text }))
-          }
-          placeholder="e.g., 9mm"
-          testID="caliber-input"
-        />
-      </View>
+    <View className="flex-1 bg-terminal-bg">
+      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
+        <View className="flex-1">
+          <View className="mb-4">
+            <TerminalText>CALIBER</TerminalText>
+            <TerminalInput
+              value={formData.caliber}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, caliber: text }))
+              }
+              placeholder="e.g., 9mm"
+              testID="caliber-input"
+            />
+          </View>
 
       <View className="mb-4">
         <TerminalText>BRAND</TerminalText>
@@ -201,25 +203,29 @@ export const AddAmmunition = () => {
         />
       </View>
 
-      {error && (
-        <View className="mb-4">
-          <TerminalText className="text-terminal-error">{error}</TerminalText>
-        </View>
-      )}
+          {error && (
+            <View className="mb-4">
+              <TerminalText className="text-terminal-error">{error}</TerminalText>
+            </View>
+          )}
 
-      <BottomButtonGroup
-        buttons={[
-          {
-            caption: "CANCEL",
-            onPress: () => navigation.goBack(),
-          },
-          {
-            caption: saving ? "SAVING..." : "SAVE AMMUNITION",
-            onPress: handleSubmit,
-            disabled: saving,
-          },
-        ]}
-      />
-    </ScrollView>
+          <View className="flex-1" />
+
+          <BottomButtonGroup
+            buttons={[
+              {
+                caption: "CANCEL",
+                onPress: () => navigation.goBack(),
+              },
+              {
+                caption: saving ? "SAVING..." : "SAVE AMMUNITION",
+                onPress: handleSubmit,
+                disabled: saving,
+              },
+            ]}
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 };

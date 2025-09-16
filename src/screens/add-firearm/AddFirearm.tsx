@@ -115,137 +115,143 @@ export const AddFirearm = () => {
   }
 
   return (
-    <ScrollView className="flex-1 bg-terminal-bg p-4">
-      <View className="items-center mb-6">
-        <TerminalButton
-          onPress={handleImagePick}
-          className="mb-4"
-          caption="ADD PHOTOS"
-        />
+    <View className="flex-1 bg-terminal-bg">
+      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
+        <View className="flex-1">
+          <View className="items-center mb-6">
+            <TerminalButton
+              onPress={handleImagePick}
+              className="mb-4"
+              caption="ADD PHOTOS"
+            />
 
-        {formData.photos && formData.photos.length > 0 && (
-          <View className="w-full mb-4">
-            <TerminalText className="mb-2">SELECTED PHOTOS</TerminalText>
-            <ImageGallery
-              images={formData.photos}
-              onDeleteImage={handleDeleteImage}
-              size="medium"
-              showDeleteButton={true}
+            {formData.photos && formData.photos.length > 0 && (
+              <View className="w-full mb-4">
+                <TerminalText className="mb-2">SELECTED PHOTOS</TerminalText>
+                <ImageGallery
+                  images={formData.photos}
+                  onDeleteImage={handleDeleteImage}
+                  size="medium"
+                  showDeleteButton={true}
+                />
+              </View>
+            )}
+
+            {(!formData.photos || formData.photos.length === 0) && (
+              <View className="w-full mb-4">
+                <PlaceholderImagePicker onSelect={handlePlaceholderSelect} />
+              </View>
+            )}
+          </View>
+
+          <View className="mb-4">
+            <TerminalText>MODEL NAME</TerminalText>
+            <TerminalInput
+              value={formData.modelName}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, modelName: text }))
+              }
+              placeholder="e.g., Glock 19"
+              testID="model-name-input"
             />
           </View>
-        )}
 
-        {(!formData.photos || formData.photos.length === 0) && (
-          <View className="w-full mb-4">
-            <PlaceholderImagePicker onSelect={handlePlaceholderSelect} />
+          <View className="mb-4">
+            <TerminalText>CALIBER</TerminalText>
+            <TerminalInput
+              value={formData.caliber}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, caliber: text }))
+              }
+              placeholder="e.g., 9mm"
+              testID="caliber-input"
+            />
           </View>
-        )}
-      </View>
 
-      <View className="mb-4">
-        <TerminalText>MODEL NAME</TerminalText>
-        <TerminalInput
-          value={formData.modelName}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, modelName: text }))
-          }
-          placeholder="e.g., Glock 19"
-          testID="model-name-input"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>AMOUNT PAID</TerminalText>
+            <TerminalInput
+              value={formData.amountPaid}
+              onChangeText={(text) => {
+                const amount = parseFloat(text);
+                setFormData((prev) => ({
+                  ...prev,
+                  amountPaid: isNaN(amount) ? null : amount,
+                }));
+              }}
+              placeholder="Enter amount paid"
+              keyboardType="numeric"
+              testID="amount-paid-input"
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>CALIBER</TerminalText>
-        <TerminalInput
-          value={formData.caliber}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, caliber: text }))
-          }
-          placeholder="e.g., 9mm"
-          testID="caliber-input"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>INITIAL ROUNDS FIRED</TerminalText>
+            <TerminalInput
+              value={formData.initialRoundsFired?.toString() ?? ""}
+              onChangeText={(text) => {
+                const rounds = parseInt(text, 10);
+                setFormData((prev) => ({
+                  ...prev,
+                  initialRoundsFired: isNaN(rounds) ? undefined : rounds,
+                }));
+              }}
+              placeholder="e.g., 500"
+              keyboardType="numeric"
+              testID="initial-rounds-input"
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>AMOUNT PAID</TerminalText>
-        <TerminalInput
-          value={formData.amountPaid}
-          onChangeText={(text) => {
-            const amount = parseFloat(text);
-            setFormData((prev) => ({
-              ...prev,
-              amountPaid: isNaN(amount) ? null : amount,
-            }));
-          }}
-          placeholder="Enter amount paid"
-          keyboardType="numeric"
-          testID="amount-paid-input"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalDatePicker
+              value={new Date(formData.datePurchased)}
+              onChange={(date) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  datePurchased: date.toISOString(),
+                }))
+              }
+              label="PURCHASE DATE"
+              maxDate={new Date()}
+              placeholder="Select purchase date"
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>INITIAL ROUNDS FIRED</TerminalText>
-        <TerminalInput
-          value={formData.initialRoundsFired?.toString() ?? ""}
-          onChangeText={(text) => {
-            const rounds = parseInt(text, 10);
-            setFormData((prev) => ({
-              ...prev,
-              initialRoundsFired: isNaN(rounds) ? undefined : rounds,
-            }));
-          }}
-          placeholder="e.g., 500"
-          keyboardType="numeric"
-          testID="initial-rounds-input"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>NOTES</TerminalText>
+            <TerminalInput
+              value={formData.notes || ""}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, notes: text }))
+              }
+              placeholder="Add any notes about this firearm"
+              multiline
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalDatePicker
-          value={new Date(formData.datePurchased)}
-          onChange={(date) =>
-            setFormData((prev) => ({
-              ...prev,
-              datePurchased: date.toISOString(),
-            }))
-          }
-          label="PURCHASE DATE"
-          maxDate={new Date()}
-          placeholder="Select purchase date"
-        />
-      </View>
+          {error && (
+            <View className="mb-4">
+              <TerminalText className="text-terminal-error">{error}</TerminalText>
+            </View>
+          )}
 
-      <View className="mb-4">
-        <TerminalText>NOTES</TerminalText>
-        <TerminalInput
-          value={formData.notes || ""}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, notes: text }))
-          }
-          placeholder="Add any notes about this firearm"
-          multiline
-        />
-      </View>
+          <View className="flex-1" />
 
-      {error && (
-        <View className="mb-4">
-          <TerminalText className="text-terminal-error">{error}</TerminalText>
+          <BottomButtonGroup
+            buttons={[
+              {
+                caption: "CANCEL",
+                onPress: () => navigation.goBack(),
+              },
+              {
+                caption: saving ? "SAVING..." : "SAVE FIREARM",
+                onPress: handleSubmit,
+                disabled: saving,
+              },
+            ]}
+          />
         </View>
-      )}
-
-      <BottomButtonGroup
-        buttons={[
-          {
-            caption: "CANCEL",
-            onPress: () => navigation.goBack(),
-          },
-          {
-            caption: saving ? "SAVING..." : "SAVE FIREARM",
-            onPress: handleSubmit,
-            disabled: saving,
-          },
-        ]}
-      />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
