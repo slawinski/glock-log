@@ -137,7 +137,7 @@ export const FirearmDetails = () => {
 
         {firearm.photos && firearm.photos.length > 0 && (
           <View className="mb-4">
-            <TerminalText className="text-lg mb-2">PHOTOS</TerminalText>
+            <TerminalText className="text-lg mb-2">PHOTOS:</TerminalText>
             <ImageGallery
               images={firearm.photos}
               size="large"
@@ -159,4 +159,4 @@ export const FirearmDetails = () => {
       </View>
     </ScrollView>
   );
-}
+};

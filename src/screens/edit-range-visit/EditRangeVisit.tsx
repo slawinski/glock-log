@@ -357,7 +357,7 @@ export const EditRangeVisit = () => {
       </View>
 
       <View className="mb-4">
-        <TerminalText>PHOTOS</TerminalText>
+        <TerminalText>PHOTOS:</TerminalText>
         <TouchableOpacity
           onPress={handleImagePick}
           className="border border-terminal-border p-3 mb-2"

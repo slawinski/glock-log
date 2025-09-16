@@ -129,14 +129,14 @@ export const EditFirearm = () => {
 
   const handleDeletePhoto = (index: number) => {
     if (!formData) return;
-    
+
     // Adjust thumbnail index if needed
     if (index === thumbnailIndex) {
       setThumbnailIndex(0); // Reset to first image
     } else if (index < thumbnailIndex) {
       setThumbnailIndex(thumbnailIndex - 1); // Shift thumbnail index down
     }
-    
+
     setFormData({
       ...formData,
       photos: (formData.photos || []).filter((_, i: number) => i !== index),
@@ -222,7 +222,7 @@ export const EditFirearm = () => {
       </View>
 
       <View className="mb-4">
-        <TerminalText>PHOTOS</TerminalText>
+        <TerminalText>PHOTOS:</TerminalText>
         <TerminalText className="text-sm text-gray-400 mb-2">
           Tap an image to set as thumbnail for Home screen
         </TerminalText>
@@ -254,4 +254,4 @@ export const EditFirearm = () => {
       </View>
     </ScrollView>
   );
-}
+};
