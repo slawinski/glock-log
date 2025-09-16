@@ -12,6 +12,7 @@ import {
   ImageGallery,
   PlaceholderImagePicker,
   BottomButtonGroup,
+  TerminalButton,
 } from "../../components";
 import { PlaceholderImageKey } from "../../services/image-source-manager";
 import {
@@ -231,7 +232,9 @@ export const AddFirearm = () => {
 
           {error && (
             <View className="mb-4">
-              <TerminalText className="text-terminal-error">{error}</TerminalText>
+              <TerminalText className="text-terminal-error">
+                {error}
+              </TerminalText>
             </View>
           )}
 

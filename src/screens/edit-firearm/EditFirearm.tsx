@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
@@ -18,6 +12,7 @@ import {
   TerminalDatePicker,
   BottomButtonGroup,
   ImageGallery,
+  TerminalButton,
 } from "../../components";
 import {
   firearmInputSchema,
@@ -188,63 +183,63 @@ export const EditFirearm = () => {
             />
           </View>
 
-      <View className="mb-4">
-        <TerminalText>CALIBER</TerminalText>
-        <TerminalInput
-          value={formData.caliber}
-          onChangeText={(text) => handleFormChange("caliber", text)}
-          placeholder="e.g., 9mm"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>CALIBER</TerminalText>
+            <TerminalInput
+              value={formData.caliber}
+              onChangeText={(text) => handleFormChange("caliber", text)}
+              placeholder="e.g., 9mm"
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>AMOUNT PAID</TerminalText>
-        <TerminalInput
-          value={formData.amountPaid}
-          onChangeText={(text) => {
-            const amount = parseFloat(text);
-            handleFormChange("amountPaid", isNaN(amount) ? null : amount);
-          }}
-          placeholder="Enter amount paid"
-          keyboardType="numeric"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>AMOUNT PAID</TerminalText>
+            <TerminalInput
+              value={formData.amountPaid}
+              onChangeText={(text) => {
+                const amount = parseFloat(text);
+                handleFormChange("amountPaid", isNaN(amount) ? null : amount);
+              }}
+              placeholder="Enter amount paid"
+              keyboardType="numeric"
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>DATE PURCHASED</TerminalText>
-        <TerminalDatePicker
-          value={new Date(formData.datePurchased)}
-          onChange={(date) =>
-            handleFormChange("datePurchased", date.toISOString())
-          }
-          label="PURCHASE DATE"
-          maxDate={new Date()}
-          placeholder="Select purchase date"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>DATE PURCHASED</TerminalText>
+            <TerminalDatePicker
+              value={new Date(formData.datePurchased)}
+              onChange={(date) =>
+                handleFormChange("datePurchased", date.toISOString())
+              }
+              label="PURCHASE DATE"
+              maxDate={new Date()}
+              placeholder="Select purchase date"
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>PHOTOS:</TerminalText>
-        <TerminalText className="text-sm text-gray-400 mb-2">
-          Tap an image to set as thumbnail for Home screen
-        </TerminalText>
-        <TerminalButton
-          onPress={handleImagePick}
-          className="p-3 mb-2"
-          caption="ADD PHOTO"
-        />
-        {formData.photos && formData.photos.length > 0 && (
-          <ImageGallery
-            images={formData.photos}
-            onDeleteImage={handleDeletePhoto}
-            size="medium"
-            showDeleteButton={true}
-            thumbnailIndex={thumbnailIndex}
-            onSelectThumbnail={handleSelectThumbnail}
-            allowThumbnailSelection={true}
-          />
-        )}
-      </View>
+          <View className="mb-4">
+            <TerminalText>PHOTOS:</TerminalText>
+            <TerminalText className="text-sm text-gray-400 mb-2">
+              Tap an image to set as thumbnail for Home screen
+            </TerminalText>
+            <TerminalButton
+              onPress={handleImagePick}
+              className="p-3 mb-2"
+              caption="ADD PHOTO"
+            />
+            {formData.photos && formData.photos.length > 0 && (
+              <ImageGallery
+                images={formData.photos}
+                onDeleteImage={handleDeletePhoto}
+                size="medium"
+                showDeleteButton={true}
+                thumbnailIndex={thumbnailIndex}
+                onSelectThumbnail={handleSelectThumbnail}
+                allowThumbnailSelection={true}
+              />
+            )}
+          </View>
 
           <View className="flex-1" />
 
