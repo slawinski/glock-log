@@ -388,24 +388,72 @@ export const storage = {
 
   async saveRangeVisitWithAmmunition(visit: RangeVisitInput): Promise<void> {
     try {
+      const isUpdate = !!visit.id;
+      let originalVisit: RangeVisitStorage | undefined;
+
+      // Get original visit data if this is an update
+      if (isUpdate) {
+        const visits = await this.getRangeVisits();
+        originalVisit = visits.find((v) => v.id === visit.id);
+      }
+
       await this.saveRangeVisit(visit);
 
       // Update ammunition quantities
       if (visit.ammunitionUsed) {
-        for (const ammoData of Object.values(visit.ammunitionUsed)) {
-          await this.updateAmmunitionQuantity(
-            ammoData.ammunitionId,
-            -ammoData.rounds
-          );
+        for (const [firearmId, ammoData] of Object.entries(visit.ammunitionUsed)) {
+          const originalAmmoData = originalVisit?.ammunitionUsed?.[firearmId];
+          const originalRounds = originalAmmoData?.rounds || 0;
+          const newRounds = ammoData.rounds;
+          const roundsDifference = newRounds - originalRounds;
+
+          // Only update if there's a difference
+          if (roundsDifference !== 0) {
+            await this.updateAmmunitionQuantity(
+              ammoData.ammunitionId,
+              -roundsDifference
+            );
+          }
         }
       }
 
-      // Update firearm rounds fired for each firearm used
+      // Handle ammunition that was removed from the visit (restore to inventory)
+      if (isUpdate && originalVisit?.ammunitionUsed) {
+        for (const [firearmId, originalAmmoData] of Object.entries(originalVisit.ammunitionUsed)) {
+          // If this firearm/ammunition is no longer used in the updated visit
+          if (!visit.ammunitionUsed?.[firearmId]) {
+            await this.updateAmmunitionQuantity(
+              originalAmmoData.ammunitionId,
+              originalAmmoData.rounds // Add back to inventory
+            );
+          }
+        }
+      }
+
+      // Update firearm rounds fired
       if (visit.ammunitionUsed && visit.firearmsUsed.length > 0) {
         for (const firearmId of visit.firearmsUsed) {
           const ammoData = visit.ammunitionUsed[firearmId];
           if (ammoData) {
-            await this.updateFirearmRoundsFired(firearmId, ammoData.rounds);
+            const originalAmmoData = originalVisit?.ammunitionUsed?.[firearmId];
+            const originalRounds = originalAmmoData?.rounds || 0;
+            const newRounds = ammoData.rounds;
+            const roundsDifference = newRounds - originalRounds;
+
+            // Only update if there's a difference
+            if (roundsDifference !== 0) {
+              await this.updateFirearmRoundsFired(firearmId, roundsDifference);
+            }
+          }
+        }
+      }
+
+      // Handle firearms that were removed from the visit (subtract rounds fired)
+      if (isUpdate && originalVisit?.ammunitionUsed) {
+        for (const [firearmId, originalAmmoData] of Object.entries(originalVisit.ammunitionUsed)) {
+          // If this firearm is no longer used in the updated visit
+          if (!visit.ammunitionUsed?.[firearmId]) {
+            await this.updateFirearmRoundsFired(firearmId, -originalAmmoData.rounds);
           }
         }
       }
