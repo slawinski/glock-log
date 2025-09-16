@@ -41,6 +41,7 @@ export const EditFirearm = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [thumbnailIndex, setThumbnailIndex] = useState(0);
 
   const fetchFirearm = useCallback(async () => {
     try {
@@ -52,6 +53,7 @@ export const EditFirearm = () => {
           ...firearm,
           photos: firearm.photos || [],
         });
+        setThumbnailIndex(0); // Reset thumbnail index when loading firearm
       } else {
         setError("Firearm not found");
       }
@@ -92,9 +94,18 @@ export const EditFirearm = () => {
     try {
       setSaving(true);
 
+      // Reorder photos to put thumbnail first
+      let reorderedPhotos = [...(formData.photos || [])];
+      if (thumbnailIndex > 0 && thumbnailIndex < reorderedPhotos.length) {
+        const thumbnailPhoto = reorderedPhotos[thumbnailIndex];
+        reorderedPhotos.splice(thumbnailIndex, 1);
+        reorderedPhotos.unshift(thumbnailPhoto);
+      }
+
       const dataToValidate = {
         ...formData,
         amountPaid: formData.amountPaid || 0,
+        photos: reorderedPhotos,
       };
 
       // Validate form data using Zod
@@ -118,10 +129,22 @@ export const EditFirearm = () => {
 
   const handleDeletePhoto = (index: number) => {
     if (!formData) return;
+    
+    // Adjust thumbnail index if needed
+    if (index === thumbnailIndex) {
+      setThumbnailIndex(0); // Reset to first image
+    } else if (index < thumbnailIndex) {
+      setThumbnailIndex(thumbnailIndex - 1); // Shift thumbnail index down
+    }
+    
     setFormData({
       ...formData,
       photos: (formData.photos || []).filter((_, i: number) => i !== index),
     });
+  };
+
+  const handleSelectThumbnail = (index: number) => {
+    setThumbnailIndex(index);
   };
 
   const handleFormChange = (
@@ -200,6 +223,9 @@ export const EditFirearm = () => {
 
       <View className="mb-4">
         <TerminalText>PHOTOS</TerminalText>
+        <TerminalText className="text-sm text-gray-400 mb-2">
+          Tap an image to set as thumbnail for Home screen
+        </TerminalText>
         <TerminalButton
           onPress={handleImagePick}
           className="p-3 mb-2"
@@ -211,6 +237,9 @@ export const EditFirearm = () => {
             onDeleteImage={handleDeletePhoto}
             size="medium"
             showDeleteButton={true}
+            thumbnailIndex={thumbnailIndex}
+            onSelectThumbnail={handleSelectThumbnail}
+            allowThumbnailSelection={true}
           />
         )}
       </View>
