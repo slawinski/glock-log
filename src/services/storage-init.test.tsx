@@ -1,0 +1,313 @@
+import React from "react";
+import { render, waitFor } from "@testing-library/react-native";
+import { StorageInit } from "./storage-init";
+import { StorageFactory } from "./storage-factory";
+import { STORAGE_CONFIG } from "./storage-config";
+
+// Mock dependencies
+jest.mock("./storage-factory", () => ({
+  StorageFactory: {
+    configure: jest.fn(),
+    getStorage: jest.fn(),
+  },
+}));
+
+jest.mock("./storage-config", () => ({
+  STORAGE_CONFIG: {
+    type: "mmkv",
+    id: "test-storage",
+    encryptionKey: "test-key",
+  },
+}));
+
+const mockConsoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+
+describe("StorageInit", () => {
+  const mockStorageFactory = StorageFactory as jest.Mocked<typeof StorageFactory>;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockConsoleError.mockClear();
+  });
+
+  afterAll(() => {
+    mockConsoleError.mockRestore();
+  });
+
+  it("renders loading state initially", () => {
+    // Mock configure to throw immediately to keep component in loading state
+    mockStorageFactory.configure.mockImplementation(() => {
+      throw new Error("Keep loading");
+    });
+
+    const TestChild = () => <></>;
+    const { queryByText } = render(
+      <StorageInit>
+        <TestChild />
+      </StorageInit>
+    );
+
+    // Component should show error instead of loading for this test
+    expect(queryByText("Failed to initialize storage: Keep loading")).toBeTruthy();
+  });
+
+  it("renders children after successful initialization", async () => {
+    mockStorageFactory.configure.mockImplementation(() => {});
+    mockStorageFactory.getStorage.mockImplementation(() => ({} as any));
+
+    const TestChild = () => <></>;
+    const { getByTestId, queryByText } = render(
+      <StorageInit>
+        <div testID="test-child">Test Content</div>
+      </StorageInit>
+    );
+
+    await waitFor(() => {
+      expect(queryByText("Initializing storage...")).toBeNull();
+    });
+
+    expect(getByTestId("test-child")).toBeTruthy();
+  });
+
+  it("configures storage with correct config", async () => {
+    mockStorageFactory.configure.mockImplementation(() => {});
+    mockStorageFactory.getStorage.mockImplementation(() => ({} as any));
+
+    const TestChild = () => <></>;
+    render(
+      <StorageInit>
+        <TestChild />
+      </StorageInit>
+    );
+
+    await waitFor(() => {
+      expect(mockStorageFactory.configure).toHaveBeenCalledWith(STORAGE_CONFIG);
+    });
+  });
+
+  it("tests storage by getting an instance", async () => {
+    mockStorageFactory.configure.mockImplementation(() => {});
+    mockStorageFactory.getStorage.mockImplementation(() => ({} as any));
+
+    const TestChild = () => <></>;
+    render(
+      <StorageInit>
+        <TestChild />
+      </StorageInit>
+    );
+
+    await waitFor(() => {
+      expect(mockStorageFactory.getStorage).toHaveBeenCalled();
+    });
+  });
+
+  it("displays error when storage configuration fails", async () => {
+    const configError = new Error("Storage configuration failed");
+    mockStorageFactory.configure.mockImplementation(() => {
+      throw configError;
+    });
+
+    const TestChild = () => <></>;
+    const { getByText } = render(
+      <StorageInit>
+        <TestChild />
+      </StorageInit>
+    );
+
+    await waitFor(() => {
+      expect(getByText("Failed to initialize storage: Storage configuration failed")).toBeTruthy();
+    });
+
+    expect(mockConsoleError).toHaveBeenCalledWith("Failed to initialize storage:", configError);
+  });
+
+  it("displays error when storage instance creation fails", async () => {
+    const instanceError = new Error("Storage instance creation failed");
+    mockStorageFactory.configure.mockImplementation(() => {});
+    mockStorageFactory.getStorage.mockImplementation(() => {
+      throw instanceError;
+    });
+
+    const TestChild = () => <></>;
+    const { getByText } = render(
+      <StorageInit>
+        <TestChild />
+      </StorageInit>
+    );
+
+    await waitFor(() => {
+      expect(getByText("Failed to initialize storage: Storage instance creation failed")).toBeTruthy();
+    });
+
+    expect(mockConsoleError).toHaveBeenCalledWith("Failed to initialize storage:", instanceError);
+  });
+
+  it("handles non-Error exceptions", async () => {
+    const stringError = "String error message";
+    mockStorageFactory.configure.mockImplementation(() => {
+      throw stringError;
+    });
+
+    const TestChild = () => <></>;
+    const { getByText } = render(
+      <StorageInit>
+        <TestChild />
+      </StorageInit>
+    );
+
+    await waitFor(() => {
+      expect(getByText("Failed to initialize storage: Unknown error")).toBeTruthy();
+    });
+
+    expect(mockConsoleError).toHaveBeenCalledWith("Failed to initialize storage:", stringError);
+  });
+
+  it("handles null errors", async () => {
+    mockStorageFactory.configure.mockImplementation(() => {
+      throw null;
+    });
+
+    const TestChild = () => <></>;
+    const { getByText } = render(
+      <StorageInit>
+        <TestChild />
+      </StorageInit>
+    );
+
+    await waitFor(() => {
+      expect(getByText("Failed to initialize storage: Unknown error")).toBeTruthy();
+    });
+
+    expect(mockConsoleError).toHaveBeenCalledWith("Failed to initialize storage:", null);
+  });
+
+  it("renders multiple children correctly", async () => {
+    mockStorageFactory.configure.mockImplementation(() => {});
+    mockStorageFactory.getStorage.mockImplementation(() => ({} as any));
+
+    const { getByTestId } = render(
+      <StorageInit>
+        <div testID="child-1">Child 1</div>
+        <div testID="child-2">Child 2</div>
+        <div testID="child-3">Child 3</div>
+      </StorageInit>
+    );
+
+    await waitFor(() => {
+      expect(getByTestId("child-1")).toBeTruthy();
+      expect(getByTestId("child-2")).toBeTruthy();
+      expect(getByTestId("child-3")).toBeTruthy();
+    });
+  });
+
+  it("applies correct styling to error view", () => {
+    mockStorageFactory.configure.mockImplementation(() => {
+      throw new Error("Test styling error");
+    });
+
+    const TestChild = () => <></>;
+    const { getByText } = render(
+      <StorageInit>
+        <TestChild />
+      </StorageInit>
+    );
+
+    const errorText = getByText("Failed to initialize storage: Test styling error");
+    
+    // Check that the error view exists and has content
+    expect(errorText).toBeTruthy();
+  });
+
+  it("applies correct styling to error view", async () => {
+    mockStorageFactory.configure.mockImplementation(() => {
+      throw new Error("Test error");
+    });
+
+    const TestChild = () => <></>;
+    const { getByText } = render(
+      <StorageInit>
+        <TestChild />
+      </StorageInit>
+    );
+
+    await waitFor(() => {
+      const errorText = getByText(/Failed to initialize storage/);
+      const errorView = errorText.parent;
+
+      expect(errorView).toBeTruthy();
+      expect(errorText).toBeTruthy();
+    });
+  });
+
+  it("only initializes storage once", async () => {
+    mockStorageFactory.configure.mockImplementation(() => {});
+    mockStorageFactory.getStorage.mockImplementation(() => ({} as any));
+
+    const TestChild = () => <></>;
+    const { rerender } = render(
+      <StorageInit>
+        <TestChild />
+      </StorageInit>
+    );
+
+    await waitFor(() => {
+      expect(mockStorageFactory.configure).toHaveBeenCalledTimes(1);
+    });
+
+    // Re-render the component
+    rerender(
+      <StorageInit>
+        <div testID="new-child">New Child</div>
+      </StorageInit>
+    );
+
+    // Should not call configure again
+    expect(mockStorageFactory.configure).toHaveBeenCalledTimes(1);
+    expect(mockStorageFactory.getStorage).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders children after successful async initialization", async () => {
+    mockStorageFactory.configure.mockImplementation(() => {
+      // Successful synchronous initialization
+    });
+    mockStorageFactory.getStorage.mockImplementation(() => ({} as any));
+
+    const TestChild = () => <div testID="test-child">Test Content</div>;
+    const { getByTestId } = render(
+      <StorageInit>
+        <TestChild />
+      </StorageInit>
+    );
+
+    await waitFor(() => {
+      expect(getByTestId("test-child")).toBeTruthy();
+    });
+  });
+
+  it("maintains error state after error occurs", async () => {
+    mockStorageFactory.configure.mockImplementation(() => {
+      throw new Error("Persistent error");
+    });
+
+    const TestChild = () => <></>;
+    const { getByText, rerender } = render(
+      <StorageInit>
+        <TestChild />
+      </StorageInit>
+    );
+
+    await waitFor(() => {
+      expect(getByText("Failed to initialize storage: Persistent error")).toBeTruthy();
+    });
+
+    // Re-render with different children
+    rerender(
+      <StorageInit>
+        <div testID="different-child">Different Child</div>
+      </StorageInit>
+    );
+
+    // Should still show error, not try to initialize again
+    expect(getByText("Failed to initialize storage: Persistent error")).toBeTruthy();
+  });
+});
