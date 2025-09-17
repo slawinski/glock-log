@@ -26,9 +26,7 @@ export const Menu = () => {
 
       <TouchableOpacity
         className="px-2 py-1"
-        onPress={() => {
-          // TODO: Navigate to Settings when implemented
-        }}
+        onPress={() => navigation.navigate("Settings")}
       >
         <TerminalText>├── SETTINGS</TerminalText>
       </TouchableOpacity>

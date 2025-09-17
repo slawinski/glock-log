@@ -9,4 +9,5 @@ export { FirearmDetails } from "./firearm-details/FirearmDetails";
 export { Home } from "./home/Home";
 export { Menu } from "./menu/Menu";
 export { RangeVisitDetails } from "./range-visit-details/RangeVisitDetails";
+export { Settings } from "./settings/Settings";
 export { Stats } from "./stats/Stats";
