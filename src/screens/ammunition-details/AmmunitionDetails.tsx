@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import {
+  useNavigation,
+  useRoute,
+  useFocusEffect,
+} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
@@ -53,6 +57,12 @@ export const AmmunitionDetails = () => {
   useEffect(() => {
     fetchAmmunition();
   }, [fetchAmmunition]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchAmmunition();
+    }, [fetchAmmunition])
+  );
 
   const handleDelete = async () => {
     if (!ammunition) return;
