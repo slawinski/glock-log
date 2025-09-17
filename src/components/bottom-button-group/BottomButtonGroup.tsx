@@ -14,8 +14,11 @@ type Props = {
 };
 
 export const BottomButtonGroup: FC<Props> = ({ buttons, className }) => {
+  // If only one button, align it to the right
+  const justifyClass = buttons.length === 1 ? "justify-end" : "justify-between";
+  
   return (
-    <View className={`flex-row justify-between ${className || ""}`}>
+    <View className={`flex-row ${justifyClass} p-4 ${className || ""}`}>
       {buttons.map((button, index) => (
         <TerminalButton
           key={index}

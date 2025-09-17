@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -19,6 +20,7 @@ import {
   HeaderButton,
   TerminalTabs,
 } from "../../components";
+import { BottomButtonGroup } from "../../components/bottom-button-group/BottomButtonGroup";
 import { FirearmsTab } from "./FirearmsTab";
 import { VisitsTab } from "./VisitsTab";
 import { AmmunitionTab } from "./AmmunitionTab";
@@ -46,25 +48,20 @@ export const Home = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("firearms");
 
+  const [menuVisible, setMenuVisible] = useState(false);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
         <HeaderButton
-          onPress={() => navigation.navigate("Stats")}
-          caption="STATS"
+          onPress={() => setMenuVisible(true)}
+          caption="☰"
           className="text-2xl"
-        />
-      ),
-      headerRight: () => (
-        <HeaderButton
-          onPress={() => navigation.navigate(getAddScreen())}
-          caption="+"
-          className="text-3xl"
         />
       ),
       title: "TRIGGERNOTE",
     });
-  }, [navigation, activeTab]);
+  }, [navigation]);
 
   useEffect(() => {
     fetchData(false);
@@ -125,6 +122,19 @@ export const Home = () => {
     }
   };
 
+  const getAddButtonCaption = () => {
+    switch (activeTab) {
+      case "firearms":
+        return "+ ADD FIREARM";
+      case "visits":
+        return "+ ADD VISIT";
+      case "ammunition":
+        return "+ ADD AMMO";
+      default:
+        return "+ ADD";
+    }
+  };
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -179,6 +189,60 @@ export const Home = () => {
     }
   };
 
+  const renderHamburgerMenu = () => (
+    <Modal
+      visible={menuVisible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setMenuVisible(false)}
+    >
+      <TouchableOpacity
+        className="flex-1 bg-black bg-opacity-50"
+        activeOpacity={1}
+        onPress={() => setMenuVisible(false)}
+      >
+        <View className="absolute top-16 left-4 bg-terminal-bg border border-terminal-border min-w-48">
+          <TouchableOpacity
+            className="p-4 border-b border-terminal-border"
+            onPress={() => {
+              setMenuVisible(false);
+              navigation.navigate("Stats");
+            }}
+          >
+            <TerminalText>📊 STATISTICS</TerminalText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="p-4 border-b border-terminal-border"
+            onPress={() => {
+              setMenuVisible(false);
+              // TODO: Navigate to Settings when implemented
+            }}
+          >
+            <TerminalText>⚙️ SETTINGS</TerminalText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="p-4 border-b border-terminal-border"
+            onPress={() => {
+              setMenuVisible(false);
+              // TODO: Export functionality
+            }}
+          >
+            <TerminalText>📤 EXPORT DATA</TerminalText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="p-4"
+            onPress={() => {
+              setMenuVisible(false);
+              // TODO: About screen
+            }}
+          >
+            <TerminalText>ℹ️ ABOUT</TerminalText>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  );
+
   return (
     <View className="flex-1 bg-terminal-bg">
       <TerminalTabs
@@ -186,7 +250,18 @@ export const Home = () => {
         activeTab={activeTab}
         onTabPress={(tabId) => setActiveTab(tabId as TabType)}
       />
-      {renderContent()}
+      <View className="flex-1">
+        {renderContent()}
+      </View>
+      <BottomButtonGroup
+        buttons={[
+          {
+            caption: getAddButtonCaption(),
+            onPress: () => navigation.navigate(getAddScreen()),
+          },
+        ]}
+      />
+      {renderHamburgerMenu()}
     </View>
   );
 };
