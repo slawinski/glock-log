@@ -15,38 +15,40 @@ export const Menu = () => {
 
   return (
     <View className="flex-1 bg-terminal-bg p-4">
+      <TerminalText className="mb-4">SYSTEM/</TerminalText>
+
       <TouchableOpacity
-        className="p-4 border-b border-terminal-border"
+        className="px-2 py-1"
         onPress={() => navigation.navigate("Stats")}
       >
-        <TerminalText>📊 STATISTICS</TerminalText>
+        <TerminalText>├── STATISTICS</TerminalText>
       </TouchableOpacity>
-      
+
       <TouchableOpacity
-        className="p-4 border-b border-terminal-border"
+        className="px-2 py-1"
         onPress={() => {
           // TODO: Navigate to Settings when implemented
         }}
       >
-        <TerminalText>⚙️ SETTINGS</TerminalText>
+        <TerminalText>├── SETTINGS</TerminalText>
       </TouchableOpacity>
-      
+
       <TouchableOpacity
-        className="p-4 border-b border-terminal-border"
+        className="px-2 py-1"
         onPress={() => {
           // TODO: Export functionality
         }}
       >
-        <TerminalText>📤 EXPORT DATA</TerminalText>
+        <TerminalText>├── EXPORT</TerminalText>
       </TouchableOpacity>
-      
+
       <TouchableOpacity
-        className="p-4"
+        className="px-2 py-1"
         onPress={() => {
           // TODO: About screen
         }}
       >
-        <TerminalText>ℹ️ ABOUT</TerminalText>
+        <TerminalText>└── ABOUT</TerminalText>
       </TouchableOpacity>
     </View>
   );
