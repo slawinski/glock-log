@@ -1,10 +1,14 @@
-import React, { useCallback, useState, useLayoutEffect, useEffect } from "react";
+import React, {
+  useCallback,
+  useState,
+  useLayoutEffect,
+  useEffect,
+} from "react";
 import {
   View,
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  Modal,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -15,11 +19,7 @@ import {
   AmmunitionStorage,
 } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
-import {
-  TerminalText,
-  HeaderButton,
-  TerminalTabs,
-} from "../../components";
+import { TerminalText, HeaderButton, TerminalTabs } from "../../components";
 import { BottomButtonGroup } from "../../components/bottom-button-group/BottomButtonGroup";
 import { FirearmsTab } from "./FirearmsTab";
 import { VisitsTab } from "./VisitsTab";
@@ -48,13 +48,11 @@ export const Home = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("firearms");
 
-  const [menuVisible, setMenuVisible] = useState(false);
-
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
         <HeaderButton
-          onPress={() => setMenuVisible(true)}
+          onPress={() => navigation.navigate("Menu")}
           caption="☰"
           className="text-2xl"
         />
@@ -107,7 +105,6 @@ export const Home = () => {
   const onRefresh = () => {
     fetchData(true);
   };
-
 
   const getAddScreen = () => {
     switch (activeTab) {
@@ -189,59 +186,6 @@ export const Home = () => {
     }
   };
 
-  const renderHamburgerMenu = () => (
-    <Modal
-      visible={menuVisible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={() => setMenuVisible(false)}
-    >
-      <TouchableOpacity
-        className="flex-1 bg-black bg-opacity-50"
-        activeOpacity={1}
-        onPress={() => setMenuVisible(false)}
-      >
-        <View className="absolute top-16 left-4 bg-terminal-bg border border-terminal-border min-w-48">
-          <TouchableOpacity
-            className="p-4 border-b border-terminal-border"
-            onPress={() => {
-              setMenuVisible(false);
-              navigation.navigate("Stats");
-            }}
-          >
-            <TerminalText>📊 STATISTICS</TerminalText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="p-4 border-b border-terminal-border"
-            onPress={() => {
-              setMenuVisible(false);
-              // TODO: Navigate to Settings when implemented
-            }}
-          >
-            <TerminalText>⚙️ SETTINGS</TerminalText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="p-4 border-b border-terminal-border"
-            onPress={() => {
-              setMenuVisible(false);
-              // TODO: Export functionality
-            }}
-          >
-            <TerminalText>📤 EXPORT DATA</TerminalText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="p-4"
-            onPress={() => {
-              setMenuVisible(false);
-              // TODO: About screen
-            }}
-          >
-            <TerminalText>ℹ️ ABOUT</TerminalText>
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    </Modal>
-  );
 
   return (
     <View className="flex-1 bg-terminal-bg">
@@ -250,9 +194,7 @@ export const Home = () => {
         activeTab={activeTab}
         onTabPress={(tabId) => setActiveTab(tabId as TabType)}
       />
-      <View className="flex-1">
-        {renderContent()}
-      </View>
+      <View className="flex-1">{renderContent()}</View>
       <BottomButtonGroup
         buttons={[
           {
@@ -261,7 +203,6 @@ export const Home = () => {
           },
         ]}
       />
-      {renderHamburgerMenu()}
     </View>
   );
 };

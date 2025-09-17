@@ -7,5 +7,6 @@ export { EditFirearm } from "./edit-firearm/EditFirearm";
 export { EditRangeVisit } from "./edit-range-visit/EditRangeVisit";
 export { FirearmDetails } from "./firearm-details/FirearmDetails";
 export { Home } from "./home/Home";
+export { Menu } from "./menu/Menu";
 export { RangeVisitDetails } from "./range-visit-details/RangeVisitDetails";
 export { Stats } from "./stats/Stats";

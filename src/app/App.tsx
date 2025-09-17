@@ -18,6 +18,7 @@ import {
   AddAmmunition,
   AmmunitionDetails,
   EditAmmunition,
+  Menu,
 } from "../screens";
 
 export type RootStackParamList = {
@@ -32,6 +33,7 @@ export type RootStackParamList = {
   AddAmmunition: undefined;
   AmmunitionDetails: { id: string };
   EditAmmunition: { id: string };
+  Menu: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -122,6 +124,11 @@ export default function App() {
               name="EditAmmunition"
               component={EditAmmunition}
               options={{ title: "EDIT AMMUNITION" }}
+            />
+            <Stack.Screen
+              name="Menu"
+              component={Menu}
+              options={{ title: "SYSTEM MENU" }}
             />
           </Stack.Navigator>
         </NavigationContainer>
