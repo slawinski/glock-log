@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useLayoutEffect } from "react";
+import React, { useCallback, useState, useLayoutEffect, useEffect } from "react";
 import {
   View,
   TouchableOpacity,
@@ -18,8 +18,10 @@ import {
   TerminalText,
   HeaderButton,
   TerminalTabs,
-  FirearmImage,
 } from "../../components";
+import { FirearmsTab } from "./FirearmsTab";
+import { VisitsTab } from "./VisitsTab";
+import { AmmunitionTab } from "./AmmunitionTab";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -64,11 +66,13 @@ export const Home = () => {
     });
   }, [navigation, activeTab]);
 
+  useEffect(() => {
+    fetchData(false);
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
-      if (isInitialLoad) {
-        fetchData(false);
-      } else {
+      if (!isInitialLoad) {
         fetchData(true);
       }
     }, [isInitialLoad])
@@ -107,92 +111,6 @@ export const Home = () => {
     fetchData(true);
   };
 
-  const renderFirearmItem = ({ item }: { item: FirearmStorage }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("FirearmDetails", { id: item.id })}
-      className="bg-terminal-bg border border-terminal-border p-4 mb-4"
-    >
-      <View className="flex-row items-start">
-        <FirearmImage photoUri={item.photos?.[0]} size={60} className="mr-4" />
-        <View className="flex-1 flex-row flex-wrap">
-          <View className="w-1/2 pr-2">
-            <TerminalText className="text-lg" numberOfLines={1}>
-              {item.modelName} ({item.caliber})
-            </TerminalText>
-          </View>
-          <View className="w-1/2 items-end">
-            <TerminalText>{item.roundsFired} rounds</TerminalText>
-          </View>
-          <View className="w-1/2 pr-2 mt-1">
-            <TerminalText>
-              Added: {new Date(item.createdAt).toLocaleDateString()}
-            </TerminalText>
-          </View>
-          <View className="w-1/2 items-end justify-end">
-            <TerminalText className="text-lg">{">"}</TerminalText>
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const renderVisitItem = ({ item }: { item: RangeVisitStorage }) => {
-    const totalRounds = Object.values(item.ammunitionUsed || {}).reduce(
-      (sum, usage) => sum + usage.rounds,
-      0
-    );
-    return (
-      <TouchableOpacity
-        onPress={() =>
-          navigation.navigate("RangeVisitDetails", { id: item.id })
-        }
-        className="bg-terminal-bg border border-terminal-border p-4 mb-2"
-      >
-        <View className="flex-row flex-wrap">
-          <View className="w-1/2 pr-2">
-            <TerminalText className="text-lg">{item.location}</TerminalText>
-          </View>
-          <View className="w-1/2 items-end">
-            <TerminalText>{totalRounds} rounds</TerminalText>
-          </View>
-          <View className="w-1/2 pr-2 mt-1">
-            <TerminalText>
-              {new Date(item.date).toLocaleDateString()}
-            </TerminalText>
-          </View>
-          <View className="w-1/2 items-end justify-end">
-            <TerminalText className="text-lg">{">"}</TerminalText>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderAmmunitionItem = ({ item }: { item: AmmunitionStorage }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("AmmunitionDetails", { id: item.id })}
-      className="bg-terminal-bg border border-terminal-border p-4 mb-2"
-    >
-      <View className="flex-row flex-wrap">
-        <View className="w-1/2 pr-2">
-          <TerminalText className="text-lg" numberOfLines={1}>
-            {item.brand} ({item.caliber})
-          </TerminalText>
-        </View>
-        <View className="w-1/2 items-end">
-          <TerminalText>{item.quantity} rounds</TerminalText>
-        </View>
-        <View className="w-1/2 pr-2 mt-1">
-          <TerminalText>
-            {item.pricePerRound && `$${item.pricePerRound.toFixed(2)}/rd`}
-          </TerminalText>
-        </View>
-        <View className="w-1/2 items-end justify-end">
-          <TerminalText className="text-lg">{">"}</TerminalText>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
 
   const getAddScreen = () => {
     switch (activeTab) {
@@ -236,47 +154,26 @@ export const Home = () => {
     switch (activeTab) {
       case "firearms":
         return (
-          <FlatList
-            data={firearms}
-            renderItem={renderFirearmItem}
-            keyExtractor={(item) => item.id}
+          <FirearmsTab
+            firearms={firearms}
             onRefresh={onRefresh}
             refreshing={false}
-            ListEmptyComponent={
-              <View className="flex-1 justify-center items-center mt-8">
-                <TerminalText>NO FIREARMS FOUND</TerminalText>
-              </View>
-            }
           />
         );
       case "visits":
         return (
-          <FlatList
-            data={rangeVisits}
-            renderItem={renderVisitItem}
-            keyExtractor={(item) => item.id}
+          <VisitsTab
+            rangeVisits={rangeVisits}
             onRefresh={onRefresh}
             refreshing={false}
-            ListEmptyComponent={
-              <View className="flex-1 justify-center items-center mt-8">
-                <TerminalText>NO RANGE VISITS FOUND</TerminalText>
-              </View>
-            }
           />
         );
       case "ammunition":
         return (
-          <FlatList
-            data={ammunition}
-            renderItem={renderAmmunitionItem}
-            keyExtractor={(item) => item.id}
+          <AmmunitionTab
+            ammunition={ammunition}
             onRefresh={onRefresh}
             refreshing={false}
-            ListEmptyComponent={
-              <View className="flex-1 justify-center items-center mt-8">
-                <TerminalText>NO AMMUNITION FOUND</TerminalText>
-              </View>
-            }
           />
         );
     }
