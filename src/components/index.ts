@@ -9,6 +9,7 @@ export * from "./terminal-button/HeaderButton";
 export * from "./terminal-calendar/TerminalCalendar";
 export * from "./terminal-calendar-header/TerminalCalendarHeader";
 export * from "./terminal-date-picker/TerminalDatePicker";
+export * from "./terminal-directory/TerminalDirectory";
 export * from "./terminal-input/TerminalInput";
 export * from "./terminal-tabs/TerminalTabs";
 export * from "./terminal-text/TerminalText";
