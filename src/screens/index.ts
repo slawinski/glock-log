@@ -2,6 +2,7 @@ export { AddAmmunition } from "./add-ammunition/AddAmmunition";
 export { AddFirearm } from "./add-firearm/AddFirearm";
 export { AddRangeVisit } from "./add-range-visit/AddRangeVisit";
 export { AmmunitionDetails } from "./ammunition-details/AmmunitionDetails";
+export { CurrencySelection } from "./currency-selection/CurrencySelection";
 export { EditAmmunition } from "./edit-ammunition/EditAmmunition";
 export { EditFirearm } from "./edit-firearm/EditFirearm";
 export { EditRangeVisit } from "./edit-range-visit/EditRangeVisit";

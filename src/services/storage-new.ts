@@ -25,6 +25,7 @@ const STORAGE_KEYS = {
   FIREARMS: "@storage:firearms",
   AMMUNITION: "@storage:ammunition",
   RANGE_VISITS: "@storage:range-visits",
+  SETTINGS: "@storage:settings",
 };
 
 // Helper function to validate and parse data
@@ -488,6 +489,47 @@ export const storage = {
     } catch (error) {
       console.error("Error getting ammunition images:", error);
       return [];
+    }
+  },
+
+  // Settings management methods
+  async getSettings(): Promise<{ currency: string }> {
+    try {
+      const storage = StorageFactory.getStorage();
+      const settingsData = await storage.getItem(STORAGE_KEYS.SETTINGS);
+      if (!settingsData) {
+        return { currency: "USD" }; // Default currency
+      }
+      const settings = JSON.parse(settingsData);
+      return { currency: settings.currency || "USD" };
+    } catch (error) {
+      console.error("Error getting settings:", error);
+      return { currency: "USD" };
+    }
+  },
+
+  async setCurrency(currency: string): Promise<void> {
+    try {
+      const currentSettings = await this.getSettings();
+      const updatedSettings = { ...currentSettings, currency };
+      const storage = StorageFactory.getStorage();
+      await storage.setItem(
+        STORAGE_KEYS.SETTINGS,
+        JSON.stringify(updatedSettings)
+      );
+    } catch (error) {
+      console.error("Error setting currency:", error);
+      throw error;
+    }
+  },
+
+  async getCurrency(): Promise<string> {
+    try {
+      const settings = await this.getSettings();
+      return settings.currency;
+    } catch (error) {
+      console.error("Error getting currency:", error);
+      return "USD";
     }
   },
 };

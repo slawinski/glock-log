@@ -15,6 +15,7 @@ import {
   BottomButtonGroup,
 } from "../../components";
 import { FirearmStorage } from "../../validation/storageSchemas";
+import { formatCurrency } from "../../utils/currency";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -31,18 +32,23 @@ export const FirearmDetails = () => {
   const [firearm, setFirearm] = useState<FirearmStorage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currency, setCurrency] = useState<string>("USD");
 
   const fetchFirearm = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const firearms = await storage.getFirearms();
+      const [firearms, currentCurrency] = await Promise.all([
+        storage.getFirearms(),
+        storage.getCurrency()
+      ]);
       const foundFirearm = firearms.find((f) => f.id === route.params.id);
       if (foundFirearm) {
         setFirearm(foundFirearm);
       } else {
         setError("Firearm not found");
       }
+      setCurrency(currentCurrency);
     } catch (error) {
       console.error("Error fetching firearm:", error);
       setError("Failed to load firearm details");
@@ -138,7 +144,7 @@ export const FirearmDetails = () => {
 
           <View className="mb-4 flex-row">
             <TerminalText>AMOUNT PAID: </TerminalText>
-            <TerminalText>${firearm.amountPaid.toFixed(2)}</TerminalText>
+            <TerminalText>{formatCurrency(firearm.amountPaid, currency)}</TerminalText>
           </View>
 
           {firearm.notes && (

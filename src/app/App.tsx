@@ -20,6 +20,7 @@ import {
   EditAmmunition,
   Menu,
   Settings,
+  CurrencySelection,
 } from "../screens";
 
 export type RootStackParamList = {
@@ -36,6 +37,7 @@ export type RootStackParamList = {
   EditAmmunition: { id: string };
   Menu: undefined;
   Settings: undefined;
+  CurrencySelection: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -136,6 +138,11 @@ export default function App() {
               name="Settings"
               component={Settings}
               options={{ title: "SYSTEM SETTINGS" }}
+            />
+            <Stack.Screen
+              name="CurrencySelection"
+              component={CurrencySelection}
+              options={{ title: "SELECT CURRENCY" }}
             />
           </Stack.Navigator>
         </NavigationContainer>

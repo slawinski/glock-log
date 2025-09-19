@@ -12,6 +12,7 @@ import { AmmunitionStorage } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
 import { TerminalText, BottomButtonGroup } from "../../components";
 import { logAndGetUserError } from "../../services/error-handler";
+import { formatCurrency } from "../../utils/currency";
 
 type AmmunitionDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -29,11 +30,15 @@ export const AmmunitionDetails = () => {
   const [ammunition, setAmmunition] = useState<AmmunitionStorage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currency, setCurrency] = useState<string>("USD");
 
   const fetchAmmunition = useCallback(async () => {
     try {
       setLoading(true);
-      const ammunitionList = await storage.getAmmunition();
+      const [ammunitionList, currentCurrency] = await Promise.all([
+        storage.getAmmunition(),
+        storage.getCurrency()
+      ]);
       const foundAmmunition = ammunitionList.find(
         (a) => a.id === route.params!.id
       );
@@ -42,6 +47,7 @@ export const AmmunitionDetails = () => {
       } else {
         setError("Ammunition not found");
       }
+      setCurrency(currentCurrency);
     } catch (error) {
       const userMessage = logAndGetUserError(
         error,
@@ -139,13 +145,13 @@ export const AmmunitionDetails = () => {
 
           <View className="mb-4 flex-row">
             <TerminalText>AMOUNT PAID: </TerminalText>
-            <TerminalText>${ammunition.amountPaid.toFixed(2)}</TerminalText>
+            <TerminalText>{formatCurrency(ammunition.amountPaid, currency)}</TerminalText>
           </View>
 
           {ammunition.pricePerRound && (
             <View className="mb-4 flex-row">
               <TerminalText>PRICE PER ROUND: </TerminalText>
-              <TerminalText>${ammunition.pricePerRound.toFixed(2)}</TerminalText>
+              <TerminalText>{formatCurrency(ammunition.pricePerRound, currency)}</TerminalText>
             </View>
           )}
 

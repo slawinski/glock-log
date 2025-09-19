@@ -1,8 +1,9 @@
-import React from "react";
-import { useNavigation } from "@react-navigation/native";
+import React, { useState, useEffect } from "react";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
 import { TerminalDirectory, DirectoryItem } from "../../components";
+import { storage } from "../../services/storage-new";
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -11,6 +12,26 @@ type SettingsScreenNavigationProp = NativeStackNavigationProp<
 
 export const Settings = () => {
   const navigation = useNavigation<SettingsScreenNavigationProp>();
+  const [currentCurrency, setCurrentCurrency] = useState<string>("USD");
+
+  const loadCurrency = async () => {
+    try {
+      const currency = await storage.getCurrency();
+      setCurrentCurrency(currency);
+    } catch (error) {
+      console.error("Error loading currency:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadCurrency();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadCurrency();
+    }, [])
+  );
 
   const settingsItems: DirectoryItem[] = [
     {
@@ -20,10 +41,8 @@ export const Settings = () => {
       },
     },
     {
-      label: "CURRENCY: [USD]",
-      onPress: () => {
-        // TODO: Implement currency selection
-      },
+      label: `CURRENCY: [${currentCurrency}]`,
+      onPress: () => navigation.navigate("CurrencySelection"),
     },
     {
       label: "DATE_FORMAT: [MM/DD/YYYY]",
