@@ -281,22 +281,20 @@ export const EditRangeVisit = () => {
                       }
                       onChangeText={(text) => {
                         const num = parseInt(text);
-                        if (!isNaN(num)) {
-                          setFormData((prev) => {
-                            const currentAmmo =
-                              prev.ammunitionUsed?.[firearm.id];
-                            return {
-                              ...prev,
-                              ammunitionUsed: {
-                                ...(prev.ammunitionUsed || {}),
-                                [firearm.id]: {
-                                  ammunitionId: currentAmmo?.ammunitionId || "",
-                                  rounds: num,
-                                },
+                        setFormData((prev) => {
+                          const currentAmmo =
+                            prev.ammunitionUsed?.[firearm.id];
+                          return {
+                            ...prev,
+                            ammunitionUsed: {
+                              ...(prev.ammunitionUsed || {}),
+                              [firearm.id]: {
+                                ammunitionId: currentAmmo?.ammunitionId || "",
+                                rounds: isNaN(num) ? 0 : num,
                               },
-                            };
-                          });
-                        }
+                            },
+                          };
+                        });
                       }}
                       placeholder="Rounds used"
                       keyboardType="numeric"
