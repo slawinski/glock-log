@@ -35,10 +35,18 @@ type EditRangeVisitScreenRouteProp = RouteProp<
   "EditRangeVisit"
 >;
 
+type RangeVisitFormData = Omit<RangeVisitInput, "ammunitionUsed"> & {
+  ammunitionUsed: {
+    [firearmId: string]: {
+      ammunitionId: string;
+      rounds: number | null;
+    };
+  };
+};
 export const EditRangeVisit = () => {
   const navigation = useNavigation<EditRangeVisitScreenNavigationProp>();
   const route = useRoute<EditRangeVisitScreenRouteProp>();
-  const [formData, setFormData] = useState<RangeVisitInput>({
+  const [formData, setFormData] = useState<RangeVisitFormData>({
     date: new Date().toISOString(),
     location: "",
     notes: "",
@@ -128,16 +136,29 @@ export const EditRangeVisit = () => {
     try {
       setSaving(true);
 
-      const validationResult = rangeVisitInputSchema.safeParse(formData);
+      const dataToValidate = {
+        ...formData,
+        ammunitionUsed: Object.fromEntries(
+          Object.entries(formData.ammunitionUsed).map(([firearmId, usage]) => [
+            firearmId,
+            {
+              ammunitionId: usage.ammunitionId,
+              rounds: usage.rounds || 0,
+            },
+          ])
+        ),
+      };
+
+      const validationResult = rangeVisitInputSchema.safeParse(dataToValidate);
       if (!validationResult.success) {
         const errorMessage = validationResult.error.errors[0].message;
         Alert.alert("Validation error", errorMessage);
         return;
       }
 
-      if (formData.ammunitionUsed) {
+      if (dataToValidate.ammunitionUsed) {
         for (const [firearmId, usage] of Object.entries(
-          formData.ammunitionUsed
+          dataToValidate.ammunitionUsed
         )) {
           const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
           if (!ammo) {
@@ -151,7 +172,7 @@ export const EditRangeVisit = () => {
         }
       }
 
-      await storage.saveRangeVisitWithAmmunition(formData);
+      await storage.saveRangeVisitWithAmmunition(dataToValidate);
       navigation.goBack();
     } catch (error) {
       console.error("Error updating range visit:", error);
@@ -226,154 +247,151 @@ export const EditRangeVisit = () => {
             />
           </View>
 
-      <View className="mb-4">
-        <TerminalText>DATE</TerminalText>
-        <TerminalDatePicker
-          value={new Date(formData.date)}
-          onChange={(date) =>
-            setFormData((prev) => ({
-              ...prev,
-              date: date.toISOString(),
-            }))
-          }
-          label="VISIT DATE"
-          maxDate={new Date()}
-          placeholder="Select visit date"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>DATE</TerminalText>
+            <TerminalDatePicker
+              value={new Date(formData.date)}
+              onChange={(date) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  date: date.toISOString(),
+                }))
+              }
+              label="VISIT DATE"
+              maxDate={new Date()}
+              placeholder="Select visit date"
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>NOTES</TerminalText>
-        <TerminalInput
-          value={formData.notes || ""}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, notes: text }))
-          }
-          placeholder="Optional notes"
-          multiline
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>NOTES</TerminalText>
+            <TerminalInput
+              value={formData.notes || ""}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, notes: text }))
+              }
+              placeholder="Optional notes"
+              multiline
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>FIREARMS USED</TerminalText>
-        {firearms.map((firearm) => (
-          <View key={firearm.id} className="mb-2">
-            <TouchableOpacity
-              onPress={() => toggleFirearmSelection(firearm.id)}
-              className={`border p-2 ${
-                formData.firearmsUsed.includes(firearm.id)
-                  ? "border-terminal-accent"
-                  : "border-terminal-border"
-              }`}
-            >
-              <TerminalText>{firearm.modelName}</TerminalText>
-            </TouchableOpacity>
-            {formData.firearmsUsed.includes(firearm.id) && (
-              <View className="mt-2">
-                <TerminalText>AMMUNITION USED</TerminalText>
-                <View className="flex-row items-center">
-                  <View className="flex-1 mr-2">
-                    <TerminalInput
-                      value={
-                        formData.ammunitionUsed?.[
-                          firearm.id
-                        ]?.rounds.toString() || "0"
-                      }
-                      onChangeText={(text) => {
-                        const num = parseInt(text);
-                        setFormData((prev) => {
-                          const currentAmmo =
-                            prev.ammunitionUsed?.[firearm.id];
-                          return {
-                            ...prev,
-                            ammunitionUsed: {
-                              ...(prev.ammunitionUsed || {}),
-                              [firearm.id]: {
-                                ammunitionId: currentAmmo?.ammunitionId || "",
-                                rounds: isNaN(num) ? 0 : num,
-                              },
-                            },
-                          };
-                        });
-                      }}
-                      placeholder="Rounds used"
-                      keyboardType="numeric"
-                      testID="rounds-input"
-                    />
-                  </View>
-                  <View className="flex-1">
-                    <TouchableOpacity
-                      onPress={() => {
-                        const compatibleAmmo = ammunition.filter(
-                          (a) => a.caliber === firearm.caliber
-                        );
-                        if (compatibleAmmo.length === 0) {
-                          Alert.alert(
-                            "Error",
-                            "No compatible ammunition found"
-                          );
-                          return;
-                        }
-                        Alert.alert(
-                          "Select Ammunition",
-                          "Choose ammunition type",
-                          compatibleAmmo.map((ammo) => ({
-                            text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
-                            onPress: () => {
-                              setFormData((prev) => ({
+          <View className="mb-4">
+            <TerminalText>FIREARMS USED</TerminalText>
+            {firearms.map((firearm) => (
+              <View key={firearm.id} className="mb-2">
+                <TouchableOpacity
+                  onPress={() => toggleFirearmSelection(firearm.id)}
+                  className={`border p-2 ${
+                    formData.firearmsUsed.includes(firearm.id)
+                      ? "border-terminal-accent"
+                      : "border-terminal-border"
+                  }`}
+                >
+                  <TerminalText>{firearm.modelName}</TerminalText>
+                </TouchableOpacity>
+                {formData.firearmsUsed.includes(firearm.id) && (
+                  <View className="mt-2">
+                    <TerminalText>AMMUNITION USED</TerminalText>
+                    <View className="flex-row items-center">
+                      <View className="flex-1 mr-2">
+                        <TerminalInput
+                          value={formData.ammunitionUsed?.[firearm.id]?.rounds}
+                          onChangeText={(text) => {
+                            const num = parseInt(text);
+                            setFormData((prev) => {
+                              const currentAmmo =
+                                prev.ammunitionUsed?.[firearm.id];
+                              return {
                                 ...prev,
                                 ammunitionUsed: {
                                   ...(prev.ammunitionUsed || {}),
                                   [firearm.id]: {
-                                    ammunitionId: ammo.id,
-                                    rounds:
-                                      prev.ammunitionUsed?.[firearm.id]
-                                        ?.rounds || 0,
+                                    ammunitionId:
+                                      currentAmmo?.ammunitionId || "",
+                                    rounds: isNaN(num) ? null : num,
                                   },
                                 },
-                              }));
-                            },
-                          }))
-                        );
-                      }}
-                      className="border border-terminal-border p-2"
-                    >
-                      <TerminalText>
-                        {formData.ammunitionUsed?.[firearm.id]?.ammunitionId
-                          ? ammunition.find(
-                              (a) =>
-                                a.id ===
-                                formData.ammunitionUsed?.[firearm.id]
-                                  ?.ammunitionId
-                            )?.brand
-                          : "SELECT AMMO"}
-                      </TerminalText>
-                    </TouchableOpacity>
+                              };
+                            });
+                          }}
+                          placeholder="Rounds used"
+                          keyboardType="numeric"
+                          testID="rounds-input"
+                        />
+                      </View>
+                      <View className="flex-1">
+                        <TouchableOpacity
+                          onPress={() => {
+                            const compatibleAmmo = ammunition.filter(
+                              (a) => a.caliber === firearm.caliber
+                            );
+                            if (compatibleAmmo.length === 0) {
+                              Alert.alert(
+                                "Error",
+                                "No compatible ammunition found"
+                              );
+                              return;
+                            }
+                            Alert.alert(
+                              "Select Ammunition",
+                              "Choose ammunition type",
+                              compatibleAmmo.map((ammo) => ({
+                                text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
+                                onPress: () => {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    ammunitionUsed: {
+                                      ...(prev.ammunitionUsed || {}),
+                                      [firearm.id]: {
+                                        ammunitionId: ammo.id,
+                                        rounds:
+                                          prev.ammunitionUsed?.[firearm.id]
+                                            ?.rounds || null,
+                                      },
+                                    },
+                                  }));
+                                },
+                              }))
+                            );
+                          }}
+                          className="border border-terminal-border p-2"
+                        >
+                          <TerminalText>
+                            {formData.ammunitionUsed?.[firearm.id]?.ammunitionId
+                              ? ammunition.find(
+                                  (a) =>
+                                    a.id ===
+                                    formData.ammunitionUsed?.[firearm.id]
+                                      ?.ammunitionId
+                                )?.brand
+                              : "SELECT AMMO"}
+                          </TerminalText>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
                   </View>
-                </View>
+                )}
               </View>
+            ))}
+          </View>
+
+          <View className="mb-4">
+            <TerminalText>PHOTOS:</TerminalText>
+            <TouchableOpacity
+              onPress={handleImagePick}
+              className="border border-terminal-border p-3 mb-2"
+            >
+              <TerminalText>ADD PHOTO</TerminalText>
+            </TouchableOpacity>
+            {formData.photos && formData.photos.length > 0 && (
+              <ImageGallery
+                images={formData.photos}
+                onDeleteImage={handleDeletePhoto}
+                size="medium"
+                showDeleteButton={true}
+              />
             )}
           </View>
-        ))}
-      </View>
-
-      <View className="mb-4">
-        <TerminalText>PHOTOS:</TerminalText>
-        <TouchableOpacity
-          onPress={handleImagePick}
-          className="border border-terminal-border p-3 mb-2"
-        >
-          <TerminalText>ADD PHOTO</TerminalText>
-        </TouchableOpacity>
-        {formData.photos && formData.photos.length > 0 && (
-          <ImageGallery
-            images={formData.photos}
-            onDeleteImage={handleDeletePhoto}
-            size="medium"
-            showDeleteButton={true}
-          />
-        )}
-      </View>
 
           <View className="flex-1" />
 
