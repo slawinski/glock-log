@@ -2,7 +2,7 @@
 
 // Polyfill for setImmediate
 (global as any).setImmediate = (
-  callback: (...args: any[]) => void
+  callback: () => void
 ) => {
   return setTimeout(callback, 0);
 };

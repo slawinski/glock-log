@@ -16,6 +16,7 @@ import { AmmunitionStorage } from "../../validation/storageSchemas";
 // Define types for the mock functions
 type GetAmmunitionMock = jest.Mock<() => Promise<AmmunitionStorage[]>>;
 type DeleteAmmunitionMock = jest.Mock<() => Promise<void>>;
+type GetCurrencyMock = jest.Mock<() => Promise<string>>;
 
 // Mock the storage module
 jest.mock("../../services/storage-new");
@@ -54,7 +55,7 @@ const renderScreen = (initialParams = { id: "test-id" }) => {
 describe("AmmunitionDetailsScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (storage.getCurrency as jest.Mock).mockResolvedValue("USD");
+    (storage.getCurrency as GetCurrencyMock).mockResolvedValue("USD");
   });
 
   it("shows loading state initially", () => {
