@@ -72,6 +72,7 @@ const renderWithNavigation = (component: React.ReactElement) => {
         <Stack.Screen name="FirearmDetails">{() => <></>}</Stack.Screen>
         <Stack.Screen name="RangeVisitDetails">{() => <></>}</Stack.Screen>
         <Stack.Screen name="AmmunitionDetails">{() => <></>}</Stack.Screen>
+        <Stack.Screen name="Menu">{() => <></>}</Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -238,17 +239,15 @@ describe("Home", () => {
     });
   });
 
-  it("displays navigation elements correctly", async () => {
+  it("navigates to Menu screen", async () => {
     const { getByTestId } = renderWithNavigation(<Home />);
 
     await waitFor(() => {
-      expect(getByTestId("header-button-+")).toBeTruthy();
-      expect(getByTestId("terminal-tabs")).toBeTruthy();
+      expect(getByTestId("header-button-☰")).toBeTruthy();
     });
 
-    // Should have both header buttons
-    expect(getByTestId("header-button-STATS")).toBeTruthy();
-    expect(getByTestId("header-button-+")).toBeTruthy();
+    fireEvent.press(getByTestId("header-button-☰"));
+    // Navigation would be handled by the navigation mock
   });
 
   it("handles refresh functionality", async () => {
@@ -269,16 +268,5 @@ describe("Home", () => {
     await waitFor(() => {
       expect(getByText(/Added: \d+\/\d+\/\d+/)).toBeTruthy();
     });
-  });
-
-  it("navigates to Stats screen", async () => {
-    const { getByTestId } = renderWithNavigation(<Home />);
-
-    await waitFor(() => {
-      expect(getByTestId("header-button-STATS")).toBeTruthy();
-    });
-
-    fireEvent.press(getByTestId("header-button-STATS"));
-    // Navigation would be handled by the navigation mock
   });
 });

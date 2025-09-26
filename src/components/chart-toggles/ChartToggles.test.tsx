@@ -298,7 +298,7 @@ describe("ChartToggles", () => {
         { id: "2", title: "Second Item" },
       ];
 
-      const { getByText, queryByText } = render(
+      const { getByText } = render(
         <ChartToggles
           items={itemsWithDuplicates}
           visibleItems={new Set(["1"])}

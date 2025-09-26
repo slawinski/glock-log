@@ -51,6 +51,18 @@ jest.mock("./stats/Stats", () => ({
   Stats: "Stats",
 }));
 
+jest.mock("./menu/Menu", () => ({
+  Menu: "Menu",
+}));
+
+jest.mock("./settings/Settings", () => ({
+  Settings: "Settings",
+}));
+
+jest.mock("./currency-selection/CurrencySelection", () => ({
+  CurrencySelection: "CurrencySelection",
+}));
+
 describe("screens/index.ts", () => {
   it("exports AddAmmunition screen", () => {
     expect(ScreenIndex.AddAmmunition).toBe("AddAmmunition");
@@ -109,6 +121,9 @@ describe("screens/index.ts", () => {
       "Home",
       "RangeVisitDetails",
       "Stats",
+      "Menu",
+      "Settings",
+      "CurrencySelection",
     ];
     
     expectedExports.forEach(exportName => {
@@ -127,8 +142,8 @@ describe("screens/index.ts", () => {
   it("maintains consistent export count", () => {
     const exportNames = Object.keys(ScreenIndex);
     
-    // Should have exactly 11 screens as defined in the barrel file
-    expect(exportNames.length).toBe(11);
+    // Should have exactly 14 screens as defined in the barrel file
+    expect(exportNames.length).toBe(14);
     
     // All export names should be strings
     exportNames.forEach(name => {

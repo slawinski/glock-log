@@ -54,6 +54,7 @@ const renderScreen = (initialParams = { id: "test-id" }) => {
 describe("AmmunitionDetailsScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (storage.getCurrency as jest.Mock).mockResolvedValue("USD");
   });
 
   it("shows loading state initially", () => {
@@ -80,9 +81,7 @@ describe("AmmunitionDetailsScreen", () => {
       expect(
         screen.getByText(`${mockAmmunition.quantity} rounds`)
       ).toBeTruthy();
-      expect(
-        screen.getByText(`$${mockAmmunition.amountPaid.toFixed(2)}`)
-      ).toBeTruthy();
+      expect(screen.getByText(`$${mockAmmunition.amountPaid.toFixed(2)}`)).toBeTruthy();
     });
   });
 

@@ -7,7 +7,7 @@ import { DeleteButton } from "./DeleteButton";
 
 type Props = {
   images: string[];
-  onDeleteImage?: (index: number) => void;
+  onDeleteImage?: (imageIndex: number) => void;
   size?: "small" | "medium" | "large";
   showDeleteButton?: boolean;
   thumbnailIndex?: number;
@@ -82,15 +82,11 @@ export const ImageGallery = ({
   }
 
   return (
-    <View style={{ gap: 8 }}>
+    <View className="gap-2">
       {rows.map((row, rowIndex) => (
         <View
           key={rowIndex}
-          style={{
-            flexDirection: "row",
-            gap: 8,
-            justifyContent: "flex-start",
-          }}
+          className="flex-row gap-2 justify-start"
         >
           {row.map((imageIdentifier, colIndex) => {
             const imageIndex = rowIndex * columns + colIndex;
@@ -103,11 +99,8 @@ export const ImageGallery = ({
             return (
               <ImageContainer
                 key={imageIndex}
-                style={{
-                  position: "relative",
-                  width: imageSize,
-                  height: imageSize,
-                }}
+                className="relative"
+                style={{ width: imageSize, height: imageSize }}
                 onPress={
                   allowThumbnailSelection
                     ? () => onSelectThumbnail?.(imageIndex)
@@ -117,13 +110,7 @@ export const ImageGallery = ({
               >
                 <Image
                   source={resolveImageSource(imageIdentifier)}
-                  style={{
-                    width: imageSize,
-                    height: imageSize,
-                    borderRadius: 8,
-                    borderWidth: isThumbnail ? 3 : 0,
-                    borderColor: isThumbnail ? "#00ff00" : "transparent",
-                  }}
+                  className={`w-full h-full rounded-lg ${isThumbnail ? "border-4 border-terminal-green" : ""}`}
                   contentFit="cover"
                   placeholder="Loading..."
                   placeholderContentFit="cover"
@@ -131,18 +118,8 @@ export const ImageGallery = ({
                   onError={() => {}}
                 />
                 {allowThumbnailSelection && !isThumbnail && (
-                  <View
-                    style={{
-                      position: "absolute",
-                      bottom: 4,
-                      right: 4,
-                      backgroundColor: "rgba(0, 0, 0, 0.6)",
-                      paddingHorizontal: 4,
-                      paddingVertical: 2,
-                      borderRadius: 4,
-                    }}
-                  >
-                    <TerminalText style={{ fontSize: 8, color: "#00ff00" }}>
+                  <View className="absolute bottom-1 right-1 bg-black/60 px-1 py-0.5 rounded">
+                    <TerminalText className="text-xs text-terminal-green">
                       TAP TO SET
                     </TerminalText>
                   </View>

@@ -1,9 +1,10 @@
+/* globals global */
+
 // Polyfill for setImmediate
 (global as any).setImmediate = (
-  callback: (...args: any[]) => void,
-  ...args: any[]
+  callback: (...args: any[]) => void
 ) => {
-  return setTimeout(callback, 0, ...args);
+  return setTimeout(callback, 0);
 };
 
 // Polyfill for clearImmediate

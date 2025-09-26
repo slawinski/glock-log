@@ -49,4 +49,12 @@ export default [
       },
     },
   },
+  {
+    files: ["*.js", "*.cjs"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
 ];

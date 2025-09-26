@@ -1,6 +1,7 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
 import App from "./App";
+import { useFonts } from "@expo-google-fonts/vt323";
 
 // Mock expo-google-fonts
 jest.mock("@expo-google-fonts/vt323", () => ({
@@ -48,17 +49,18 @@ jest.mock("../screens", () => ({
   AddAmmunition: () => null,
   AmmunitionDetails: () => null,
   EditAmmunition: () => null,
+  Menu: () => null,
+  Settings: () => null,
+  CurrencySelection: () => null,
 }));
 
 describe("App", () => {
-  const { useFonts } = require("@expo-google-fonts/vt323");
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it("renders null when fonts are not loaded", () => {
-    useFonts.mockReturnValue([false]);
+    (useFonts as jest.Mock).mockReturnValue([false]);
 
     const result = render(<App />);
     // When fonts aren't loaded, the component returns null
@@ -66,15 +68,14 @@ describe("App", () => {
   });
 
   it("renders correctly when fonts are loaded", () => {
-    useFonts.mockReturnValue([true]);
+    (useFonts as jest.Mock).mockReturnValue([true]);
 
-    const { getByTestId } = render(<App />);
     // The app should render without crashing
     expect(() => render(<App />)).not.toThrow();
   });
 
   it("loads VT323 font", () => {
-    useFonts.mockReturnValue([true]);
+    (useFonts as jest.Mock).mockReturnValue([true]);
 
     render(<App />);
 
@@ -84,7 +85,7 @@ describe("App", () => {
   });
 
   it("renders with correct navigation structure", () => {
-    useFonts.mockReturnValue([true]);
+    (useFonts as jest.Mock).mockReturnValue([true]);
 
     const result = render(<App />);
     // Should not throw and should have content
@@ -93,18 +94,18 @@ describe("App", () => {
 
   it("handles font loading states correctly", () => {
     // First render with fonts not loaded
-    useFonts.mockReturnValue([false]);
+    (useFonts as jest.Mock).mockReturnValue([false]);
     const { rerender, toJSON } = render(<App />);
     expect(toJSON()).toBeNull();
 
     // Re-render with fonts loaded
-    useFonts.mockReturnValue([true]);
+    (useFonts as jest.Mock).mockReturnValue([true]);
     rerender(<App />);
     expect(toJSON()).not.toBeNull();
   });
 
   it("includes all required navigation screens", () => {
-    useFonts.mockReturnValue([true]);
+    (useFonts as jest.Mock).mockReturnValue([true]);
 
     // Mock the Navigator to capture screen configurations
     const mockScreens: string[] = [];
@@ -119,7 +120,7 @@ describe("App", () => {
           });
           return children;
         },
-        Screen: ({ name, component }: { name: string; component: any }) => {
+        Screen: ({ name }: { name: string; component: any }) => {
           mockScreens.push(name);
           return null;
         },
@@ -134,17 +135,15 @@ describe("App", () => {
   });
 
   it("applies correct styling to container", () => {
-    useFonts.mockReturnValue([true]);
+    (useFonts as jest.Mock).mockReturnValue([true]);
 
-    const { getByTestId } = render(<App />);
-    
     // The main container should have the terminal background styling
     // This is verified by the app rendering without errors
     expect(() => render(<App />)).not.toThrow();
   });
 
   it("includes StatusBar and ScanlinesOverlay components", () => {
-    useFonts.mockReturnValue([true]);
+    (useFonts as jest.Mock).mockReturnValue([true]);
 
     render(<App />);
     
