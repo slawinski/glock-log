@@ -7,19 +7,11 @@ import Svg, {
   Stop,
 } from "react-native-svg";
 
+import { styles } from "./styles";
+
 export const ScanlinesOverlay = () => {
   return (
-    <View
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        pointerEvents: "none",
-        zIndex: 9999,
-      }}
-    >
+    <View style={styles.overlay}>
       <Svg height="100%" width="100%">
         <Defs>
           <Pattern

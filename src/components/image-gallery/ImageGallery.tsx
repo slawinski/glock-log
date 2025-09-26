@@ -7,11 +7,11 @@ import { DeleteButton } from "./DeleteButton";
 
 type Props = {
   images: string[];
-  onDeleteImage?: (imageIndex: number) => void;
+  onDeleteImage?: (_imageIndex: number) => void;
   size?: "small" | "medium" | "large";
   showDeleteButton?: boolean;
   thumbnailIndex?: number;
-  onSelectThumbnail?: (index: number) => void;
+  onSelectThumbnail?: (_index: number) => void;
   allowThumbnailSelection?: boolean;
 };
 
