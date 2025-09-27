@@ -4,12 +4,7 @@ import React, {
   useLayoutEffect,
   useEffect,
 } from "react";
-import {
-  View,
-  TouchableOpacity,
-  FlatList,
-  ActivityIndicator,
-} from "react-native";
+import { View, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
@@ -185,7 +180,6 @@ export const Home = () => {
         );
     }
   };
-
 
   return (
     <View className="flex-1 bg-terminal-bg">

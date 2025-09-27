@@ -23,12 +23,16 @@ jest.mock("../../components", () => ({
   HeaderButton: ({ onPress, caption, ...props }: any) => {
     const { TouchableOpacity, Text } = require("react-native");
     return (
-      <TouchableOpacity onPress={onPress} testID={`header-button-${caption}`} {...props}>
+      <TouchableOpacity
+        onPress={onPress}
+        testID={`header-button-${caption}`}
+        {...props}
+      >
         <Text>{caption}</Text>
       </TouchableOpacity>
     );
   },
-  TerminalTabs: ({ tabs, activeTab, onTabPress }: any) => {
+  TerminalTabs: ({ tabs, onTabPress }: any) => {
     const { View, TouchableOpacity, Text } = require("react-native");
     return (
       <View testID="terminal-tabs">
@@ -44,7 +48,7 @@ jest.mock("../../components", () => ({
       </View>
     );
   },
-  FirearmImage: ({ photoUri, size, ...props }: any) => {
+  FirearmImage: ({ photoUri, ...props }: any) => {
     const { View, Text } = require("react-native");
     return (
       <View testID="firearm-image" {...props}>
@@ -56,7 +60,8 @@ jest.mock("../../components", () => ({
 
 const Stack = createNativeStackNavigator();
 
-const TestComponent = ({ component }: { component: React.ReactElement }) => component;
+const TestComponent = ({ component }: { component: React.ReactElement }) =>
+  component;
 
 const renderWithNavigation = (component: React.ReactElement) => {
   return render(
@@ -98,8 +103,8 @@ const mockRangeVisit = {
   updatedAt: "2023-01-01T00:00:00.000Z",
   firearmsUsed: ["1"],
   ammunitionUsed: {
-    "ammo1": { ammunitionId: "ammo1", rounds: 50 },
-    "ammo2": { ammunitionId: "ammo2", rounds: 25 },
+    ammo1: { ammunitionId: "ammo1", rounds: 50 },
+    ammo2: { ammunitionId: "ammo2", rounds: 25 },
   },
 };
 
@@ -189,7 +194,9 @@ describe("Home", () => {
   });
 
   it("retries data fetch on error", async () => {
-    mockStorageApi.getFirearms.mockRejectedValueOnce(new Error("Network error"));
+    mockStorageApi.getFirearms.mockRejectedValueOnce(
+      new Error("Network error")
+    );
     mockStorageApi.getFirearms.mockResolvedValueOnce([mockFirearm]);
 
     const { getByText } = renderWithNavigation(<Home />);

@@ -1,5 +1,5 @@
 import React from "react";
-import { render, fireEvent, act } from "@testing-library/react-native";
+import { render, fireEvent } from "@testing-library/react-native";
 import { TerminalInput } from "../terminal-input/TerminalInput";
 
 // Tests for TerminalInput component
@@ -49,10 +49,10 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       fireEvent(input, "focus");
-      
+
       expect(queryByText(placeholder)).toBeNull();
     });
 
@@ -156,12 +156,12 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
-      
+
       // Test focus
       fireEvent(input, "focus");
-      
+
       // Test blur
       fireEvent(input, "blur");
     });
@@ -174,10 +174,10 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       fireEvent(input, "focus");
-      
+
       // Cursor should be visible when focused at end of empty input
       expect(getByText("▋")).toBeTruthy();
     });
@@ -190,11 +190,11 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       fireEvent(input, "focus");
       fireEvent(input, "blur");
-      
+
       expect(queryByText("▋")).toBeNull();
     });
   });
@@ -208,13 +208,13 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       fireEvent(input, "focus");
-      
+
       // Simulate cursor at position 0
       fireEvent(input, "selectionChange", {
-        nativeEvent: { selection: { start: 0, end: 0 } }
+        nativeEvent: { selection: { start: 0, end: 0 } },
       });
     });
 
@@ -226,13 +226,13 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       fireEvent(input, "focus");
-      
+
       // Simulate cursor at position 2
       fireEvent(input, "selectionChange", {
-        nativeEvent: { selection: { start: 2, end: 2 } }
+        nativeEvent: { selection: { start: 2, end: 2 } },
       });
     });
 
@@ -244,13 +244,13 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       fireEvent(input, "focus");
-      
+
       // Simulate cursor at end
       fireEvent(input, "selectionChange", {
-        nativeEvent: { selection: { start: 5, end: 5 } }
+        nativeEvent: { selection: { start: 5, end: 5 } },
       });
     });
 
@@ -262,7 +262,7 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       // Change value to empty
       rerender(
         <TerminalInput
@@ -271,10 +271,10 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       fireEvent(input, "focus");
-      
+
       // Should show cursor at position 0 for empty input
       expect(input).toBeTruthy();
     });
@@ -289,13 +289,13 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
-      
+
       // Test focus without timers
       fireEvent(input, "focus");
       fireEvent(input, "blur");
-      
+
       // Component should handle focus/blur without crashing
       expect(input).toBeTruthy();
     });
@@ -310,15 +310,15 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       fireEvent(input, "focus");
-      
+
       // Set cursor in middle
       fireEvent(input, "selectionChange", {
-        nativeEvent: { selection: { start: 2, end: 2 } }
+        nativeEvent: { selection: { start: 2, end: 2 } },
       });
-      
+
       // Should render "he" before cursor
       expect(getByText("he")).toBeTruthy();
     });
@@ -331,13 +331,13 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       fireEvent(input, "focus");
-      
+
       // Set cursor at position 2 (character 'l')
       fireEvent(input, "selectionChange", {
-        nativeEvent: { selection: { start: 2, end: 2 } }
+        nativeEvent: { selection: { start: 2, end: 2 } },
       });
     });
 
@@ -349,15 +349,15 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       fireEvent(input, "focus");
-      
+
       // Set cursor at position 2
       fireEvent(input, "selectionChange", {
-        nativeEvent: { selection: { start: 2, end: 2 } }
+        nativeEvent: { selection: { start: 2, end: 2 } },
       });
-      
+
       // Should render "lo" after cursor (position 3 to end)
       expect(getByText("lo")).toBeTruthy();
     });
@@ -373,7 +373,7 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       expect(input.props.style.textAlignVertical).toBe("top");
     });
@@ -386,7 +386,7 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       expect(input.props.style.textAlignVertical).toBe("center");
     });
@@ -401,7 +401,7 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       expect(input.props.value).toBe("");
     });
@@ -415,7 +415,7 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       expect(input.props.value).toBe(longText);
     });
@@ -429,7 +429,7 @@ describe("TerminalInput", () => {
           testID="terminal-input"
         />
       );
-      
+
       const input = getByTestId("terminal-input");
       expect(input.props.value).toBe(specialText);
     });

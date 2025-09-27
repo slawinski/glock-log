@@ -104,7 +104,7 @@ describe("storage-interface types", () => {
       const result = await mockStorage.getAllKeys();
       expect(Array.isArray(result)).toBe(true);
       expect(result).toEqual(mockKeys);
-      expect(result.every(key => typeof key === "string")).toBe(true);
+      expect(result.every((key) => typeof key === "string")).toBe(true);
     });
 
     it("getAllKeys should handle empty array", async () => {
@@ -217,10 +217,14 @@ describe("storage-interface types", () => {
         { type: "mmkv", encryptionKey: "simple-key" },
         { type: "mmkv", encryptionKey: "key-with-special-chars!@#$" },
         { type: "mmkv", encryptionKey: "123456789" },
-        { type: "mmkv", encryptionKey: "very-long-encryption-key-that-might-be-used-for-security" },
+        {
+          type: "mmkv",
+          encryptionKey:
+            "very-long-encryption-key-that-might-be-used-for-security",
+        },
       ];
 
-      configs.forEach((config, index) => {
+      configs.forEach((config) => {
         expect(config.type).toBe("mmkv");
         expect(typeof config.encryptionKey).toBe("string");
         expect(config.encryptionKey!.length).toBeGreaterThan(0);
@@ -287,7 +291,9 @@ describe("storage-interface types", () => {
       };
 
       await expect(mockStorage.getItem("key")).resolves.toBe("test");
-      await expect(mockStorage.setItem("key", "value")).resolves.toBeUndefined();
+      await expect(
+        mockStorage.setItem("key", "value")
+      ).resolves.toBeUndefined();
       await expect(mockStorage.removeItem("key")).resolves.toBeUndefined();
       await expect(mockStorage.clear()).resolves.toBeUndefined();
       await expect(mockStorage.getAllKeys()).resolves.toEqual(["test"]);

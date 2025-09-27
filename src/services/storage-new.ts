@@ -19,7 +19,7 @@ import {
   deleteImages,
   getImagePaths,
 } from "./image-storage";
-import { handleStorageError, logAndGetUserError } from "./error-handler";
+import { handleStorageError } from "./error-handler";
 
 const STORAGE_KEYS = {
   FIREARMS: "@storage:firearms",
@@ -56,12 +56,13 @@ function validateBeforeSave<T>(data: T, schema: z.ZodSchema<T>): T {
 function generateId(prefix: string): string {
   // Generate a more secure random ID using crypto.getRandomValues if available
   const timestamp = Date.now();
-  const randomPart = typeof crypto !== 'undefined' && crypto.getRandomValues
-    ? Array.from(crypto.getRandomValues(new Uint8Array(6)))
-        .map(b => b.toString(36))
-        .join('')
-    : Math.random().toString(36).slice(2, 11);
-  
+  const randomPart =
+    typeof crypto !== "undefined" && crypto.getRandomValues
+      ? Array.from(crypto.getRandomValues(new Uint8Array(6)))
+          .map((b) => b.toString(36))
+          .join("")
+      : Math.random().toString(36).slice(2, 11);
+
   return `${prefix}-${timestamp}-${randomPart}`;
 }
 
@@ -402,7 +403,9 @@ export const storage = {
 
       // Update ammunition quantities
       if (visit.ammunitionUsed) {
-        for (const [firearmId, ammoData] of Object.entries(visit.ammunitionUsed)) {
+        for (const [firearmId, ammoData] of Object.entries(
+          visit.ammunitionUsed
+        )) {
           const originalAmmoData = originalVisit?.ammunitionUsed?.[firearmId];
           const originalRounds = originalAmmoData?.rounds || 0;
           const newRounds = ammoData.rounds;
@@ -420,7 +423,9 @@ export const storage = {
 
       // Handle ammunition that was removed from the visit (restore to inventory)
       if (isUpdate && originalVisit?.ammunitionUsed) {
-        for (const [firearmId, originalAmmoData] of Object.entries(originalVisit.ammunitionUsed)) {
+        for (const [firearmId, originalAmmoData] of Object.entries(
+          originalVisit.ammunitionUsed
+        )) {
           // If this firearm/ammunition is no longer used in the updated visit
           if (!visit.ammunitionUsed?.[firearmId]) {
             await this.updateAmmunitionQuantity(
@@ -451,10 +456,15 @@ export const storage = {
 
       // Handle firearms that were removed from the visit (subtract rounds fired)
       if (isUpdate && originalVisit?.ammunitionUsed) {
-        for (const [firearmId, originalAmmoData] of Object.entries(originalVisit.ammunitionUsed)) {
+        for (const [firearmId, originalAmmoData] of Object.entries(
+          originalVisit.ammunitionUsed
+        )) {
           // If this firearm is no longer used in the updated visit
           if (!visit.ammunitionUsed?.[firearmId]) {
-            await this.updateFirearmRoundsFired(firearmId, -originalAmmoData.rounds);
+            await this.updateFirearmRoundsFired(
+              firearmId,
+              -originalAmmoData.rounds
+            );
           }
         }
       }

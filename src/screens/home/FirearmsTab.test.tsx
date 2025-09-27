@@ -10,7 +10,7 @@ jest.mock("../../components", () => ({
     const { Text } = require("react-native");
     return <Text {...props}>{children}</Text>;
   },
-  FirearmImage: ({ photoUri, size, ...props }: any) => {
+  FirearmImage: ({ photoUri, ...props }: any) => {
     const { View, Text } = require("react-native");
     return (
       <View testID="firearm-image" {...props}>
@@ -22,7 +22,8 @@ jest.mock("../../components", () => ({
 
 const Stack = createNativeStackNavigator();
 
-const TestComponent = ({ component }: { component: React.ReactElement }) => component;
+const TestComponent = ({ component }: { component: React.ReactElement }) =>
+  component;
 
 const renderWithNavigation = (component: React.ReactElement) => {
   return render(
@@ -31,9 +32,7 @@ const renderWithNavigation = (component: React.ReactElement) => {
         <Stack.Screen name="Home">
           {() => <TestComponent component={component} />}
         </Stack.Screen>
-        <Stack.Screen name="FirearmDetails">
-          {() => <></>}
-        </Stack.Screen>
+        <Stack.Screen name="FirearmDetails">{() => <></>}</Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -88,11 +87,7 @@ describe("FirearmsTab", () => {
 
   it("displays empty state when no firearms", () => {
     const { getByText } = renderWithNavigation(
-      <FirearmsTab
-        firearms={[]}
-        onRefresh={mockOnRefresh}
-        refreshing={false}
-      />
+      <FirearmsTab firearms={[]} onRefresh={mockOnRefresh} refreshing={false} />
     );
 
     expect(getByText("NO FIREARMS FOUND")).toBeTruthy();
@@ -152,13 +147,11 @@ describe("FirearmsTab", () => {
   });
 
   it("handles refresh", () => {
-    const { getByTestId } = renderWithNavigation(
-      <FirearmsTab
-        firearms={mockFirearms}
-        onRefresh={mockOnRefresh}
-        refreshing={false}
-      />
-    );
+    <FirearmsTab
+      firearms={mockFirearms}
+      onRefresh={mockOnRefresh}
+      refreshing={false}
+    />;
 
     // The FlatList doesn't have a direct testID, but we can test the refresh functionality
     // through the props passed to the component

@@ -5,7 +5,6 @@ import { TerminalText } from "../terminal-text/TerminalText";
 
 type TerminalDatePickerProps = {
   value: Date | null;
-  // eslint-disable-next-line
   onChange: (date: Date) => void;
   label: string;
   error?: string;

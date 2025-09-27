@@ -1,6 +1,6 @@
 import js from "@eslint/js";
 import globals from "globals";
-import * as tseslint from "@typescript-eslint/eslint-plugin";
+import tseslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
@@ -42,6 +42,15 @@ export default [
       "@typescript-eslint/explicit-module-boundary-types": "off",
       "react-native/no-inline-styles": "warn",
       "react-native/no-raw-text": ["error", { skip: ["TerminalText"] }],
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
     },
     settings: {
       react: {

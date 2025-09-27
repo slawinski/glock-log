@@ -20,10 +20,14 @@ jest.mock("./storage-config", () => ({
   },
 }));
 
-const mockConsoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+const mockConsoleError = jest
+  .spyOn(console, "error")
+  .mockImplementation(() => {});
 
 describe("StorageInit", () => {
-  const mockStorageFactory = StorageFactory as jest.Mocked<typeof StorageFactory>;
+  const mockStorageFactory = StorageFactory as jest.Mocked<
+    typeof StorageFactory
+  >;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -48,14 +52,15 @@ describe("StorageInit", () => {
     );
 
     // Component should show error instead of loading for this test
-    expect(queryByText("Failed to initialize storage: Keep loading")).toBeTruthy();
+    expect(
+      queryByText("Failed to initialize storage: Keep loading")
+    ).toBeTruthy();
   });
 
   it("renders children after successful initialization", async () => {
     mockStorageFactory.configure.mockImplementation(() => {});
     mockStorageFactory.getStorage.mockImplementation(() => ({} as any));
 
-    const TestChild = () => <></>;
     const { getByTestId, queryByText } = render(
       <StorageInit>
         {(() => {
@@ -122,10 +127,15 @@ describe("StorageInit", () => {
     );
 
     await waitFor(() => {
-      expect(getByText("Failed to initialize storage: Storage configuration failed")).toBeTruthy();
+      expect(
+        getByText("Failed to initialize storage: Storage configuration failed")
+      ).toBeTruthy();
     });
 
-    expect(mockConsoleError).toHaveBeenCalledWith("Failed to initialize storage:", configError);
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      "Failed to initialize storage:",
+      configError
+    );
   });
 
   it("displays error when storage instance creation fails", async () => {
@@ -143,10 +153,17 @@ describe("StorageInit", () => {
     );
 
     await waitFor(() => {
-      expect(getByText("Failed to initialize storage: Storage instance creation failed")).toBeTruthy();
+      expect(
+        getByText(
+          "Failed to initialize storage: Storage instance creation failed"
+        )
+      ).toBeTruthy();
     });
 
-    expect(mockConsoleError).toHaveBeenCalledWith("Failed to initialize storage:", instanceError);
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      "Failed to initialize storage:",
+      instanceError
+    );
   });
 
   it("handles non-Error exceptions", async () => {
@@ -163,10 +180,15 @@ describe("StorageInit", () => {
     );
 
     await waitFor(() => {
-      expect(getByText("Failed to initialize storage: Unknown error")).toBeTruthy();
+      expect(
+        getByText("Failed to initialize storage: Unknown error")
+      ).toBeTruthy();
     });
 
-    expect(mockConsoleError).toHaveBeenCalledWith("Failed to initialize storage:", stringError);
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      "Failed to initialize storage:",
+      stringError
+    );
   });
 
   it("handles null errors", async () => {
@@ -182,10 +204,15 @@ describe("StorageInit", () => {
     );
 
     await waitFor(() => {
-      expect(getByText("Failed to initialize storage: Unknown error")).toBeTruthy();
+      expect(
+        getByText("Failed to initialize storage: Unknown error")
+      ).toBeTruthy();
     });
 
-    expect(mockConsoleError).toHaveBeenCalledWith("Failed to initialize storage:", null);
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      "Failed to initialize storage:",
+      null
+    );
   });
 
   it("renders multiple children correctly", async () => {
@@ -198,9 +225,15 @@ describe("StorageInit", () => {
           const { View, Text } = require("react-native");
           return (
             <>
-              <View testID="child-1"><Text>Child 1</Text></View>
-              <View testID="child-2"><Text>Child 2</Text></View>
-              <View testID="child-3"><Text>Child 3</Text></View>
+              <View testID="child-1">
+                <Text>Child 1</Text>
+              </View>
+              <View testID="child-2">
+                <Text>Child 2</Text>
+              </View>
+              <View testID="child-3">
+                <Text>Child 3</Text>
+              </View>
             </>
           );
         })()}
@@ -226,8 +259,10 @@ describe("StorageInit", () => {
       </StorageInit>
     );
 
-    const errorText = getByText("Failed to initialize storage: Test styling error");
-    
+    const errorText = getByText(
+      "Failed to initialize storage: Test styling error"
+    );
+
     // Check that the error view exists and has content
     expect(errorText).toBeTruthy();
   });
@@ -325,7 +360,9 @@ describe("StorageInit", () => {
     );
 
     await waitFor(() => {
-      expect(getByText("Failed to initialize storage: Persistent error")).toBeTruthy();
+      expect(
+        getByText("Failed to initialize storage: Persistent error")
+      ).toBeTruthy();
     });
 
     // Re-render with different children
@@ -343,6 +380,8 @@ describe("StorageInit", () => {
     );
 
     // Should still show error, not try to initialize again
-    expect(getByText("Failed to initialize storage: Persistent error")).toBeTruthy();
+    expect(
+      getByText("Failed to initialize storage: Persistent error")
+    ).toBeTruthy();
   });
 });

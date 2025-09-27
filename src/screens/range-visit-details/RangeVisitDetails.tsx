@@ -1,11 +1,19 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
-import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
+import {
+  useNavigation,
+  useRoute,
+  useFocusEffect,
+} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { storage } from "../../services/storage-new";
-import { TerminalText, ImageGallery, BottomButtonGroup } from "../../components";
+import {
+  TerminalText,
+  ImageGallery,
+  BottomButtonGroup,
+} from "../../components";
 import {
   FirearmStorage,
   RangeVisitStorage,
@@ -143,7 +151,9 @@ export const RangeVisitDetails = () => {
 
           <View className="mb-4 flex-row">
             <TerminalText>DATE: </TerminalText>
-            <TerminalText>{new Date(visit.date).toLocaleDateString()}</TerminalText>
+            <TerminalText>
+              {new Date(visit.date).toLocaleDateString()}
+            </TerminalText>
           </View>
 
           <View className="mb-4">
@@ -197,7 +207,8 @@ export const RangeVisitDetails = () => {
             buttons={[
               {
                 caption: "EDIT",
-                onPress: () => navigation.navigate("EditRangeVisit", { id: visit.id }),
+                onPress: () =>
+                  navigation.navigate("EditRangeVisit", { id: visit.id }),
               },
               {
                 caption: "DELETE",

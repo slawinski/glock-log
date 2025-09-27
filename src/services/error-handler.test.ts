@@ -4,11 +4,12 @@ import {
   handleImageError,
   logAndGetUserError,
   ERROR_MESSAGES,
-  AppError,
 } from "./error-handler";
 
 // Mock console.error to test logging
-const mockConsoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+const mockConsoleError = jest
+  .spyOn(console, "error")
+  .mockImplementation(() => {});
 
 describe("error-handler", () => {
   beforeEach(() => {
@@ -83,13 +84,27 @@ describe("error-handler", () => {
       expect(ERROR_MESSAGES.NETWORK).toBe(
         "Network connection failed. Please check your internet connection."
       );
-      expect(ERROR_MESSAGES.STORAGE).toBe("Failed to save data. Please try again.");
-      expect(ERROR_MESSAGES.VALIDATION).toBe("Please check your input and try again.");
-      expect(ERROR_MESSAGES.NOT_FOUND).toBe("The requested item was not found.");
-      expect(ERROR_MESSAGES.DELETE_FAILED).toBe("Failed to delete item. Please try again.");
-      expect(ERROR_MESSAGES.LOAD_FAILED).toBe("Failed to load data. Please try again.");
-      expect(ERROR_MESSAGES.IMAGE_SAVE_FAILED).toBe("Failed to save image. Please try again.");
-      expect(ERROR_MESSAGES.PERMISSION_DENIED).toBe("Permission denied. Please check app permissions.");
+      expect(ERROR_MESSAGES.STORAGE).toBe(
+        "Failed to save data. Please try again."
+      );
+      expect(ERROR_MESSAGES.VALIDATION).toBe(
+        "Please check your input and try again."
+      );
+      expect(ERROR_MESSAGES.NOT_FOUND).toBe(
+        "The requested item was not found."
+      );
+      expect(ERROR_MESSAGES.DELETE_FAILED).toBe(
+        "Failed to delete item. Please try again."
+      );
+      expect(ERROR_MESSAGES.LOAD_FAILED).toBe(
+        "Failed to load data. Please try again."
+      );
+      expect(ERROR_MESSAGES.IMAGE_SAVE_FAILED).toBe(
+        "Failed to save image. Please try again."
+      );
+      expect(ERROR_MESSAGES.PERMISSION_DENIED).toBe(
+        "Permission denied. Please check app permissions."
+      );
     });
   });
 
@@ -220,7 +235,11 @@ describe("error-handler", () => {
   describe("logAndGetUserError", () => {
     it("logs Error instance and returns user message", () => {
       const error = new Error("Technical error");
-      const result = logAndGetUserError(error, "TestContext", "User friendly message");
+      const result = logAndGetUserError(
+        error,
+        "TestContext",
+        "User friendly message"
+      );
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         "[TestContext] Technical error",
@@ -231,7 +250,11 @@ describe("error-handler", () => {
 
     it("logs string error and returns user message", () => {
       const error = "String error";
-      const result = logAndGetUserError(error, "TestContext", "User friendly message");
+      const result = logAndGetUserError(
+        error,
+        "TestContext",
+        "User friendly message"
+      );
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         "[TestContext] String error",
@@ -242,7 +265,11 @@ describe("error-handler", () => {
 
     it("logs non-Error object and returns user message", () => {
       const error = { type: "custom" };
-      const result = logAndGetUserError(error, "TestContext", "User friendly message");
+      const result = logAndGetUserError(
+        error,
+        "TestContext",
+        "User friendly message"
+      );
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         "[TestContext] [object Object]",
@@ -253,7 +280,11 @@ describe("error-handler", () => {
 
     it("logs null error and returns user message", () => {
       const error = null;
-      const result = logAndGetUserError(error, "TestContext", "User friendly message");
+      const result = logAndGetUserError(
+        error,
+        "TestContext",
+        "User friendly message"
+      );
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         "[TestContext] null",
@@ -264,7 +295,11 @@ describe("error-handler", () => {
 
     it("logs undefined error and returns user message", () => {
       const error = undefined;
-      const result = logAndGetUserError(error, "TestContext", "User friendly message");
+      const result = logAndGetUserError(
+        error,
+        "TestContext",
+        "User friendly message"
+      );
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         "[TestContext] undefined",
