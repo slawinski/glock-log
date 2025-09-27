@@ -249,36 +249,51 @@ describe("storage-interface types", () => {
   });
 
   describe("interface compatibility", () => {
-    it("should allow implementing StorageInterface", () => {
+    it("should allow implementing StorageInterface", async () => {
       class TestStorage implements StorageInterface {
+        private store = new Map<string, string>();
+
         async getItem(key: string): Promise<string | null> {
-          return key === "exists" ? "value" : null;
+          return this.store.get(key) ?? null;
         }
 
         async setItem(key: string, value: string): Promise<void> {
-          // Implementation would go here
+          this.store.set(key, value);
         }
 
         async removeItem(key: string): Promise<void> {
-          // Implementation would go here
+          this.store.delete(key);
         }
 
         async clear(): Promise<void> {
-          // Implementation would go here
+          this.store.clear();
         }
 
         async getAllKeys(): Promise<string[]> {
-          return ["key1", "key2"];
+          return Array.from(this.store.keys());
         }
       }
 
       const storage = new TestStorage();
-      expect(storage).toBeInstanceOf(TestStorage);
-      expect(typeof storage.getItem).toBe("function");
-      expect(typeof storage.setItem).toBe("function");
-      expect(typeof storage.removeItem).toBe("function");
-      expect(typeof storage.clear).toBe("function");
-      expect(typeof storage.getAllKeys).toBe("function");
+
+      // Test setItem and getItem
+      await storage.setItem("name", "Gemini");
+      let name = await storage.getItem("name");
+      expect(name).toBe("Gemini");
+
+      // Test removeItem
+      await storage.removeItem("name");
+      name = await storage.getItem("name");
+      expect(name).toBeNull();
+
+      // Test clear and getAllKeys
+      await storage.setItem("key1", "value1");
+      await storage.setItem("key2", "value2");
+      let keys = await storage.getAllKeys();
+      expect(keys).toEqual(["key1", "key2"]);
+      await storage.clear();
+      keys = await storage.getAllKeys();
+      expect(keys).toEqual([]);
     });
 
     it("should work with async/await patterns", async () => {

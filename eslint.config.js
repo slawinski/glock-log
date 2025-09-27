@@ -16,6 +16,7 @@ export default [
         ...globals.browser,
         ...globals.es2021,
         ...globals.jest,
+        ...globals.node,
       },
       parser: tsParser,
       parserOptions: {
