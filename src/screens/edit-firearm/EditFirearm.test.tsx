@@ -27,6 +27,7 @@ jest.spyOn(Alert, "alert");
 
 // Mock navigation
 const mockGoBack = jest.fn();
+const mockRoute = { params: { id: "firearm-1" } };
 jest.mock("@react-navigation/native", () => {
   const actualNav = jest.requireActual("@react-navigation/native");
   return {
@@ -34,9 +35,7 @@ jest.mock("@react-navigation/native", () => {
     useNavigation: () => ({
       goBack: mockGoBack,
     }),
-    useRoute: () => ({
-      params: { id: "firearm-1" },
-    }),
+    useRoute: () => mockRoute,
   };
 });
 

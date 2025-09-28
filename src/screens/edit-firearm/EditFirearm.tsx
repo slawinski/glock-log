@@ -58,7 +58,7 @@ export const EditFirearm = () => {
     } finally {
       setLoading(false);
     }
-  }, [route.params?.id]);
+  }, [route.params]);
 
   useEffect(() => {
     if (route.params?.id) {

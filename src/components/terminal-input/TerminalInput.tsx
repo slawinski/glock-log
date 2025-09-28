@@ -28,9 +28,11 @@ export const TerminalInput = ({
   className = "",
   testID,
 }: Props) => {
+  const displayValue =
+    value === null || value === undefined ? "" : value.toString();
   const [isFocused, setIsFocused] = useState(false);
   const [showCursor, setShowCursor] = useState(false);
-  const [cursorPosition, setCursorPosition] = useState(0);
+  const [cursorPosition, setCursorPosition] = useState(displayValue.length);
   const textInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
@@ -52,20 +54,12 @@ export const TerminalInput = ({
     };
   }, [isFocused]);
 
-  const displayValue =
-    value === null || value === undefined ? "" : value.toString();
-
-  // Initialize cursor position when component first mounts
-  useEffect(() => {
-    setCursorPosition(displayValue.length);
-  }, []); // Only run on mount
-
   // Reset cursor to start when value becomes empty
   useEffect(() => {
     if (displayValue.length === 0) {
       setCursorPosition(0);
     }
-  }, [displayValue]);
+  }, [displayValue.length]);
 
   const handleSelectionChange = (
     event: NativeSyntheticEvent<TextInputSelectionChangeEventData>

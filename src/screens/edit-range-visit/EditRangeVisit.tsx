@@ -87,7 +87,7 @@ export const EditRangeVisit = () => {
     } finally {
       setLoading(false);
     }
-  }, [route.params?.id]);
+  }, [route.params]);
 
   const fetchData = useCallback(async () => {
     try {

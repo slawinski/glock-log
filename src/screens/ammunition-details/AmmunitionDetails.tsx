@@ -58,7 +58,7 @@ export const AmmunitionDetails = () => {
     } finally {
       setLoading(false);
     }
-  }, [route.params?.id]);
+  }, [route.params]);
 
   useEffect(() => {
     fetchAmmunition();

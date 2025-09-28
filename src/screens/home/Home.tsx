@@ -43,32 +43,7 @@ export const Home = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("firearms");
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <HeaderButton
-          onPress={() => navigation.navigate("Menu")}
-          caption="☰"
-          className="text-2xl"
-        />
-      ),
-      title: "TRIGGERNOTE",
-    });
-  }, [navigation]);
-
-  useEffect(() => {
-    fetchData(false);
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!isInitialLoad) {
-        fetchData(true);
-      }
-    }, [isInitialLoad])
-  );
-
-  const fetchData = async (isRefresh = false) => {
+  const fetchData = useCallback(async (isRefresh = false) => {
     try {
       if (!isRefresh) {
         setLoading(true);
@@ -95,7 +70,32 @@ export const Home = () => {
         setLoading(false);
       }
     }
-  };
+  }, [isInitialLoad]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        <HeaderButton
+          onPress={() => navigation.navigate("Menu")}
+          caption="☰"
+          className="text-2xl"
+        />
+      ),
+      title: "TRIGGERNOTE",
+    });
+  }, [navigation]);
+
+  useEffect(() => {
+    fetchData(false);
+  }, [fetchData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isInitialLoad) {
+        fetchData(true);
+      }
+    }, [isInitialLoad, fetchData])
+  );
 
   const onRefresh = () => {
     fetchData(true);

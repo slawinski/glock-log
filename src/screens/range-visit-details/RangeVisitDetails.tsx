@@ -85,7 +85,7 @@ export const RangeVisitDetails = () => {
     } finally {
       setLoading(false);
     }
-  }, [route.params?.id]);
+  }, [route.params]);
 
   useFocusEffect(
     useCallback(() => {

@@ -1,9 +1,5 @@
-/* globals global */
-
 // Polyfill for setImmediate
-(global as any).setImmediate = (
-  callback: () => void
-) => {
+(global as any).setImmediate = (callback: () => void) => {
   return setTimeout(callback, 0);
 };
 
