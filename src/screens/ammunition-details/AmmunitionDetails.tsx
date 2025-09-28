@@ -37,7 +37,7 @@ export const AmmunitionDetails = () => {
       setLoading(true);
       const [ammunitionList, currentCurrency] = await Promise.all([
         storage.getAmmunition(),
-        storage.getCurrency()
+        storage.getCurrency(),
       ]);
       const foundAmmunition = ammunitionList.find(
         (a) => a.id === route.params!.id
@@ -128,7 +128,9 @@ export const AmmunitionDetails = () => {
           <View className="mb-4">
             <View className="flex-row">
               <TerminalText className="text-lg">BRAND: </TerminalText>
-              <TerminalText className="text-lg">{ammunition.brand}</TerminalText>
+              <TerminalText className="text-lg">
+                {ammunition.brand}
+              </TerminalText>
             </View>
             <View className="flex-row">
               <TerminalText>DETAILS: </TerminalText>
@@ -145,13 +147,17 @@ export const AmmunitionDetails = () => {
 
           <View className="mb-4 flex-row">
             <TerminalText>AMOUNT PAID: </TerminalText>
-            <TerminalText>{formatCurrency(ammunition.amountPaid, currency)}</TerminalText>
+            <TerminalText>
+              {formatCurrency(ammunition.amountPaid, currency)}
+            </TerminalText>
           </View>
 
           {ammunition.pricePerRound && (
             <View className="mb-4 flex-row">
               <TerminalText>PRICE PER ROUND: </TerminalText>
-              <TerminalText>{formatCurrency(ammunition.pricePerRound, currency)}</TerminalText>
+              <TerminalText>
+                {formatCurrency(ammunition.pricePerRound, currency)}
+              </TerminalText>
             </View>
           )}
 
@@ -178,7 +184,8 @@ export const AmmunitionDetails = () => {
             buttons={[
               {
                 caption: "EDIT",
-                onPress: () => navigation.navigate("EditAmmunition", { id: ammunition.id }),
+                onPress: () =>
+                  navigation.navigate("EditAmmunition", { id: ammunition.id }),
               },
               {
                 caption: "DELETE",
@@ -194,4 +201,4 @@ export const AmmunitionDetails = () => {
       </ScrollView>
     </View>
   );
-}
+};

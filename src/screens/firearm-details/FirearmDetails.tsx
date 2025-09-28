@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
 import {
   useNavigation,
@@ -40,7 +40,7 @@ export const FirearmDetails = () => {
       setError(null);
       const [firearms, currentCurrency] = await Promise.all([
         storage.getFirearms(),
-        storage.getCurrency()
+        storage.getCurrency(),
       ]);
       const foundFirearm = firearms.find((f) => f.id === route.params.id);
       if (foundFirearm) {
@@ -144,7 +144,9 @@ export const FirearmDetails = () => {
 
           <View className="mb-4 flex-row">
             <TerminalText>AMOUNT PAID: </TerminalText>
-            <TerminalText>{formatCurrency(firearm.amountPaid, currency)}</TerminalText>
+            <TerminalText>
+              {formatCurrency(firearm.amountPaid, currency)}
+            </TerminalText>
           </View>
 
           {firearm.notes && (

@@ -41,7 +41,6 @@ export default [
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
-      "react-native/no-inline-styles": "warn",
       "react-native/no-raw-text": ["error", { skip: ["TerminalText"] }],
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
@@ -52,6 +51,7 @@ export default [
           caughtErrorsIgnorePattern: "^_",
         },
       ],
+      "react-native/no-inline-styles": "off",
     },
     settings: {
       react: {

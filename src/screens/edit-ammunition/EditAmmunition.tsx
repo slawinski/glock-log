@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
@@ -152,73 +146,73 @@ export const EditAmmunition = () => {
             />
           </View>
 
-      <View className="mb-4">
-        <TerminalText>BRAND</TerminalText>
-        <TerminalInput
-          value={formData.brand}
-          onChangeText={(text) => handleFormChange("brand", text)}
-          placeholder="e.g., Federal"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>BRAND</TerminalText>
+            <TerminalInput
+              value={formData.brand}
+              onChangeText={(text) => handleFormChange("brand", text)}
+              placeholder="e.g., Federal"
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>GRAIN</TerminalText>
-        <TerminalInput
-          value={formData.grain}
-          onChangeText={(text) => handleFormChange("grain", text)}
-          placeholder="e.g., 115"
-          keyboardType="numeric"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>GRAIN</TerminalText>
+            <TerminalInput
+              value={formData.grain}
+              onChangeText={(text) => handleFormChange("grain", text)}
+              placeholder="e.g., 115"
+              keyboardType="numeric"
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>QUANTITY</TerminalText>
-        <TerminalInput
-          value={formData.quantity}
-          onChangeText={(text) => {
-            const quantity = parseInt(text);
-            handleFormChange("quantity", isNaN(quantity) ? null : quantity);
-          }}
-          placeholder="e.g., 1000"
-          keyboardType="numeric"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>QUANTITY</TerminalText>
+            <TerminalInput
+              value={formData.quantity}
+              onChangeText={(text) => {
+                const quantity = parseInt(text);
+                handleFormChange("quantity", isNaN(quantity) ? null : quantity);
+              }}
+              placeholder="e.g., 1000"
+              keyboardType="numeric"
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>AMOUNT PAID</TerminalText>
-        <TerminalInput
-          value={formData.amountPaid}
-          onChangeText={(text) => {
-            const amount = parseFloat(text);
-            handleFormChange("amountPaid", isNaN(amount) ? null : amount);
-          }}
-          placeholder="e.g., 299.99"
-          keyboardType="numeric"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>AMOUNT PAID</TerminalText>
+            <TerminalInput
+              value={formData.amountPaid}
+              onChangeText={(text) => {
+                const amount = parseFloat(text);
+                handleFormChange("amountPaid", isNaN(amount) ? null : amount);
+              }}
+              placeholder="e.g., 299.99"
+              keyboardType="numeric"
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>DATE PURCHASED</TerminalText>
-        <TerminalDatePicker
-          value={new Date(formData.datePurchased)}
-          onChange={(date) =>
-            handleFormChange("datePurchased", date.toISOString())
-          }
-          label="PURCHASE DATE"
-          maxDate={new Date()}
-          placeholder="Select purchase date"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>DATE PURCHASED</TerminalText>
+            <TerminalDatePicker
+              value={new Date(formData.datePurchased)}
+              onChange={(date) =>
+                handleFormChange("datePurchased", date.toISOString())
+              }
+              label="PURCHASE DATE"
+              maxDate={new Date()}
+              placeholder="Select purchase date"
+            />
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>NOTES</TerminalText>
-        <TerminalInput
-          value={formData.notes || ""}
-          onChangeText={(text) => handleFormChange("notes", text)}
-          placeholder="Optional notes"
-          multiline
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>NOTES</TerminalText>
+            <TerminalInput
+              value={formData.notes || ""}
+              onChangeText={(text) => handleFormChange("notes", text)}
+              placeholder="Optional notes"
+              multiline
+            />
+          </View>
 
           <View className="flex-1" />
 
@@ -239,4 +233,4 @@ export const EditAmmunition = () => {
       </ScrollView>
     </View>
   );
-}
+};
