@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useFormChangeHandler } from "../../hooks/useFormChangeHandler";
 import {
   View,
   TouchableOpacity,
@@ -46,14 +47,8 @@ type RangeVisitFormData = Omit<RangeVisitInput, "ammunitionUsed"> & {
 export const EditRangeVisit = () => {
   const navigation = useNavigation<EditRangeVisitScreenNavigationProp>();
   const route = useRoute<EditRangeVisitScreenRouteProp>();
-  const [formData, setFormData] = useState<RangeVisitFormData>({
-    date: new Date().toISOString(),
-    location: "",
-    notes: "",
-    firearmsUsed: [],
-    photos: [],
-    ammunitionUsed: {},
-  });
+  const [formData, setFormData] = useState<RangeVisitFormData | null>(null);
+  const handleFormChange = useFormChangeHandler(formData, setFormData);
   const [firearms, setFirearms] = useState<
     { id: string; modelName: string; caliber: string }[]
   >([]);
@@ -68,18 +63,18 @@ export const EditRangeVisit = () => {
       const visits = await storage.getRangeVisits();
       const visit = visits.find((v) => v.id === route.params!.id);
       if (visit) {
-        const { photos, firearmsUsed, notes, ammunitionUsed } = visit;
         setFormData({
           id: visit.id,
           date: visit.date,
           location: visit.location,
-          photos: photos ?? [],
-          firearmsUsed,
-          notes: notes || "",
-          ammunitionUsed: ammunitionUsed || {},
+          photos: visit.photos ?? [],
+          firearmsUsed: visit.firearmsUsed,
+          notes: visit.notes || "",
+          ammunitionUsed: visit.ammunitionUsed || {},
         });
       } else {
         setError("Range visit not found");
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching range visit:", error);
@@ -109,11 +104,11 @@ export const EditRangeVisit = () => {
   }, []);
 
   useEffect(() => {
-    if (route.params?.id) {
+    if (route.params?.id && !formData) {
       fetchVisit();
     }
     fetchData();
-  }, [route.params?.id, fetchVisit, fetchData]);
+  }, [route.params?.id, fetchVisit, fetchData, formData]);
 
   const handleImagePick = () => {
     ImagePicker.launchImageLibrary(
@@ -123,16 +118,20 @@ export const EditRangeVisit = () => {
       },
       (response) => {
         if (response.assets && response.assets[0].uri) {
-          setFormData((prev) => ({
-            ...prev,
-            photos: [...(prev.photos || []), response.assets![0].uri!],
-          }));
+          setFormData((prev) => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              photos: [...(prev.photos || []), response.assets![0].uri!],
+            };
+          });
         }
       }
     );
   };
 
   const handleSubmit = async () => {
+    if (!formData) return;
     try {
       setSaving(true);
 
@@ -187,8 +186,11 @@ export const EditRangeVisit = () => {
     }
   };
 
+
+
   const toggleFirearmSelection = (firearmId: string) => {
     setFormData((prev) => {
+      if (!prev) return null;
       const isSelected = prev.firearmsUsed.includes(firearmId);
       const newAmmunitionUsed = { ...prev.ammunitionUsed };
 
@@ -207,13 +209,16 @@ export const EditRangeVisit = () => {
   };
 
   const handleDeletePhoto = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      photos: (prev.photos || []).filter((_, i) => i !== index),
-    }));
+    setFormData((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        photos: (prev.photos || []).filter((_, i) => i !== index),
+      };
+    });
   };
 
-  if (loading) {
+  if (loading || !formData) {
     return (
       <View className="flex-1 justify-center items-center bg-terminal-bg">
         <ActivityIndicator size="large" color="#00ff00" />
@@ -240,9 +245,7 @@ export const EditRangeVisit = () => {
             <TerminalText>LOCATION</TerminalText>
             <TerminalInput
               value={formData.location}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, location: text }))
-              }
+              onChangeText={(text) => handleFormChange("location", text)}
               placeholder="e.g., Local Range"
             />
           </View>
@@ -251,12 +254,7 @@ export const EditRangeVisit = () => {
             <TerminalText>DATE</TerminalText>
             <TerminalDatePicker
               value={new Date(formData.date)}
-              onChange={(date) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  date: date.toISOString(),
-                }))
-              }
+              onChange={(date) => handleFormChange("date", date.toISOString())}
               label="VISIT DATE"
               maxDate={new Date()}
               placeholder="Select visit date"
@@ -267,9 +265,7 @@ export const EditRangeVisit = () => {
             <TerminalText>NOTES</TerminalText>
             <TerminalInput
               value={formData.notes || ""}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, notes: text }))
-              }
+              onChangeText={(text) => handleFormChange("notes", text)}
               placeholder="Optional notes"
               multiline
             />
@@ -299,6 +295,7 @@ export const EditRangeVisit = () => {
                           onChangeText={(text) => {
                             const num = parseInt(text);
                             setFormData((prev) => {
+                              if (!prev) return null;
                               const currentAmmo =
                                 prev.ammunitionUsed?.[firearm.id];
                               return {
@@ -338,18 +335,21 @@ export const EditRangeVisit = () => {
                               compatibleAmmo.map((ammo) => ({
                                 text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
                                 onPress: () => {
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    ammunitionUsed: {
-                                      ...(prev.ammunitionUsed || {}),
-                                      [firearm.id]: {
-                                        ammunitionId: ammo.id,
-                                        rounds:
-                                          prev.ammunitionUsed?.[firearm.id]
-                                            ?.rounds || null,
+                                  setFormData((prev) => {
+                                    if (!prev) return null;
+                                    return {
+                                      ...prev,
+                                      ammunitionUsed: {
+                                        ...(prev.ammunitionUsed || {}),
+                                        [firearm.id]: {
+                                          ammunitionId: ammo.id,
+                                          rounds:
+                                            prev.ammunitionUsed?.[firearm.id]
+                                              ?.rounds || null,
+                                        },
                                       },
-                                    },
-                                  }));
+                                    };
+                                  });
                                 },
                               }))
                             );

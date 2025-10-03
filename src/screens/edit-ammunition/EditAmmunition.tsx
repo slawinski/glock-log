@@ -11,6 +11,7 @@ import {
   BottomButtonGroup,
 } from "../../components";
 import { storage } from "../../services/storage-new";
+import { useFormChangeHandler } from "../../hooks";
 import {
   ammunitionInputSchema,
   AmmunitionInput,
@@ -42,6 +43,8 @@ export const EditAmmunition = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleFormChange = useFormChangeHandler(formData, setFormData);
 
   const fetchAmmunition = useCallback(async () => {
     try {
@@ -103,14 +106,6 @@ export const EditAmmunition = () => {
     }
   };
 
-  const handleFormChange = (
-    field: keyof AmmunitionFormData,
-    value: string | number | null
-  ) => {
-    if (formData) {
-      setFormData({ ...formData, [field]: value });
-    }
-  };
 
   if (loading) {
     return (

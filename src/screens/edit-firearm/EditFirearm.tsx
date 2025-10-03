@@ -6,6 +6,8 @@ import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
 import { storage } from "../../services/storage-new";
+import { useFormChangeHandler } from "../../hooks";
+
 import {
   TerminalText,
   TerminalInput,
@@ -37,6 +39,7 @@ export const EditFirearm = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [thumbnailIndex, setThumbnailIndex] = useState(0);
+  const handleFormChange = useFormChangeHandler(formData, setFormData);
 
   const fetchFirearm = useCallback(async () => {
     try {
@@ -140,15 +143,6 @@ export const EditFirearm = () => {
 
   const handleSelectThumbnail = (index: number) => {
     setThumbnailIndex(index);
-  };
-
-  const handleFormChange = (
-    field: keyof FirearmFormData,
-    value: string | number | null
-  ) => {
-    if (formData) {
-      setFormData({ ...formData, [field]: value });
-    }
   };
 
   if (loading) {
