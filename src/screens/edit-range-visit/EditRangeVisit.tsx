@@ -218,21 +218,21 @@ export const EditRangeVisit = () => {
     });
   };
 
-  if (loading || !formData) {
-    return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <ActivityIndicator size="large" color="#00ff00" />
-        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
-      </View>
-    );
-  }
-
   if (error) {
     return (
       <View className="flex-1 justify-center items-center bg-terminal-bg">
         <TerminalText className="text-terminal-error text-lg">
           {error}
         </TerminalText>
+      </View>
+    );
+  }
+
+  if (loading || !formData) {
+    return (
+      <View className="flex-1 justify-center items-center bg-terminal-bg">
+        <ActivityIndicator size="large" color="#00ff00" />
+        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
       </View>
     );
   }
