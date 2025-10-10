@@ -11,6 +11,7 @@ import {
   TerminalDatePicker,
   ImageGallery,
   BottomButtonGroup,
+  FirearmsUsedInput,
 } from "../../components";
 import {
   rangeVisitInputSchema,
@@ -229,165 +230,58 @@ export const AddRangeVisit = () => {
         />
       </View>
 
-      <View className="mb-4">
-        <TerminalText>FIREARMS USED</TerminalText>
-        {firearms.map((firearm) => (
-          <View key={firearm.id} className="mb-2">
-            <TouchableOpacity
-              onPress={() => {
-                if (selectedFirearms.includes(firearm.id)) {
-                  setSelectedFirearms((prev) =>
-                    prev.filter((id) => id !== firearm.id)
-                  );
-                  setAmmunitionUsed((prev) => {
-                    const newAmmo = { ...prev };
-                    delete newAmmo[firearm.id];
-                    return newAmmo;
-                  });
-                } else {
-                  setSelectedFirearms((prev) => [...prev, firearm.id]);
-                }
-              }}
-              className={`border p-2 ${
-                selectedFirearms.includes(firearm.id)
-                  ? "border-terminal-accent"
-                  : "border-terminal-border"
-              }`}
-            >
-              <TerminalText>{firearm.modelName}</TerminalText>
-            </TouchableOpacity>
-            {selectedFirearms.includes(firearm.id) && (
-              <View className="mt-2">
-                <TerminalText>AMMUNITION USED</TerminalText>
-                <View className="flex-row items-center">
-                  <View className="flex-1 mr-2">
-                    <TerminalInput
-                      value={
-                        ammunitionUsed[firearm.id]?.rounds?.toString() ?? ""
-                      }
-                      onChangeText={(text) => {
-                        const num = parseInt(text, 10);
-                        setAmmunitionUsed((prev) => ({
-                          ...prev,
-                          [firearm.id]: {
-                            ...prev[firearm.id],
-                            rounds: isNaN(num) ? null : num,
-                          },
-                        }));
-                      }}
-                      placeholder="Rounds used"
-                      keyboardType="numeric"
-                      testID="rounds-input"
-                    />
-                  </View>
-                  <View className="flex-1">
-                    <TouchableOpacity
-                      onPress={() => {
-                        const compatibleAmmo = ammunition.filter(
-                          (a) => a.caliber === firearm.caliber
-                        );
-                        if (compatibleAmmo.length === 0) {
-                          Alert.alert(
-                            "Error",
-                            "No compatible ammunition found"
-                          );
-                          return;
-                        }
-                        Alert.alert(
-                          "Select Ammunition",
-                          "Choose ammunition type",
-                          [
-                            ...compatibleAmmo.map((ammo) => ({
-                              text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
-                              onPress: () => {
-                                setAmmunitionUsed((prev) => ({
-                                  ...prev,
-                                  [firearm.id]: {
-                                    ...prev[firearm.id],
-                                    ammunitionId: ammo.id,
-                                  },
-                                }));
-                              },
-                            })),
-                            { text: "Cancel", style: "cancel" },
-                          ]
-                        );
-                      }}
-                    >
-                      <TerminalText className="text-terminal-accent">
-                        {ammunitionUsed[firearm.id]?.ammunitionId
-                          ? ammunition.find(
-                              (a) =>
-                                a.id ===
-                                ammunitionUsed[firearm.id]?.ammunitionId
-                            )?.brand
-                          : "Select Ammunition"}
-                      </TerminalText>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            )}
-          </View>
-        ))}
-      </View>
-
-      <View className="my-4">
-        <TouchableOpacity
-          onPress={handleAddBorrowedAmmunition}
-          className="border border-terminal-accent p-2"
-        >
-          <TerminalText>+ Log ammunition for a borrowed firearm</TerminalText>
-        </TouchableOpacity>
-
-        {Object.entries(ammunitionUsed)
-          .filter(([key]) => key.startsWith("borrowed-"))
-          .map(([key, usage]) => {
-            const ammoDetails = ammunition.find(
-              (a) => a.id === usage.ammunitionId
+      <FirearmsUsedInput
+        firearms={firearms}
+        ammunition={ammunition}
+        selectedFirearms={selectedFirearms}
+        ammunitionUsed={ammunitionUsed}
+        onToggleFirearm={(firearmId) => {
+          if (selectedFirearms.includes(firearmId)) {
+            setSelectedFirearms((prev) =>
+              prev.filter((id) => id !== firearmId)
             );
-            return (
-              <View
-                key={key}
-                className="mt-2 p-2 border border-terminal-dim rounded"
-              >
-                <View className="flex-row justify-between items-center mb-2">
-                  <TerminalText>
-                    {ammoDetails
-                      ? `${ammoDetails.brand} ${ammoDetails.caliber}`
-                      : "Borrowed Firearm"}
-                  </TerminalText>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setAmmunitionUsed((prev) => {
-                        const newAmmo = { ...prev };
-                        delete newAmmo[key];
-                        return newAmmo;
-                      });
-                    }}
-                  >
-                    <TerminalText className="text-terminal-error">
-                      Remove
-                    </TerminalText>
-                  </TouchableOpacity>
-                </View>
-                <TerminalInput
-                  value={usage.rounds?.toString() || ""}
-                  onChangeText={(text) => {
-                    const num = parseInt(text, 10);
-                    setAmmunitionUsed((prev) => ({
-                      ...prev,
-                      [key]: { ...prev[key], rounds: isNaN(num) ? null : num },
-                    }));
-                  }}
-                  placeholder="Rounds used"
-                  keyboardType="numeric"
-                  testID="rounds-input"
-                />
-              </View>
-            );
-          })}
-      </View>
+            setAmmunitionUsed((prev) => {
+              const newAmmo = { ...prev };
+              delete newAmmo[firearmId];
+              return newAmmo;
+            });
+          } else {
+            setSelectedFirearms((prev) => [...prev, firearmId]);
+          }
+        }}
+        onRoundsChange={(firearmId, rounds) => {
+          setAmmunitionUsed((prev) => ({
+            ...prev,
+            [firearmId]: {
+              ...prev[firearmId],
+              rounds: rounds,
+            },
+          }));
+        }}
+        onAmmunitionSelect={(firearmId, ammunitionId) => {
+          setAmmunitionUsed((prev) => ({
+            ...prev,
+            [firearmId]: {
+              ...prev[firearmId],
+              ammunitionId: ammunitionId,
+            },
+          }));
+        }}
+        onAddBorrowedAmmunition={handleAddBorrowedAmmunition}
+        onRemoveBorrowedAmmunition={(key) => {
+          setAmmunitionUsed((prev) => {
+            const newAmmo = { ...prev };
+            delete newAmmo[key];
+            return newAmmo;
+          });
+        }}
+        onBorrowedAmmunitionRoundsChange={(key, rounds) => {
+          setAmmunitionUsed((prev) => ({
+            ...prev,
+            [key]: { ...prev[key], rounds: rounds },
+          }));
+        }}
+      />
 
       <View className="mb-4">
         <TerminalText>PHOTOS</TerminalText>

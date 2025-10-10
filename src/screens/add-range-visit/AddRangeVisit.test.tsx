@@ -174,24 +174,20 @@ describe("AddRangeVisitScreen", () => {
     const locationInput = screen.getByTestId("location-input");
     fireEvent.changeText(locationInput, "Test Range");
 
-    // Select firearm
-    const glock19Button = screen.getByText("Glock 19");
-    fireEvent.press(glock19Button);
+    // Simulate firearm selection
+    fireEvent.press(screen.getByText("Glock 19"));
 
-    // Enter rounds
-    const roundsInput = screen.getAllByTestId("rounds-input")[0];
+    // Simulate rounds input
+    const roundsInput = screen.getByTestId(
+      `rounds-input-${mockFirearms[0].id}`
+    );
     fireEvent.changeText(roundsInput, "100");
-    fireEvent(roundsInput, "blur");
 
-    // Select ammunition
+    // Simulate ammunition selection
+    fireEvent.press(screen.getByText("Select Ammunition"));
+    // The mock Alert.alert will automatically select the first option
     await waitFor(() => {
-      const selectAmmoButton = screen.getByText("Select Ammunition");
-      fireEvent.press(selectAmmoButton);
-    });
-
-    // Ensure state is updated
-    await waitFor(() => {
-      expect(roundsInput.props.value).toBe("100");
+      expect(screen.getByText("Federal")).toBeTruthy(); // Check if the selected ammo brand is displayed
     });
 
     // Save the form
@@ -252,23 +248,20 @@ describe("AddRangeVisitScreen", () => {
     });
   });
 
-  it("saves range visit when form is valid", async () => {
+  it("handles firearm selection, ammunition selection, and form save", async () => {
     await renderScreen();
 
-    const locationInput = screen.getByTestId("location-input");
-    fireEvent.changeText(locationInput, "Test Range");
-
-    // Select firearm
-    const glock19Button = screen.getByText("Glock 19");
-    fireEvent.press(glock19Button);
-
-    const roundsInput = screen.getAllByTestId("rounds-input")[0];
+    // Simulate rounds input
+    const roundsInput = screen.getByTestId(
+      `rounds-input-${mockFirearms[0].id}`
+    );
     fireEvent.changeText(roundsInput, "100");
 
-    // Select ammunition for the firearm
+    // Simulate ammunition selection
+    fireEvent.press(screen.getByText("Select Ammunition"));
+    // The mock Alert.alert will automatically select the first option
     await waitFor(() => {
-      const selectAmmoButton = screen.getByText("Select Ammunition");
-      fireEvent.press(selectAmmoButton);
+      expect(screen.getByText("Federal")).toBeTruthy(); // Check if the selected ammo brand is displayed
     });
 
     // Save the form
@@ -301,16 +294,20 @@ describe("AddRangeVisitScreen", () => {
     const locationInput = screen.getByTestId("location-input");
     fireEvent.changeText(locationInput, "Test Range");
 
-    const glock19Button = screen.getByText("Glock 19");
-    fireEvent.press(glock19Button);
+    // Simulate firearm selection
+    fireEvent.press(screen.getByText("Glock 19"));
 
-    const roundsInput = screen.getAllByTestId("rounds-input")[0];
+    // Simulate rounds input
+    const roundsInput = screen.getByTestId(
+      `rounds-input-${mockFirearms[0].id}`
+    );
     fireEvent.changeText(roundsInput, "100");
 
-    // Select ammunition
+    // Simulate ammunition selection
+    fireEvent.press(screen.getByText("Select Ammunition"));
+    // The mock Alert.alert will automatically select the first option
     await waitFor(() => {
-      const selectAmmoButton = screen.getByText("Select Ammunition");
-      fireEvent.press(selectAmmoButton);
+      expect(screen.getByText("Federal")).toBeTruthy(); // Check if the selected ammo brand is displayed
     });
 
     const saveButton = screen.getByText(/SAVE/);
@@ -375,11 +372,13 @@ describe("AddRangeVisitScreen", () => {
 
     // Wait for the borrowed rounds input to appear
     await waitFor(() =>
-      expect(screen.getAllByTestId("rounds-input").length).toBe(2)
+      expect(screen.getAllByTestId(/^borrowed-rounds-input-/).length).toBe(1)
     );
 
     // Fill in rounds for borrowed firearm
-    const borrowedRoundsInput = screen.getAllByTestId("rounds-input")[1];
+    const borrowedRoundsInput = screen.getByTestId(
+      `borrowed-rounds-input-${mockAmmunition[0].id}`
+    ); // Use mockAmmunition[0].id for the key
     fireEvent.changeText(borrowedRoundsInput, "50");
 
     const saveButton = screen.getByText(/SAVE/);

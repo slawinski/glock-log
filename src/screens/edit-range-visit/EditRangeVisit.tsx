@@ -19,6 +19,7 @@ import {
   TerminalDatePicker,
   ImageGallery,
   BottomButtonGroup,
+  FirearmsUsedInput,
 } from "../../components";
 import {
   rangeVisitInputSchema,
@@ -271,109 +272,75 @@ export const EditRangeVisit = () => {
             />
           </View>
 
-          <View className="mb-4">
-            <TerminalText>FIREARMS USED</TerminalText>
-            {firearms.map((firearm) => (
-              <View key={firearm.id} className="mb-2">
-                <TouchableOpacity
-                  onPress={() => toggleFirearmSelection(firearm.id)}
-                  className={`border p-2 ${
-                    formData.firearmsUsed.includes(firearm.id)
-                      ? "border-terminal-accent"
-                      : "border-terminal-border"
-                  }`}
-                >
-                  <TerminalText>{firearm.modelName}</TerminalText>
-                </TouchableOpacity>
-                {formData.firearmsUsed.includes(firearm.id) && (
-                  <View className="mt-2">
-                    <TerminalText>AMMUNITION USED</TerminalText>
-                    <View className="flex-row items-center">
-                      <View className="flex-1 mr-2">
-                        <TerminalInput
-                          value={formData.ammunitionUsed?.[firearm.id]?.rounds}
-                          onChangeText={(text) => {
-                            const num = parseInt(text);
-                            setFormData((prev) => {
-                              if (!prev) return null;
-                              const currentAmmo =
-                                prev.ammunitionUsed?.[firearm.id];
-                              return {
-                                ...prev,
-                                ammunitionUsed: {
-                                  ...(prev.ammunitionUsed || {}),
-                                  [firearm.id]: {
-                                    ammunitionId:
-                                      currentAmmo?.ammunitionId || "",
-                                    rounds: isNaN(num) ? null : num,
-                                  },
-                                },
-                              };
-                            });
-                          }}
-                          placeholder="Rounds used"
-                          keyboardType="numeric"
-                          testID="rounds-input"
-                        />
-                      </View>
-                      <View className="flex-1">
-                        <TouchableOpacity
-                          onPress={() => {
-                            const compatibleAmmo = ammunition.filter(
-                              (a) => a.caliber === firearm.caliber
-                            );
-                            if (compatibleAmmo.length === 0) {
-                              Alert.alert(
-                                "Error",
-                                "No compatible ammunition found"
-                              );
-                              return;
-                            }
-                            Alert.alert(
-                              "Select Ammunition",
-                              "Choose ammunition type",
-                              compatibleAmmo.map((ammo) => ({
-                                text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
-                                onPress: () => {
-                                  setFormData((prev) => {
-                                    if (!prev) return null;
-                                    return {
-                                      ...prev,
-                                      ammunitionUsed: {
-                                        ...(prev.ammunitionUsed || {}),
-                                        [firearm.id]: {
-                                          ammunitionId: ammo.id,
-                                          rounds:
-                                            prev.ammunitionUsed?.[firearm.id]
-                                              ?.rounds || null,
-                                        },
-                                      },
-                                    };
-                                  });
-                                },
-                              }))
-                            );
-                          }}
-                          className="border border-terminal-border p-2"
-                        >
-                          <TerminalText>
-                            {formData.ammunitionUsed?.[firearm.id]?.ammunitionId
-                              ? ammunition.find(
-                                  (a) =>
-                                    a.id ===
-                                    formData.ammunitionUsed?.[firearm.id]
-                                      ?.ammunitionId
-                                )?.brand
-                              : "SELECT AMMO"}
-                          </TerminalText>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                )}
-              </View>
-            ))}
-          </View>
+          <FirearmsUsedInput
+            firearms={firearms}
+            ammunition={ammunition}
+            selectedFirearms={formData.firearmsUsed}
+            ammunitionUsed={formData.ammunitionUsed}
+            onToggleFirearm={toggleFirearmSelection}
+            onRoundsChange={(firearmId, rounds) => {
+              setFormData((prev) => {
+                if (!prev) return null;
+                const currentAmmo = prev.ammunitionUsed?.[firearmId];
+                return {
+                  ...prev,
+                  ammunitionUsed: {
+                    ...(prev.ammunitionUsed || {}),
+                    [firearmId]: {
+                      ammunitionId: currentAmmo?.ammunitionId || "",
+                      rounds: rounds,
+                    },
+                  },
+                };
+              });
+            }}
+            onAmmunitionSelect={(firearmId, ammunitionId) => {
+              setFormData((prev) => {
+                if (!prev) return null;
+                return {
+                  ...prev,
+                  ammunitionUsed: {
+                    ...(prev.ammunitionUsed || {}),
+                    [firearmId]: {
+                      ammunitionId: ammunitionId,
+                      rounds: prev.ammunitionUsed?.[firearmId]?.rounds || null,
+                    },
+                  },
+                };
+              });
+            }}
+            onAddBorrowedAmmunition={() => {
+              // Edit screen does not support adding borrowed ammunition directly
+              // This functionality is primarily for the AddRangeVisit screen
+              Alert.alert(
+                "Feature Not Available",
+                "Adding borrowed ammunition is not supported in edit mode."
+              );
+            }}
+            onRemoveBorrowedAmmunition={(key) => {
+              setFormData((prev) => {
+                if (!prev) return null;
+                const newAmmo = { ...prev.ammunitionUsed };
+                delete newAmmo[key];
+                return {
+                  ...prev,
+                  ammunitionUsed: newAmmo,
+                };
+              });
+            }}
+            onBorrowedAmmunitionRoundsChange={(key, rounds) => {
+              setFormData((prev) => {
+                if (!prev) return null;
+                return {
+                  ...prev,
+                  ammunitionUsed: {
+                    ...prev.ammunitionUsed,
+                    [key]: { ...prev.ammunitionUsed[key], rounds: rounds },
+                  },
+                };
+              });
+            }}
+          />
 
           <View className="mb-4">
             <TerminalText>PHOTOS:</TerminalText>

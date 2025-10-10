@@ -176,7 +176,7 @@ describe("EditRangeVisitScreen", () => {
     await waitFor(() => {
       const firearmButton = screen.getByText("AR-15");
       fireEvent.press(firearmButton);
-      const roundsInput = screen.getAllByTestId("rounds-input")[0];
+      const roundsInput = screen.getByTestId(`rounds-input-${mockFirearms[1].id}`);
       fireEvent.changeText(roundsInput, "123");
       expect(roundsInput.props.value).toBe("123");
     });
@@ -216,18 +216,25 @@ describe("EditRangeVisitScreen", () => {
   });
 
   it("saves range visit when form is valid", async () => {
-    (
-      storage.saveRangeVisitWithAmmunition as SaveRangeVisitWithAmmunitionMock
-    ).mockResolvedValue();
+    (storage.saveRangeVisitWithAmmunition as SaveRangeVisitWithAmmunitionMock).mockResolvedValue();
     renderScreen();
     await waitFor(() => {
+      // Select AR-15 and add rounds
+      const ar15Button = screen.getByText("AR-15");
+      fireEvent.press(ar15Button);
+      const roundsInput = screen.getByTestId(`rounds-input-${mockFirearms[1].id}`);
+      fireEvent.changeText(roundsInput, "75");
+
       const saveButton = screen.getByText(/SAVE/);
       fireEvent.press(saveButton);
       expect(storage.saveRangeVisitWithAmmunition).toHaveBeenCalledWith(
         expect.objectContaining({
           location: "Test Range",
           notes: "Test notes",
-          firearmsUsed: ["firearm-1"],
+          firearmsUsed: ["firearm-1", "firearm-2"], // Glock 19 was initially selected, AR-15 is added
+          ammunitionUsed: {
+            "firearm-2": { ammunitionId: "", rounds: 75 } // AR-15 with 75 rounds
+          }
         })
       );
       expect(mockGoBack).toHaveBeenCalled();
@@ -258,9 +265,10 @@ describe("EditRangeVisitScreen", () => {
   it("handles removing a firearm", async () => {
     renderScreen();
     await waitFor(() => {
-      const firearmButton = screen.getByText("Glock 19");
-      fireEvent.press(firearmButton);
-      expect(screen.queryByText("Glock 19")).toBeTruthy();
+      // Initially, Glock 19 is selected from mockRangeVisit
+      const glock19Button = screen.getByText("Glock 19");
+      fireEvent.press(glock19Button); // Deselect Glock 19
+      expect(screen.queryByText("AMMUNITION USED")).toBeNull(); // Ammunition input should disappear
     });
   });
 });
