@@ -2,7 +2,8 @@ import React from "react";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
-import { TerminalDirectory, DirectoryItem } from "../../components";
+import { TerminalDirectory } from "../../components";
+import { DirectoryItem } from "../../components/terminal-directory/TerminalDirectory";
 
 type MenuScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -35,10 +36,5 @@ export const Menu = () => {
     },
   ];
 
-  return (
-    <TerminalDirectory
-      title="SYSTEM/"
-      items={menuItems}
-    />
-  );
+  return <TerminalDirectory title="SYSTEM/" items={menuItems} />;
 };

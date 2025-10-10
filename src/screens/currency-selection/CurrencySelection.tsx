@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
-import { TerminalDirectory, DirectoryItem } from "../../components";
+import { TerminalDirectory } from "../../components";
 import { storage } from "../../services/storage-new";
+import { DirectoryItem } from "../../components/terminal-directory/TerminalDirectory";
 
 type CurrencySelectionNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
