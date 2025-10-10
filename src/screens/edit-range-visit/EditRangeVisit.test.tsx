@@ -218,23 +218,29 @@ describe("EditRangeVisitScreen", () => {
   it("saves range visit when form is valid", async () => {
     (storage.saveRangeVisitWithAmmunition as SaveRangeVisitWithAmmunitionMock).mockResolvedValue();
     renderScreen();
-    await waitFor(() => {
-      // Select AR-15 and add rounds
-      const ar15Button = screen.getByText("AR-15");
-      fireEvent.press(ar15Button);
-      const roundsInput = screen.getByTestId(`rounds-input-${mockFirearms[1].id}`);
-      fireEvent.changeText(roundsInput, "75");
 
-      const saveButton = screen.getByText(/SAVE/);
-      fireEvent.press(saveButton);
+    // Wait for the screen to load and be interactive
+    const ar15Button = await screen.findByText("AR-15");
+
+    // Select AR-15 and add rounds
+    fireEvent.press(ar15Button);
+    const roundsInput = await screen.findByTestId(
+      `rounds-input-${mockFirearms[1].id}`
+    );
+    fireEvent.changeText(roundsInput, "75");
+
+    const saveButton = screen.getByText(/SAVE/);
+    fireEvent.press(saveButton);
+
+    await waitFor(() => {
       expect(storage.saveRangeVisitWithAmmunition).toHaveBeenCalledWith(
         expect.objectContaining({
           location: "Test Range",
           notes: "Test notes",
           firearmsUsed: ["firearm-1", "firearm-2"], // Glock 19 was initially selected, AR-15 is added
           ammunitionUsed: {
-            "firearm-2": { ammunitionId: "", rounds: 75 } // AR-15 with 75 rounds
-          }
+            "firearm-2": { ammunitionId: "", rounds: 75 }, // AR-15 with 75 rounds
+          },
         })
       );
       expect(mockGoBack).toHaveBeenCalled();

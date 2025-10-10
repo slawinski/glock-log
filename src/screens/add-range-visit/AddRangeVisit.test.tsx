@@ -251,7 +251,14 @@ describe("AddRangeVisitScreen", () => {
   it("handles firearm selection, ammunition selection, and form save", async () => {
     await renderScreen();
 
-    // Simulate rounds input
+    // Enter location first (required field)
+    const locationInput = screen.getByTestId("location-input");
+    fireEvent.changeText(locationInput, "Test Range");
+
+    // Simulate firearm selection first
+    fireEvent.press(screen.getByText("Glock 19"));
+
+    // Now the rounds input should be available
     const roundsInput = screen.getByTestId(
       `rounds-input-${mockFirearms[0].id}`
     );
@@ -365,20 +372,17 @@ describe("AddRangeVisitScreen", () => {
       );
     });
 
-    // Simulate user selecting the first ammunition option
-    const alertMock = Alert.alert as jest.Mock;
-    const alertButtons = alertMock.mock.calls[0][2];
-    alertButtons[0].onPress();
-
+    // The mock Alert.alert will automatically select the first option
     // Wait for the borrowed rounds input to appear
     await waitFor(() =>
       expect(screen.getAllByTestId(/^borrowed-rounds-input-/).length).toBe(1)
     );
 
     // Fill in rounds for borrowed firearm
-    const borrowedRoundsInput = screen.getByTestId(
-      `borrowed-rounds-input-${mockAmmunition[0].id}`
-    ); // Use mockAmmunition[0].id for the key
+    // Find the borrowed rounds input using pattern matching since the key is dynamically generated
+    const borrowedRoundsInputs = screen.getAllByTestId(/^borrowed-rounds-input-borrowed-/);
+    expect(borrowedRoundsInputs.length).toBe(1);
+    const borrowedRoundsInput = borrowedRoundsInputs[0];
     fireEvent.changeText(borrowedRoundsInput, "50");
 
     const saveButton = screen.getByText(/SAVE/);

@@ -160,14 +160,16 @@ export const EditRangeVisit = () => {
         for (const [firearmId, usage] of Object.entries(
           dataToValidate.ammunitionUsed
         )) {
-          const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
-          if (!ammo) {
-            throw new Error(`Ammunition not found for firearm ${firearmId}`);
-          }
-          if (ammo.quantity < usage.rounds) {
-            throw new Error(
-              `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
-            );
+          if (usage.ammunitionId) {
+            const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
+            if (!ammo) {
+              throw new Error(`Ammunition not found for firearm ${firearmId}`);
+            }
+            if (ammo.quantity < usage.rounds) {
+              throw new Error(
+                `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
+              );
+            }
           }
         }
       }

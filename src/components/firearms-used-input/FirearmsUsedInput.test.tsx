@@ -1,21 +1,9 @@
-jest.mock("react-native", () => ({
-  ...jest.requireActual("react-native"),
-  Alert: {
-    alert: jest.fn(),
-  },
-  NativeModules: {
-    ...jest.requireActual("react-native").NativeModules,
-    DevMenu: {
-      show: jest.fn(),
-      hide: jest.fn(),
-    },
-  },
-}));
-
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 import { FirearmsUsedInput } from "./FirearmsUsedInput";
 import { Alert } from "react-native";
+
+jest.mock('react-native/Libraries/Alert/Alert');
 
 // Mock Alert for testing purposes
 jest.mock("react-native-safe-area-context", () => ({
@@ -97,14 +85,14 @@ describe("FirearmsUsedInput", () => {
   });
 
   it("renders correctly with no firearms selected", () => {
-    const { getByText, queryByPlaceholderText } = render(
+    const { getByText, queryByText } = render(
       <FirearmsUsedInput {...defaultProps} />
     );
 
     expect(getByText("FIREARMS USED")).toBeTruthy();
     expect(getByText("Glock 19")).toBeTruthy();
     expect(getByText("AR-15")).toBeTruthy();
-    expect(queryByPlaceholderText("Rounds used")).toBeNull();
+    expect(queryByText("Rounds used")).toBeNull();
     expect(getByText("+ Log ammunition for a borrowed firearm")).toBeTruthy();
   });
 
@@ -115,22 +103,22 @@ describe("FirearmsUsedInput", () => {
   });
 
   it("shows ammunition input when a firearm is selected", () => {
-    const { getByText, getByPlaceholderText } = render(
+    const { getByText } = render(
       <FirearmsUsedInput {...defaultProps} selectedFirearms={["f1"]} />
     );
 
     expect(getByText("Glock 19")).toBeTruthy();
     expect(getByText("AMMUNITION USED")).toBeTruthy();
-    expect(getByPlaceholderText("Rounds used")).toBeTruthy();
+    expect(getByText("Rounds used")).toBeTruthy();
     expect(getByText("Select Ammunition")).toBeTruthy();
   });
 
   it("calls onRoundsChange when rounds input changes", () => {
-    const { getByPlaceholderText } = render(
+    const { getByTestId } = render(
       <FirearmsUsedInput {...defaultProps} selectedFirearms={["f1"]} />
     );
 
-    fireEvent.changeText(getByPlaceholderText("Rounds used"), "10");
+    fireEvent.changeText(getByTestId("rounds-input-f1"), "10");
     expect(defaultProps.onRoundsChange).toHaveBeenCalledWith("f1", 10);
   });
 
