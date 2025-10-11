@@ -11,7 +11,7 @@ import { RootStackParamList } from "../../app/App";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
 import { TerminalText, BottomButtonGroup } from "../../components";
-import { logAndGetUserError } from "../../services/error-handler";
+import { logAndReportError } from "../../services/error-handler";
 import { formatCurrency } from "../../utils/currency";
 
 type AmmunitionDetailsScreenNavigationProp = NativeStackNavigationProp<
@@ -49,7 +49,7 @@ export const AmmunitionDetails = () => {
       }
       setCurrency(currentCurrency);
     } catch (error) {
-      const userMessage = logAndGetUserError(
+      const userMessage = logAndReportError(
         error,
         "AmmunitionDetails.fetchAmmunition",
         "Failed to load ammunition details. Please try again."
@@ -89,7 +89,7 @@ export const AmmunitionDetails = () => {
               await storage.deleteAmmunition(ammunition.id);
               navigation.goBack();
             } catch (error) {
-              const userMessage = logAndGetUserError(
+              const userMessage = logAndReportError(
                 error,
                 "AmmunitionDetails.handleDelete",
                 "Failed to delete ammunition. Please try again."

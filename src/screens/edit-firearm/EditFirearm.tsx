@@ -5,6 +5,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
+import { logAndReportError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import { useFormChangeHandler } from "../../hooks";
 
@@ -56,8 +57,8 @@ export const EditFirearm = () => {
         setError("Firearm not found");
       }
     } catch (error) {
-      console.error("Error fetching firearm:", error);
-      Alert.alert("Error", "Failed to load firearm data");
+      const userMessage = logAndReportError(error, "EditFirearm.fetchFirearm", "Failed to load firearm data.");
+      Alert.alert("Error", userMessage);
     } finally {
       setLoading(false);
     }
@@ -118,8 +119,8 @@ export const EditFirearm = () => {
       await storage.saveFirearm(validationResult.data);
       navigation.goBack();
     } catch (error) {
-      console.error("Error updating firearm:", error);
-      Alert.alert("Error", "Failed to update firearm. Please try again.");
+      const userMessage = logAndReportError(error, "EditFirearm.handleSubmit", "Failed to update firearm. Please try again.");
+      Alert.alert("Error", userMessage);
     } finally {
       setSaving(false);
     }

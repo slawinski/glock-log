@@ -2,7 +2,7 @@ import {
   createAppError,
   handleStorageError,
   handleImageError,
-  logAndGetUserError,
+  logAndReportError,
   ERROR_MESSAGES,
 } from "./error-handler";
 
@@ -232,10 +232,10 @@ describe("error-handler", () => {
     });
   });
 
-  describe("logAndGetUserError", () => {
+  describe("logAndReportError", () => {
     it("logs Error instance and returns user message", () => {
       const error = new Error("Technical error");
-      const result = logAndGetUserError(
+      const result = logAndReportError(
         error,
         "TestContext",
         "User friendly message"
@@ -250,7 +250,7 @@ describe("error-handler", () => {
 
     it("logs string error and returns user message", () => {
       const error = "String error";
-      const result = logAndGetUserError(
+      const result = logAndReportError(
         error,
         "TestContext",
         "User friendly message"
@@ -265,7 +265,7 @@ describe("error-handler", () => {
 
     it("logs non-Error object and returns user message", () => {
       const error = { type: "custom" };
-      const result = logAndGetUserError(
+      const result = logAndReportError(
         error,
         "TestContext",
         "User friendly message"
@@ -280,7 +280,7 @@ describe("error-handler", () => {
 
     it("logs null error and returns user message", () => {
       const error = null;
-      const result = logAndGetUserError(
+      const result = logAndReportError(
         error,
         "TestContext",
         "User friendly message"
@@ -295,7 +295,7 @@ describe("error-handler", () => {
 
     it("logs undefined error and returns user message", () => {
       const error = undefined;
-      const result = logAndGetUserError(
+      const result = logAndReportError(
         error,
         "TestContext",
         "User friendly message"
@@ -306,20 +306,6 @@ describe("error-handler", () => {
         error
       );
       expect(result).toBe("User friendly message");
-    });
-
-    it("handles complex error contexts", () => {
-      const error = new Error("Database connection timeout");
-      const context = "UserService.getUserById";
-      const userMessage = "Unable to load user profile";
-
-      const result = logAndGetUserError(error, context, userMessage);
-
-      expect(mockConsoleError).toHaveBeenCalledWith(
-        "[UserService.getUserById] Database connection timeout",
-        error
-      );
-      expect(result).toBe("Unable to load user profile");
     });
   });
 });

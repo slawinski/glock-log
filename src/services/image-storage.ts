@@ -1,3 +1,4 @@
+import { logAndReportError } from "./error-handler";
 import * as FileSystem from "expo-file-system";
 import { StorageFactory } from "./storage-factory";
 
@@ -40,7 +41,7 @@ export const saveImageToFileSystem = async (
 
     return filePath;
   } catch (error) {
-    console.error("Error saving image to file system:", error);
+    logAndReportError(error, "ImageStorage.saveImageToFileSystem", "Failed to save image.");
     throw error;
   }
 };
@@ -61,7 +62,7 @@ export const storeImagePaths = async (
     const key = `${IMAGE_PATHS_KEY}_${entityType}_${entityId}`;
     await storage.setItem(key, JSON.stringify(imagePaths));
   } catch (error) {
-    console.error("Error storing image paths:", error);
+    logAndReportError(error, "ImageStorage.storeImagePaths", "Failed to store image paths.");
     throw error;
   }
 };
@@ -82,7 +83,7 @@ export const getImagePaths = async (
     const data = await storage.getItem(key);
     return data ? JSON.parse(data) : [];
   } catch (error) {
-    console.error("Error getting image paths:", error);
+    logAndReportError(error, "ImageStorage.getImagePaths", "Failed to get image paths.");
     return [];
   }
 };
@@ -113,7 +114,7 @@ export const deleteImages = async (
     const key = `${IMAGE_PATHS_KEY}_${entityType}_${entityId}`;
     await storage.removeItem(key);
   } catch (error) {
-    console.error("Error deleting images:", error);
+    logAndReportError(error, "ImageStorage.deleteImages", "Failed to delete images.");
     throw error;
   }
 };
@@ -160,7 +161,7 @@ export const cleanupOrphanedImages = async (): Promise<void> => {
       }
     }
   } catch (error) {
-    console.error("Error cleaning up orphaned images:", error);
+    logAndReportError(error, "ImageStorage.cleanupOrphanedImages", "Failed to clean up orphaned images.");
   }
 };
 
@@ -187,7 +188,7 @@ export const getImageStorageSize = async (): Promise<number> => {
 
     return totalSize;
   } catch (error) {
-    console.error("Error calculating image storage size:", error);
+    logAndReportError(error, "ImageStorage.getImageStorageSize", "Failed to calculate image storage size.");
     return 0;
   }
 };

@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
+import { logAndReportError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import {
   TerminalText,
@@ -64,8 +65,8 @@ export const AddRangeVisit = () => {
         );
         setAmmunition(loadedAmmunition);
       } catch (error) {
-        console.error("Error loading data:", error);
-        setError("Failed to load data");
+        const userMessage = logAndReportError(error, "AddRangeVisit.loadData", "Failed to load data.");
+      setError(userMessage);
       }
     };
     loadData();
@@ -182,8 +183,8 @@ export const AddRangeVisit = () => {
       await storage.saveRangeVisitWithAmmunition(visitData);
       navigation.goBack();
     } catch (error) {
-      console.error("Error creating range visit:", error);
-      Alert.alert("Error", "Failed to create range visit. Please try again.");
+      const userMessage = logAndReportError(error, "AddRangeVisit.handleSubmit", "Failed to create range visit. Please try again.");
+      Alert.alert("Error", userMessage);
     } finally {
       setSaving(false);
     }

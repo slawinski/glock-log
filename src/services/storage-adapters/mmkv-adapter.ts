@@ -1,3 +1,4 @@
+import { logAndReportError } from "../error-handler";
 import { MMKV } from "react-native-mmkv";
 import { StorageInterface, StorageConfig } from "../storage-interface";
 
@@ -11,7 +12,7 @@ export class MMKVAdapter implements StorageInterface {
         encryptionKey: config.encryptionKey,
       });
     } catch (error) {
-      console.error("MMKV initialization failed:", error);
+      logAndReportError(error, "MMKVAdapter.constructor", "MMKV initialization failed.");
       throw error;
     }
   }
@@ -21,7 +22,7 @@ export class MMKVAdapter implements StorageInterface {
       const value = this.mmkv.getString(key);
       return value || null;
     } catch (error) {
-      console.error("MMKV getItem error:", error);
+      logAndReportError(error, "MMKVAdapter.getItem", "Failed to get item from MMKV.");
       return null;
     }
   }
@@ -30,7 +31,7 @@ export class MMKVAdapter implements StorageInterface {
     try {
       this.mmkv.set(key, value);
     } catch (error) {
-      console.error("MMKV setItem error:", error);
+      logAndReportError(error, "MMKVAdapter.setItem", "Failed to set item in MMKV.");
       throw error;
     }
   }
@@ -39,7 +40,7 @@ export class MMKVAdapter implements StorageInterface {
     try {
       this.mmkv.delete(key);
     } catch (error) {
-      console.error("MMKV removeItem error:", error);
+      logAndReportError(error, "MMKVAdapter.removeItem", "Failed to remove item from MMKV.");
       throw error;
     }
   }
@@ -48,7 +49,7 @@ export class MMKVAdapter implements StorageInterface {
     try {
       this.mmkv.clearAll();
     } catch (error) {
-      console.error("MMKV clear error:", error);
+      logAndReportError(error, "MMKVAdapter.clear", "Failed to clear MMKV storage.");
       throw error;
     }
   }
@@ -57,7 +58,7 @@ export class MMKVAdapter implements StorageInterface {
     try {
       return this.mmkv.getAllKeys();
     } catch (error) {
-      console.error("MMKV getAllKeys error:", error);
+      logAndReportError(error, "MMKVAdapter.getAllKeys", "Failed to get all keys from MMKV.");
       return [];
     }
   }

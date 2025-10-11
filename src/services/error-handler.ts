@@ -81,11 +81,7 @@ export function handleImageError(error: unknown, operation: string): AppError {
 /**
  * Log error for debugging while showing user-friendly message
  */
-export function logAndGetUserError(
-  error: unknown,
-  context: string,
-  userMessage: string
-): string {
+export const logAndReportError = (error: unknown, context: string = "Unknown Context", userMessage: string = "An unexpected error occurred."): string => {
   const errorMessage = error instanceof Error ? error.message : String(error);
   
   // Log the technical error for debugging

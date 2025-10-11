@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
-import {
-  TerminalText,
-  TerminalTabs,
-  TerminalButton,
-} from "../../components";
+import { logAndReportError } from "../../services/error-handler";
+import { TerminalText, TerminalTabs, TerminalButton, } from "../../components";
 import {
   FirearmStorage,
   RangeVisitStorage,
@@ -78,8 +75,8 @@ export const Stats = () => {
       setAmmunition(ammunitionData);
       setRangeVisits(visitsData);
     } catch (error) {
-      console.error("Error fetching data:", error);
-      setError("Failed to load statistics");
+      const userMessage = logAndReportError(error, "Stats.fetchData", "Failed to load statistics.");
+      setError(userMessage);
     } finally {
       setLoading(false);
     }

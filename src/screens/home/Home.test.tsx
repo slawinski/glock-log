@@ -182,7 +182,7 @@ describe("Home", () => {
   });
 
   it("handles error state", async () => {
-    const errorMessage = "Failed to load data";
+    const errorMessage = "Failed to load data.";
     mockStorageApi.getFirearms.mockRejectedValue(new Error(errorMessage));
 
     const { getByText } = renderWithNavigation(<Home />);

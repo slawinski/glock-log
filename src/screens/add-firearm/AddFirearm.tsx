@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
+import { logAndReportError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import {
   TerminalText,
@@ -98,8 +99,8 @@ export const AddFirearm = () => {
       await storage.saveFirearm(validationResult.data);
       navigation.goBack();
     } catch (error) {
-      console.error("Error creating firearm:", error);
-      Alert.alert("Error", "Failed to create firearm. Please try again.");
+      const userMessage = logAndReportError(error, "AddFirearm.handleSubmit", "Failed to create firearm. Please try again.");
+      Alert.alert("Error", userMessage);
     } finally {
       setSaving(false);
     }

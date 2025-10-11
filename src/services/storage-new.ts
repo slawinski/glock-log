@@ -19,7 +19,7 @@ import {
   deleteImages,
   getImagePaths,
 } from "./image-storage";
-import { handleStorageError } from "./error-handler";
+import { handleStorageError, logAndReportError } from "./error-handler";
 
 const STORAGE_KEYS = {
   FIREARMS: "@storage:firearms",
@@ -37,7 +37,7 @@ async function validateAndParse<T>(
     const parsed = JSON.parse(data);
     return schema.parse(parsed);
   } catch (error) {
-    console.error("Validation error:", error);
+    logAndReportError(error, "Storage.validateAndParse", "Data validation failed.");
     throw new Error("Data validation failed");
   }
 }
@@ -47,7 +47,7 @@ function validateBeforeSave<T>(data: T, schema: z.ZodSchema<T>): T {
   try {
     return schema.parse(data);
   } catch (error) {
-    console.error("Validation error:", error);
+    logAndReportError(error, "Storage.validateBeforeSave", "Data validation failed.");
     throw new Error("Data validation failed");
   }
 }
@@ -303,7 +303,7 @@ export const storage = {
       const storage = StorageFactory.getStorage();
       await storage.setItem(STORAGE_KEYS.RANGE_VISITS, JSON.stringify(visits));
     } catch (error) {
-      console.error("Error saving range visit:", error);
+      logAndReportError(error, "Storage.saveRangeVisit", "Failed to save range visit.");
       throw error;
     }
   },
@@ -315,7 +315,7 @@ export const storage = {
       if (!data) return [];
       return validateAndParse(data, z.array(rangeVisitStorageSchema));
     } catch (error) {
-      console.error("Error getting range visits:", error);
+      logAndReportError(error, "Storage.getRangeVisits", "Failed to get range visits.");
       throw error;
     }
   },
@@ -333,7 +333,7 @@ export const storage = {
         JSON.stringify(filteredVisits)
       );
     } catch (error) {
-      console.error("Error deleting range visit:", error);
+      logAndReportError(error, "Storage.deleteRangeVisit", "Failed to delete range visit.");
       throw error;
     }
   },
@@ -360,7 +360,7 @@ export const storage = {
         JSON.stringify(ammunition)
       );
     } catch (error) {
-      console.error("Error updating ammunition quantity:", error);
+      logAndReportError(error, "Storage.updateAmmunitionQuantity", "Failed to update ammunition quantity.");
       throw error;
     }
   },
@@ -383,7 +383,7 @@ export const storage = {
       const storage = StorageFactory.getStorage();
       await storage.setItem(STORAGE_KEYS.FIREARMS, JSON.stringify(firearms));
     } catch (error) {
-      console.error("Error updating firearm rounds fired:", error);
+      logAndReportError(error, "Storage.updateFirearmRoundsFired", "Failed to update firearm rounds fired.");
       throw error;
     }
   },
@@ -469,7 +469,7 @@ export const storage = {
         }
       }
     } catch (error) {
-      console.error("Error saving range visit with ammunition:", error);
+      logAndReportError(error, "Storage.saveRangeVisitWithAmmunition", "Failed to save range visit with ammunition.");
       throw error;
     }
   },
@@ -479,7 +479,7 @@ export const storage = {
     try {
       return getImagePaths("firearm", firearmId);
     } catch (error) {
-      console.error("Error getting firearm images:", error);
+      logAndReportError(error, "Storage.getFirearmImages", "Failed to get firearm images.");
       return [];
     }
   },
@@ -488,7 +488,7 @@ export const storage = {
     try {
       return getImagePaths("range-visit", visitId);
     } catch (error) {
-      console.error("Error getting range visit images:", error);
+      logAndReportError(error, "Storage.getRangeVisitImages", "Failed to get range visit images.");
       return [];
     }
   },
@@ -497,7 +497,7 @@ export const storage = {
     try {
       return getImagePaths("ammunition", ammunitionId);
     } catch (error) {
-      console.error("Error getting ammunition images:", error);
+      logAndReportError(error, "Storage.getAmmunitionImages", "Failed to get ammunition images.");
       return [];
     }
   },
@@ -513,7 +513,7 @@ export const storage = {
       const settings = JSON.parse(settingsData);
       return { currency: settings.currency || "USD" };
     } catch (error) {
-      console.error("Error getting settings:", error);
+      logAndReportError(error, "Storage.getSettings", "Failed to get settings.");
       return { currency: "USD" };
     }
   },
@@ -528,7 +528,7 @@ export const storage = {
         JSON.stringify(updatedSettings)
       );
     } catch (error) {
-      console.error("Error setting currency:", error);
+      logAndReportError(error, "Storage.setCurrency", "Failed to set currency.");
       throw error;
     }
   },
@@ -538,7 +538,7 @@ export const storage = {
       const settings = await this.getSettings();
       return settings.currency;
     } catch (error) {
-      console.error("Error getting currency:", error);
+      logAndReportError(error, "Storage.getCurrency", "Failed to get currency.");
       return "USD";
     }
   },

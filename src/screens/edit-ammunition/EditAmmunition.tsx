@@ -10,6 +10,7 @@ import {
   TerminalDatePicker,
   BottomButtonGroup,
 } from "../../components";
+import { logAndReportError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import { useFormChangeHandler } from "../../hooks";
 import {
@@ -61,8 +62,8 @@ export const EditAmmunition = () => {
         setError("Ammunition not found");
       }
     } catch (error) {
-      console.error("Error fetching ammunition:", error);
-      Alert.alert("Error", "Failed to load ammunition data");
+      const userMessage = logAndReportError(error, "EditAmmunition.fetchAmmunition", "Failed to load ammunition details. Please try again.");
+      setError(userMessage);
     } finally {
       setLoading(false);
     }
@@ -99,8 +100,8 @@ export const EditAmmunition = () => {
       await storage.saveAmmunition(validationResult.data);
       navigation.goBack();
     } catch (error) {
-      console.error("Error updating ammunition:", error);
-      Alert.alert("Error", "Failed to update ammunition. Please try again.");
+      const userMessage = logAndReportError(error, "EditAmmunition.handleSubmit", "Failed to update ammunition. Please try again.");
+      Alert.alert("Error", userMessage);
     } finally {
       setSaving(false);
     }

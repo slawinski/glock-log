@@ -33,7 +33,7 @@ beforeAll(() => {
       buttons[0].onPress && buttons[0].onPress();
     } else if (title === "Validation error") {
       // For validation errors, just log them
-      console.log("Validation error:", message);
+      console.error("Validation error:", message);
     } else if (title === "Error") {
       // For error alerts, just log them
       console.error("Error creating range visit:", message);
@@ -380,7 +380,9 @@ describe("AddRangeVisitScreen", () => {
 
     // Fill in rounds for borrowed firearm
     // Find the borrowed rounds input using pattern matching since the key is dynamically generated
-    const borrowedRoundsInputs = screen.getAllByTestId(/^borrowed-rounds-input-borrowed-/);
+    const borrowedRoundsInputs = screen.getAllByTestId(
+      /^borrowed-rounds-input-borrowed-/
+    );
     expect(borrowedRoundsInputs.length).toBe(1);
     const borrowedRoundsInput = borrowedRoundsInputs[0];
     fireEvent.changeText(borrowedRoundsInput, "50");

@@ -76,7 +76,7 @@ describe("MMKVAdapter", () => {
       });
 
       expect(() => new MMKVAdapter(mockConfig)).toThrow("MMKV init failed");
-      expect(mockConsoleError).toHaveBeenCalledWith("MMKV initialization failed:", initError);
+      expect(mockConsoleError).toHaveBeenCalledWith("[MMKVAdapter.constructor] MMKV init failed", initError);
     });
   });
 
@@ -116,7 +116,7 @@ describe("MMKVAdapter", () => {
 
       const result = await adapter.getItem("error-key");
 
-      expect(mockConsoleError).toHaveBeenCalledWith("MMKV getItem error:", getError);
+      expect(mockConsoleError).toHaveBeenCalledWith("[MMKVAdapter.getItem] MMKV get error", getError);
       expect(result).toBeNull();
     });
 
@@ -143,7 +143,7 @@ describe("MMKVAdapter", () => {
       });
 
       await expect(adapter.setItem("error-key", "value")).rejects.toThrow("MMKV set error");
-      expect(mockConsoleError).toHaveBeenCalledWith("MMKV setItem error:", setError);
+      expect(mockConsoleError).toHaveBeenCalledWith("[MMKVAdapter.setItem] MMKV set error", setError);
     });
 
     it("handles empty string values", async () => {
@@ -176,7 +176,7 @@ describe("MMKVAdapter", () => {
       });
 
       await expect(adapter.removeItem("error-key")).rejects.toThrow("MMKV delete error");
-      expect(mockConsoleError).toHaveBeenCalledWith("MMKV removeItem error:", deleteError);
+      expect(mockConsoleError).toHaveBeenCalledWith("[MMKVAdapter.removeItem] MMKV delete error", deleteError);
     });
 
     it("handles removal of non-existent keys", async () => {
@@ -201,7 +201,7 @@ describe("MMKVAdapter", () => {
       });
 
       await expect(adapter.clear()).rejects.toThrow("MMKV clear error");
-      expect(mockConsoleError).toHaveBeenCalledWith("MMKV clear error:", clearError);
+      expect(mockConsoleError).toHaveBeenCalledWith("[MMKVAdapter.clear] MMKV clear error", clearError);
     });
   });
 
@@ -233,7 +233,7 @@ describe("MMKVAdapter", () => {
 
       const result = await adapter.getAllKeys();
 
-      expect(mockConsoleError).toHaveBeenCalledWith("MMKV getAllKeys error:", getAllKeysError);
+      expect(mockConsoleError).toHaveBeenCalledWith("[MMKVAdapter.getAllKeys] MMKV getAllKeys error", getAllKeysError);
       expect(result).toEqual([]);
     });
 

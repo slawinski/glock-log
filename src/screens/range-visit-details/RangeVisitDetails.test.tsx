@@ -228,9 +228,9 @@ describe("RangeVisitDetailsScreen", () => {
     deleteButton?.onPress();
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
+      expect(Alert.alert).toHaveBeenLastCalledWith(
         "Error",
-        "Failed to delete range visit"
+        "Failed to delete range visit."
       );
     });
   });
