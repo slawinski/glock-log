@@ -13,7 +13,7 @@ import {
   RangeVisitStorage,
   AmmunitionStorage,
 } from "../../validation/storageSchemas";
-import { logAndReportError } from "../../services/error-handler";
+import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import { TerminalText, HeaderButton, TerminalTabs } from "../../components";
 import { BottomButtonGroup } from "../../components/bottom-button-group/BottomButtonGroup";
@@ -64,8 +64,8 @@ export const Home = () => {
         setIsInitialLoad(false);
       }
     } catch (error) {
-      const userMessage = logAndReportError(error, "Home.fetchData", "Failed to load data.");
-      setError(userMessage);
+      handleError(error, "Home.fetchData", { isUserFacing: true, userMessage: "Failed to load data." });
+      setError("Failed to load data.");
     } finally {
       if (!isRefresh) {
         setLoading(false);

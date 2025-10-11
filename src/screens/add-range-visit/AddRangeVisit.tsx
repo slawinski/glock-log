@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
-import { logAndReportError } from "../../services/error-handler";
+import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import {
   TerminalText,
@@ -64,10 +64,9 @@ export const AddRangeVisit = () => {
           }))
         );
         setAmmunition(loadedAmmunition);
-      } catch (error) {
-        const userMessage = logAndReportError(error, "AddRangeVisit.loadData", "Failed to load data.");
-      setError(userMessage);
-      }
+          } catch (error) {
+            handleError(error, "AddRangeVisit.loadData", { isUserFacing: true, userMessage: "Failed to load data." });
+            setError("Failed to load data.");      }
     };
     loadData();
   }, []);
@@ -183,8 +182,7 @@ export const AddRangeVisit = () => {
       await storage.saveRangeVisitWithAmmunition(visitData);
       navigation.goBack();
     } catch (error) {
-      const userMessage = logAndReportError(error, "AddRangeVisit.handleSubmit", "Failed to create range visit. Please try again.");
-      Alert.alert("Error", userMessage);
+      handleError(error, "AddRangeVisit.handleSubmit", { isUserFacing: true, userMessage: "Failed to create range visit. Please try again." });
     } finally {
       setSaving(false);
     }

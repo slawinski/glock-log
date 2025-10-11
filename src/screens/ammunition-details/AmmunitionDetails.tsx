@@ -11,7 +11,7 @@ import { RootStackParamList } from "../../app/App";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
 import { TerminalText, BottomButtonGroup } from "../../components";
-import { logAndReportError } from "../../services/error-handler";
+import { handleError } from "../../services/error-handler";
 import { formatCurrency } from "../../utils/currency";
 
 type AmmunitionDetailsScreenNavigationProp = NativeStackNavigationProp<
@@ -49,12 +49,8 @@ export const AmmunitionDetails = () => {
       }
       setCurrency(currentCurrency);
     } catch (error) {
-      const userMessage = logAndReportError(
-        error,
-        "AmmunitionDetails.fetchAmmunition",
-        "Failed to load ammunition details. Please try again."
-      );
-      setError(userMessage);
+      handleError(error, "AmmunitionDetails.fetchAmmunition", { isUserFacing: true, userMessage: "Failed to load ammunition details. Please try again." });
+      setError("Failed to load ammunition details. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -89,12 +85,7 @@ export const AmmunitionDetails = () => {
               await storage.deleteAmmunition(ammunition.id);
               navigation.goBack();
             } catch (error) {
-              const userMessage = logAndReportError(
-                error,
-                "AmmunitionDetails.handleDelete",
-                "Failed to delete ammunition. Please try again."
-              );
-              Alert.alert("Error", userMessage);
+              handleError(error, "AmmunitionDetails.handleDelete", { isUserFacing: true, userMessage: "Failed to delete ammunition. Please try again." });
             }
           },
         },

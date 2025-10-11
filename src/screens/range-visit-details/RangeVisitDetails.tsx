@@ -8,7 +8,7 @@ import {
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
-import { logAndReportError } from "../../services/error-handler";
+import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import {
   TerminalText,
@@ -81,8 +81,8 @@ export const RangeVisitDetails = () => {
       setFirearms(firearmDetails);
       setAmmunition(ammunitionDetails);
     } catch (error) {
-      const userMessage = logAndReportError(error, "RangeVisitDetails.fetchVisit", "Failed to load range visit data.");
-      setError(userMessage);
+      handleError(error, "RangeVisitDetails.fetchVisit", { isUserFacing: true, userMessage: "Failed to load range visit data." });
+      setError("Failed to load range visit data.");
     } finally {
       setLoading(false);
     }
@@ -108,8 +108,7 @@ export const RangeVisitDetails = () => {
               await storage.deleteRangeVisit(route.params.id);
               navigation.goBack();
             } catch (error) {
-              const userMessage = logAndReportError(error, "RangeVisitDetails.handleDelete", "Failed to delete range visit.");
-              Alert.alert("Error", userMessage);
+              handleError(error, "RangeVisitDetails.handleDelete", { isUserFacing: true, userMessage: "Failed to delete range visit." });
             }
           },
         },

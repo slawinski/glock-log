@@ -8,7 +8,7 @@ import {
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
-import { logAndReportError } from "../../services/error-handler";
+import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import {
   TerminalText,
@@ -51,8 +51,8 @@ export const FirearmDetails = () => {
       }
       setCurrency(currentCurrency);
     } catch (error) {
-      const userMessage = logAndReportError(error, "FirearmDetails.fetchFirearm", "Failed to load firearm details.");
-      setError(userMessage);
+      handleError(error, "FirearmDetails.fetchFirearm", { isUserFacing: true, userMessage: "Failed to load firearm details." });
+      setError("Failed to load firearm details.");
     } finally {
       setLoading(false);
     }
@@ -83,8 +83,7 @@ export const FirearmDetails = () => {
               await storage.deleteFirearm(firearm.id);
               navigation.goBack();
             } catch (error) {
-              const userMessage = logAndReportError(error, "FirearmDetails.handleDelete", "Failed to delete firearm. Please try again.");
-              Alert.alert("Error", userMessage);
+              handleError(error, "FirearmDetails.handleDelete", { isUserFacing: true, userMessage: "Failed to delete firearm. Please try again." });
             }
           },
         },

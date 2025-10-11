@@ -1,4 +1,4 @@
-import { logAndReportError } from "../error-handler";
+import { handleError } from "../error-handler";
 import { MMKV } from "react-native-mmkv";
 import { StorageInterface, StorageConfig } from "../storage-interface";
 
@@ -12,7 +12,7 @@ export class MMKVAdapter implements StorageInterface {
         encryptionKey: config.encryptionKey,
       });
     } catch (error) {
-      logAndReportError(error, "MMKVAdapter.constructor", "MMKV initialization failed.");
+      handleError(error, "MMKVAdapter.constructor", { userMessage: "MMKV initialization failed." });
       throw error;
     }
   }
@@ -22,7 +22,7 @@ export class MMKVAdapter implements StorageInterface {
       const value = this.mmkv.getString(key);
       return value || null;
     } catch (error) {
-      logAndReportError(error, "MMKVAdapter.getItem", "Failed to get item from MMKV.");
+      handleError(error, "MMKVAdapter.getItem", { userMessage: "Failed to get item from MMKV." });
       return null;
     }
   }
@@ -31,7 +31,7 @@ export class MMKVAdapter implements StorageInterface {
     try {
       this.mmkv.set(key, value);
     } catch (error) {
-      logAndReportError(error, "MMKVAdapter.setItem", "Failed to set item in MMKV.");
+      handleError(error, "MMKVAdapter.setItem", { userMessage: "Failed to set item in MMKV." });
       throw error;
     }
   }
@@ -40,7 +40,7 @@ export class MMKVAdapter implements StorageInterface {
     try {
       this.mmkv.delete(key);
     } catch (error) {
-      logAndReportError(error, "MMKVAdapter.removeItem", "Failed to remove item from MMKV.");
+      handleError(error, "MMKVAdapter.removeItem", { userMessage: "Failed to remove item from MMKV." });
       throw error;
     }
   }
@@ -49,7 +49,7 @@ export class MMKVAdapter implements StorageInterface {
     try {
       this.mmkv.clearAll();
     } catch (error) {
-      logAndReportError(error, "MMKVAdapter.clear", "Failed to clear MMKV storage.");
+      handleError(error, "MMKVAdapter.clear", { userMessage: "Failed to clear MMKV storage." });
       throw error;
     }
   }
@@ -58,7 +58,7 @@ export class MMKVAdapter implements StorageInterface {
     try {
       return this.mmkv.getAllKeys();
     } catch (error) {
-      logAndReportError(error, "MMKVAdapter.getAllKeys", "Failed to get all keys from MMKV.");
+      handleError(error, "MMKVAdapter.getAllKeys", { userMessage: "Failed to get all keys from MMKV." });
       return [];
     }
   }

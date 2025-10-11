@@ -2,22 +2,27 @@ import {
   createAppError,
   handleStorageError,
   handleImageError,
-  logAndReportError,
+  handleError,
   ERROR_MESSAGES,
 } from "./error-handler";
+import { Alert } from "react-native";
 
 // Mock console.error to test logging
 const mockConsoleError = jest
   .spyOn(console, "error")
   .mockImplementation(() => {});
 
+jest.spyOn(Alert, "alert").mockImplementation(() => {});
+
 describe("error-handler", () => {
   beforeEach(() => {
     mockConsoleError.mockClear();
+    (Alert.alert as jest.Mock).mockClear(); // Clear mock for Alert.alert
   });
 
   afterAll(() => {
     mockConsoleError.mockRestore();
+    (Alert.alert as jest.Mock).mockRestore(); // Restore mock for Alert.alert
   });
 
   describe("createAppError", () => {
@@ -232,80 +237,132 @@ describe("error-handler", () => {
     });
   });
 
-  describe("logAndReportError", () => {
-    it("logs Error instance and returns user message", () => {
+  describe("handleError", () => {
+    it("logs Error instance and does not show alert by default", () => {
       const error = new Error("Technical error");
-      const result = logAndReportError(
-        error,
-        "TestContext",
-        "User friendly message"
-      );
+      handleError(error, "TestContext", { userMessage: "User friendly message" });
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         "[TestContext] Technical error",
         error
       );
-      expect(result).toBe("User friendly message");
+      expect(Alert.alert).not.toHaveBeenCalled();
     });
 
-    it("logs string error and returns user message", () => {
-      const error = "String error";
-      const result = logAndReportError(
-        error,
-        "TestContext",
-        "User friendly message"
+    it("logs Error instance and shows alert when isUserFacing is true", () => {
+      const error = new Error("Technical error");
+      handleError(error, "TestContext", { userMessage: "User friendly message", isUserFacing: true });
+
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        "[TestContext] Technical error",
+        error
       );
+      expect(Alert.alert).toHaveBeenCalledWith("Error", "User friendly message");
+    });
+
+    it("logs string error and does not show alert by default", () => {
+      const error = "String error";
+      handleError(error, "TestContext", { userMessage: "User friendly message" });
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         "[TestContext] String error",
         error
       );
-      expect(result).toBe("User friendly message");
+      expect(Alert.alert).not.toHaveBeenCalled();
     });
 
-    it("logs non-Error object and returns user message", () => {
-      const error = { type: "custom" };
-      const result = logAndReportError(
-        error,
-        "TestContext",
-        "User friendly message"
+    it("logs string error and shows alert when isUserFacing is true", () => {
+      const error = "String error";
+      handleError(error, "TestContext", { userMessage: "User friendly message", isUserFacing: true });
+
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        "[TestContext] String error",
+        error
       );
+      expect(Alert.alert).toHaveBeenCalledWith("Error", "User friendly message");
+    });
+
+    it("logs non-Error object and does not show alert by default", () => {
+      const error = { type: "custom" };
+      handleError(error, "TestContext", { userMessage: "User friendly message" });
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         "[TestContext] [object Object]",
         error
       );
-      expect(result).toBe("User friendly message");
+      expect(Alert.alert).not.toHaveBeenCalled();
     });
 
-    it("logs null error and returns user message", () => {
-      const error = null;
-      const result = logAndReportError(
-        error,
-        "TestContext",
-        "User friendly message"
+    it("logs non-Error object and shows alert when isUserFacing is true", () => {
+      const error = { type: "custom" };
+      handleError(error, "TestContext", { userMessage: "User friendly message", isUserFacing: true });
+
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        "[TestContext] [object Object]",
+        error
       );
+      expect(Alert.alert).toHaveBeenCalledWith("Error", "User friendly message");
+    });
+
+    it("logs null error and does not show alert by default", () => {
+      const error = null;
+      handleError(error, "TestContext", { userMessage: "User friendly message" });
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         "[TestContext] null",
         error
       );
-      expect(result).toBe("User friendly message");
+      expect(Alert.alert).not.toHaveBeenCalled();
     });
 
-    it("logs undefined error and returns user message", () => {
-      const error = undefined;
-      const result = logAndReportError(
-        error,
-        "TestContext",
-        "User friendly message"
+    it("logs null error and shows alert when isUserFacing is true", () => {
+      const error = null;
+      handleError(error, "TestContext", { userMessage: "User friendly message", isUserFacing: true });
+
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        "[TestContext] null",
+        error
       );
+      expect(Alert.alert).toHaveBeenCalledWith("Error", "User friendly message");
+    });
+
+    it("logs undefined error and does not show alert by default", () => {
+      const error = undefined;
+      handleError(error, "TestContext", { userMessage: "User friendly message" });
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         "[TestContext] undefined",
         error
       );
-      expect(result).toBe("User friendly message");
+      expect(Alert.alert).not.toHaveBeenCalled();
+    });
+
+    it("handles complex error contexts and does not show alert by default", () => {
+      const error = new Error("Database connection timeout");
+      const context = "UserService.getUserById";
+      const userMessage = "Unable to load user profile";
+
+      handleError(error, context, { userMessage: userMessage });
+
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        "[UserService.getUserById] Database connection timeout",
+        error
+      );
+      expect(Alert.alert).not.toHaveBeenCalled();
+    });
+
+    it("handles complex error contexts and shows alert when isUserFacing is true", () => {
+      const error = new Error("Database connection timeout");
+      const context = "UserService.getUserById";
+      const userMessage = "Unable to load user profile";
+
+      handleError(error, context, { userMessage: userMessage, isUserFacing: true, alertTitle: "Custom Error Title" });
+
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        "[UserService.getUserById] Database connection timeout",
+        error
+      );
+      expect(Alert.alert).toHaveBeenCalledWith("Custom Error Title", userMessage);
     });
   });
 });

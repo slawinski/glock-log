@@ -1,4 +1,4 @@
-import { logAndReportError } from "./error-handler";
+import { handleError } from "./error-handler";
 import * as FileSystem from "expo-file-system";
 import { StorageFactory } from "./storage-factory";
 
@@ -41,7 +41,7 @@ export const saveImageToFileSystem = async (
 
     return filePath;
   } catch (error) {
-    logAndReportError(error, "ImageStorage.saveImageToFileSystem", "Failed to save image.");
+    handleError(error, "ImageStorage.saveImageToFileSystem", { userMessage: "Failed to save image." });
     throw error;
   }
 };
@@ -62,7 +62,7 @@ export const storeImagePaths = async (
     const key = `${IMAGE_PATHS_KEY}_${entityType}_${entityId}`;
     await storage.setItem(key, JSON.stringify(imagePaths));
   } catch (error) {
-    logAndReportError(error, "ImageStorage.storeImagePaths", "Failed to store image paths.");
+    handleError(error, "ImageStorage.storeImagePaths", { userMessage: "Failed to store image paths." });
     throw error;
   }
 };
@@ -83,7 +83,7 @@ export const getImagePaths = async (
     const data = await storage.getItem(key);
     return data ? JSON.parse(data) : [];
   } catch (error) {
-    logAndReportError(error, "ImageStorage.getImagePaths", "Failed to get image paths.");
+    handleError(error, "ImageStorage.getImagePaths", { userMessage: "Failed to get image paths." });
     return [];
   }
 };
@@ -114,7 +114,7 @@ export const deleteImages = async (
     const key = `${IMAGE_PATHS_KEY}_${entityType}_${entityId}`;
     await storage.removeItem(key);
   } catch (error) {
-    logAndReportError(error, "ImageStorage.deleteImages", "Failed to delete images.");
+    handleError(error, "ImageStorage.deleteImages", { userMessage: "Failed to delete images." });
     throw error;
   }
 };
@@ -161,7 +161,7 @@ export const cleanupOrphanedImages = async (): Promise<void> => {
       }
     }
   } catch (error) {
-    logAndReportError(error, "ImageStorage.cleanupOrphanedImages", "Failed to clean up orphaned images.");
+    handleError(error, "ImageStorage.cleanupOrphanedImages", { userMessage: "Failed to clean up orphaned images." });
   }
 };
 
@@ -188,7 +188,7 @@ export const getImageStorageSize = async (): Promise<number> => {
 
     return totalSize;
   } catch (error) {
-    logAndReportError(error, "ImageStorage.getImageStorageSize", "Failed to calculate image storage size.");
+    handleError(error, "ImageStorage.getImageStorageSize", { userMessage: "Failed to calculate image storage size." });
     return 0;
   }
 };
