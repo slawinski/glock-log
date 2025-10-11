@@ -16,3 +16,4 @@ export { PlaceholderImagePicker } from "./placeholder-image-picker/PlaceholderIm
 export { FirearmsUsedInput } from "./firearms-used-input/FirearmsUsedInput";
 export { ScanlinesOverlay } from "./scanlines-overlay/ScanlinesOverlay";
 export { HeaderButton } from "./header-button/HeaderButton";
+export { ErrorDisplay } from "./error-display/ErrorDisplay";

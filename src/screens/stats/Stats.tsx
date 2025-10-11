@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { handleError } from "../../services/error-handler";
-import { TerminalText, TerminalTabs, TerminalButton, } from "../../components";
+import { ErrorDisplay, TerminalTabs, TerminalText } from "../../components";
 import {
   FirearmStorage,
   RangeVisitStorage,
@@ -93,14 +93,7 @@ export const Stats = () => {
   }
 
   if (error) {
-    return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <TerminalText className="text-terminal-error text-lg mb-4">
-          {error}
-        </TerminalText>
-        <TerminalButton onPress={fetchData} caption="RETRY" />
-      </View>
-    );
+    return <ErrorDisplay errorMessage={error} onRetry={fetchData} />;
   }
 
   return (

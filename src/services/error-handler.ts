@@ -86,7 +86,7 @@ export function handleImageError(error: unknown, operation: string): AppError {
  * @param context A string indicating where the error occurred.
  * @param userMessage A user-friendly message associated with the error.
  */
-const logError = (error: unknown, context: string, userMessage: string): void => {
+const logError = (error: unknown, context: string, _userMessage: string): void => {
   const errorMessage = error instanceof Error ? error.message : String(error);
   console.error(`[${context}] ${errorMessage}`, error);
 };
@@ -98,7 +98,7 @@ const logError = (error: unknown, context: string, userMessage: string): void =>
  * @param context A string indicating where the error occurred.
  * @param userMessage A user-friendly message associated with the error.
  */
-const reportError = (error: unknown, context: string, userMessage: string): void => {
+const reportError = (_error: unknown, _context: string, _userMessage: string): void => {
   // TODO: Implement actual error reporting to a service like Sentry or Firebase Crashlytics
   // console.log(`Reporting error: [${context}] ${userMessage}`);
 };

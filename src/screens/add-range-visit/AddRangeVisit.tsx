@@ -7,12 +7,13 @@ import * as ImagePicker from "react-native-image-picker";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import {
-  TerminalText,
-  TerminalInput,
-  TerminalDatePicker,
-  ImageGallery,
   BottomButtonGroup,
+  ErrorDisplay,
   FirearmsUsedInput,
+  ImageGallery,
+  TerminalDatePicker,
+  TerminalInput,
+  TerminalText,
 } from "../../components";
 import {
   rangeVisitInputSchema,
@@ -49,25 +50,27 @@ export const AddRangeVisit = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const loadData = async () => {
+    try {
+      const [loadedFirearms, loadedAmmunition] = await Promise.all([
+        storage.getFirearms(),
+        storage.getAmmunition(),
+      ]);
+      setFirearms(
+        loadedFirearms.map((f: FirearmStorage) => ({
+          id: f.id,
+          modelName: f.modelName,
+          caliber: f.caliber,
+        }))
+      );
+      setAmmunition(loadedAmmunition);
+    } catch (error) {
+      handleError(error, "AddRangeVisit.loadData", { isUserFacing: true, userMessage: "Failed to load data." });
+      setError("Failed to load data.");
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [loadedFirearms, loadedAmmunition] = await Promise.all([
-          storage.getFirearms(),
-          storage.getAmmunition(),
-        ]);
-        setFirearms(
-          loadedFirearms.map((f: FirearmStorage) => ({
-            id: f.id,
-            modelName: f.modelName,
-            caliber: f.caliber,
-          }))
-        );
-        setAmmunition(loadedAmmunition);
-          } catch (error) {
-            handleError(error, "AddRangeVisit.loadData", { isUserFacing: true, userMessage: "Failed to load data." });
-            setError("Failed to load data.");      }
-    };
     loadData();
   }, []);
 
@@ -189,13 +192,7 @@ export const AddRangeVisit = () => {
   };
 
   if (error) {
-    return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <TerminalText className="text-terminal-error text-lg">
-          {error}
-        </TerminalText>
-      </View>
-    );
+    return <ErrorDisplay errorMessage={error} onRetry={loadData} />;
   }
 
   return (

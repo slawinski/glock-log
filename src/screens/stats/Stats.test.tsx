@@ -214,7 +214,7 @@ describe("StatsScreen", () => {
       expect(screen.getByText(/Failed to load statistics/)).toBeTruthy();
     });
 
-    const retryButton = screen.getByText("RETRY");
+    const retryButton = screen.getByText("Retry");
     fireEvent.press(retryButton);
 
     await waitFor(() => {

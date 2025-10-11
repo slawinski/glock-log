@@ -7,13 +7,14 @@ import * as ImagePicker from "react-native-image-picker";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import {
-  TerminalText,
-  TerminalInput,
-  TerminalDatePicker,
+  BottomButtonGroup,
+  ErrorDisplay,
   ImageGallery,
   PlaceholderImagePicker,
-  BottomButtonGroup,
   TerminalButton,
+  TerminalDatePicker,
+  TerminalInput,
+  TerminalText,
 } from "../../components";
 import { PlaceholderImageKey } from "../../services/image-source-manager";
 import {
@@ -106,13 +107,7 @@ export const AddFirearm = () => {
   };
 
   if (error) {
-    return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <TerminalText className="text-terminal-error text-lg">
-          {error}
-        </TerminalText>
-      </View>
-    );
+    return <ErrorDisplay errorMessage={error} />;
   }
 
   return (
@@ -230,13 +225,7 @@ export const AddFirearm = () => {
             />
           </View>
 
-          {error && (
-            <View className="mb-4">
-              <TerminalText className="text-terminal-error">
-                {error}
-              </TerminalText>
-            </View>
-          )}
+
 
           <View className="flex-1" />
 

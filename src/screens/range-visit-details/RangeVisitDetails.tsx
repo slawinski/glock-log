@@ -11,9 +11,10 @@ import { RootStackParamList } from "../../app/App";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import {
-  TerminalText,
-  ImageGallery,
   BottomButtonGroup,
+  ErrorDisplay,
+  ImageGallery,
+  TerminalText,
 } from "../../components";
 import {
   FirearmStorage,
@@ -127,11 +128,10 @@ export const RangeVisitDetails = () => {
 
   if (error || !visit) {
     return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <TerminalText className="text-terminal-error text-lg">
-          {error || "Failed to load range visit"}
-        </TerminalText>
-      </View>
+      <ErrorDisplay
+        errorMessage={error || "Failed to load range visit"}
+        onRetry={fetchVisit}
+      />
     );
   }
 

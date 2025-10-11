@@ -10,7 +10,7 @@ import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
-import { TerminalText, BottomButtonGroup } from "../../components";
+import { BottomButtonGroup, ErrorDisplay, TerminalText } from "../../components";
 import { handleError } from "../../services/error-handler";
 import { formatCurrency } from "../../utils/currency";
 
@@ -104,11 +104,10 @@ export const AmmunitionDetails = () => {
 
   if (error || !ammunition) {
     return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <TerminalText className="text-terminal-error text-lg">
-          {error || "ENTRY NOT FOUND"}
-        </TerminalText>
-      </View>
+      <ErrorDisplay
+        errorMessage={error || "ENTRY NOT FOUND"}
+        onRetry={fetchAmmunition}
+      />
     );
   }
 

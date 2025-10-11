@@ -12,14 +12,16 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import * as ImagePicker from "react-native-image-picker";
+import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import {
-  TerminalText,
-  TerminalInput,
-  TerminalDatePicker,
-  ImageGallery,
   BottomButtonGroup,
+  ErrorDisplay,
   FirearmsUsedInput,
+  ImageGallery,
+  TerminalDatePicker,
+  TerminalInput,
+  TerminalText,
 } from "../../components";
 import {
   rangeVisitInputSchema,
@@ -78,8 +80,8 @@ export const EditRangeVisit = () => {
         setLoading(false);
       }
     } catch (error) {
-      console.error("Error fetching range visit:", error);
-      Alert.alert("Error", "Failed to load range visit data");
+      handleError(error, "EditRangeVisit.fetchVisit", { isUserFacing: true, userMessage: "Failed to load range visit data." });
+      setError("Failed to load range visit data.");
     } finally {
       setLoading(false);
     }
@@ -177,13 +179,7 @@ export const EditRangeVisit = () => {
       await storage.saveRangeVisitWithAmmunition(dataToValidate);
       navigation.goBack();
     } catch (error) {
-      console.error("Error updating range visit:", error);
-      Alert.alert(
-        "Error",
-        error instanceof Error
-          ? error.message
-          : "Failed to update range visit. Please try again."
-      );
+      handleError(error, "EditRangeVisit.handleSubmit", { isUserFacing: true, userMessage: "Failed to update range visit. Please try again." });
     } finally {
       setSaving(false);
     }
@@ -222,13 +218,7 @@ export const EditRangeVisit = () => {
   };
 
   if (error) {
-    return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <TerminalText className="text-terminal-error text-lg">
-          {error}
-        </TerminalText>
-      </View>
-    );
+    return <ErrorDisplay errorMessage={error} onRetry={fetchVisit} />;
   }
 
   if (loading || !formData) {

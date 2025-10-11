@@ -11,9 +11,10 @@ import { RootStackParamList } from "../../app/App";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import {
-  TerminalText,
-  ImageGallery,
   BottomButtonGroup,
+  ErrorDisplay,
+  ImageGallery,
+  TerminalText,
 } from "../../components";
 import { FirearmStorage } from "../../validation/storageSchemas";
 import { formatCurrency } from "../../utils/currency";
@@ -102,11 +103,10 @@ export const FirearmDetails = () => {
 
   if (error || !firearm) {
     return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <TerminalText className="text-terminal-error text-lg">
-          {error || "ENTRY NOT FOUND"}
-        </TerminalText>
-      </View>
+      <ErrorDisplay
+        errorMessage={error || "ENTRY NOT FOUND"}
+        onRetry={fetchFirearm}
+      />
     );
   }
 

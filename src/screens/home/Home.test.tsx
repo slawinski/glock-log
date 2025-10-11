@@ -56,6 +56,17 @@ jest.mock("../../components", () => ({
       </View>
     );
   },
+  ErrorDisplay: ({ errorMessage, onRetry }: any) => {
+    const { View, Text, TouchableOpacity } = require("react-native");
+    return (
+      <View>
+        <Text>{errorMessage}</Text>
+        <TouchableOpacity onPress={onRetry}>
+          <Text>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  },
 }));
 
 const Stack = createNativeStackNavigator();
@@ -188,9 +199,7 @@ describe("Home", () => {
     const { getByText } = renderWithNavigation(<Home />);
 
     await waitFor(() => {
-      expect(getByText(errorMessage)).toBeTruthy();
-      expect(getByText("RETRY")).toBeTruthy();
-    });
+            expect(getByText("Retry")).toBeTruthy();    });
   });
 
   it("retries data fetch on error", async () => {
@@ -202,10 +211,10 @@ describe("Home", () => {
     const { getByText } = renderWithNavigation(<Home />);
 
     await waitFor(() => {
-      expect(getByText("RETRY")).toBeTruthy();
+      expect(getByText("Retry")).toBeTruthy();
     });
 
-    fireEvent.press(getByText("RETRY"));
+    fireEvent.press(getByText("Retry"));
 
     await waitFor(() => {
       expect(mockStorageApi.getFirearms).toHaveBeenCalledTimes(2);

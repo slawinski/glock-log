@@ -4,7 +4,7 @@ import React, {
   useLayoutEffect,
   useEffect,
 } from "react";
-import { View, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
@@ -15,7 +15,7 @@ import {
 } from "../../validation/storageSchemas";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
-import { TerminalText, HeaderButton, TerminalTabs } from "../../components";
+import { ErrorDisplay, HeaderButton, TerminalTabs, TerminalText } from "../../components";
 import { BottomButtonGroup } from "../../components/bottom-button-group/BottomButtonGroup";
 import { FirearmsTab } from "./FirearmsTab";
 import { VisitsTab } from "./VisitsTab";
@@ -139,19 +139,7 @@ export const Home = () => {
     }
 
     if (error) {
-      return (
-        <View className="flex-1 justify-center items-center">
-          <TerminalText className="text-terminal-error text-lg mb-4">
-            {error}
-          </TerminalText>
-          <TouchableOpacity
-            onPress={() => fetchData(false)}
-            className="border border-terminal-border px-4 py-2"
-          >
-            <TerminalText>RETRY</TerminalText>
-          </TouchableOpacity>
-        </View>
-      );
+      return <ErrorDisplay errorMessage={error} onRetry={() => fetchData(false)} />;
     }
 
     switch (activeTab) {

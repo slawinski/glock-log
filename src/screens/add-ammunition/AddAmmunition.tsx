@@ -9,6 +9,7 @@ import {
   TerminalDatePicker,
   BottomButtonGroup,
 } from "../../components";
+import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import {
   ammunitionInputSchema,
@@ -42,7 +43,6 @@ export const AddAmmunition = () => {
     photos: [],
   });
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
   const [pricePerRound, setPricePerRound] = useState<number | null>(null);
 
@@ -57,7 +57,6 @@ export const AddAmmunition = () => {
   const handleSubmit = async () => {
     try {
       setSaving(true);
-      setError(null);
       setDateError(null);
 
       const purchaseDate = new Date(formData.datePurchased);
@@ -84,8 +83,7 @@ export const AddAmmunition = () => {
       await storage.saveAmmunition(validationResult.data);
       navigation.goBack();
     } catch (error) {
-      console.error("Error creating ammunition:", error);
-      Alert.alert("Error", "Failed to create ammunition. Please try again.");
+      handleError(error, "AddAmmunition.handleSubmit", { isUserFacing: true, userMessage: "Failed to create ammunition. Please try again." });
     } finally {
       setSaving(false);
     }
@@ -203,11 +201,7 @@ export const AddAmmunition = () => {
         />
       </View>
 
-          {error && (
-            <View className="mb-4">
-              <TerminalText className="text-terminal-error">{error}</TerminalText>
-            </View>
-          )}
+
 
           <View className="flex-1" />
 

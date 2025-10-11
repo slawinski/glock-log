@@ -255,7 +255,7 @@ describe("EditRangeVisitScreen", () => {
     await waitFor(() => {
       const saveButton = screen.getByText(/SAVE/);
       fireEvent.press(saveButton);
-      expect(Alert.alert).toHaveBeenCalledWith("Error", "Save failed");
+      expect(Alert.alert).toHaveBeenCalledWith("Error", "Failed to update range visit. Please try again.");
     });
   });
 

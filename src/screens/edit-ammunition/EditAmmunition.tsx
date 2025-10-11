@@ -5,10 +5,11 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import {
-  TerminalText,
-  TerminalInput,
-  TerminalDatePicker,
   BottomButtonGroup,
+  ErrorDisplay,
+  TerminalDatePicker,
+  TerminalInput,
+  TerminalText,
 } from "../../components";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
@@ -118,11 +119,10 @@ export const EditAmmunition = () => {
 
   if (error || !formData) {
     return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <TerminalText className="text-terminal-error text-lg">
-          {error || "Ammunition data could not be loaded."}
-        </TerminalText>
-      </View>
+      <ErrorDisplay
+        errorMessage={error || "Ammunition data could not be loaded."}
+        onRetry={fetchAmmunition}
+      />
     );
   }
 

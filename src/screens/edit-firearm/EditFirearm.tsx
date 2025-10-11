@@ -10,12 +10,13 @@ import { storage } from "../../services/storage-new";
 import { useFormChangeHandler } from "../../hooks";
 
 import {
-  TerminalText,
-  TerminalInput,
-  TerminalDatePicker,
   BottomButtonGroup,
+  ErrorDisplay,
   ImageGallery,
   TerminalButton,
+  TerminalDatePicker,
+  TerminalInput,
+  TerminalText,
 } from "../../components";
 import {
   firearmInputSchema,
@@ -156,11 +157,10 @@ export const EditFirearm = () => {
 
   if (error || !formData) {
     return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <TerminalText className="text-terminal-error text-lg">
-          {error || "Firearm data could not be loaded."}
-        </TerminalText>
-      </View>
+      <ErrorDisplay
+        errorMessage={error || "Firearm data could not be loaded."}
+        onRetry={fetchFirearm}
+      />
     );
   }
 
