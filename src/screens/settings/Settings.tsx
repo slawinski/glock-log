@@ -4,6 +4,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
 import { TerminalDirectory } from "../../components";
 import { storage } from "../../services/storage-new";
+import { handleError } from "../../services/error-handler";
 import { DirectoryItem } from "../../components/terminal-directory/TerminalDirectory";
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
@@ -20,7 +21,7 @@ export const Settings = () => {
       const currency = await storage.getCurrency();
       setCurrentCurrency(currency);
     } catch (error) {
-      console.error("Error loading currency:", error);
+      handleError(error, "Settings.loadCurrency", { userMessage: "Failed to load currency." });
     }
   };
 
