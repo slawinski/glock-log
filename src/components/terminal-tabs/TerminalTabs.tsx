@@ -18,11 +18,16 @@ type TabProps = {
 const Tab = ({ title, active, onPress }: TabProps) => (
   <TouchableOpacity onPress={onPress} className="flex-1 items-center py-3">
     {active ? (
-      <TerminalText className="bg-terminal-green text-terminal-bg px-1">
+      <TerminalText
+        testID="active-tab-text"
+        className="bg-terminal-green text-terminal-bg px-1"
+      >
         {title}
       </TerminalText>
     ) : (
-      <TerminalText className="text-terminal-border px-1">{title}</TerminalText>
+      <TerminalText testID="inactive-tab-text" className="text-terminal-border px-1">
+        {title}
+      </TerminalText>
     )}
   </TouchableOpacity>
 );

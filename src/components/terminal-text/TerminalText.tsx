@@ -6,6 +6,7 @@ type Props = {
   className?: string;
   numberOfLines?: number;
   style?: TextStyle;
+  testID?: string;
 };
 
 export const TerminalText = ({
@@ -13,8 +14,10 @@ export const TerminalText = ({
   className = "",
   numberOfLines,
   style,
+  testID,
 }: Props) => (
   <Text
+    testID={testID}
     className={`font-terminal text-lg text-terminal-green ${className}`}
     numberOfLines={numberOfLines}
     style={style}

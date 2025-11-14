@@ -12,6 +12,9 @@ export class StorageFactory {
   }
 
   static getStorage(): StorageInterface {
+    if (!this.config) {
+      throw new Error("Storage not configured. Call configure() first.");
+    }
     if (!this.instance) {
       if (this.config.type === "mmkv") {
         this.instance = new MMKVAdapter(this.config);

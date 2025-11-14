@@ -8,10 +8,12 @@ import {
 
 type Props = {
   onSelect: (key: PlaceholderImageKey) => void;
+  selectedImageKey?: PlaceholderImageKey;
 };
 
 export const PlaceholderImagePicker = ({
   onSelect,
+  selectedImageKey,
 }: Props) => {
   const imageKeys = Object.keys(placeholderImages) as PlaceholderImageKey[];
 
@@ -23,10 +25,15 @@ export const PlaceholderImagePicker = ({
         horizontal
         keyExtractor={(item) => item}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => onSelect(item)} className="mr-2">
+          <TouchableOpacity
+            testID={`placeholder-image-option-${item}`}
+            onPress={() => onSelect(item)}
+            className="mr-2"
+          >
             <Image
+              testID={`placeholder-image-${item}`}
               source={placeholderImages[item]}
-              className="w-24 h-24 border border-terminal-border"
+              className={`w-24 h-24 border ${selectedImageKey === item ? "border-terminal-green" : "border-terminal-border"}`}
               resizeMode="contain"
             />
           </TouchableOpacity>

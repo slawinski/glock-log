@@ -52,6 +52,14 @@ export const VisitsTab = ({ rangeVisits }: Props) => {
   const visitStats = calculateVisitStats();
   const visitDates = rangeVisits.map((visit) => new Date(visit.date));
 
+  if (rangeVisits.length === 0) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <TerminalText>NO RANGE VISIT DATA</TerminalText>
+      </View>
+    );
+  }
+
   return (
     <ScrollView className="flex-1">
       <View className="mb-4">
@@ -60,7 +68,7 @@ export const VisitsTab = ({ rangeVisits }: Props) => {
 
       <View className="mb-4 flex-row">
         <TerminalText className="text-lg">TOTAL VISITS: </TerminalText>
-        <TerminalText>{rangeVisits.length}</TerminalText>
+        <TerminalText testID="total-visits">{rangeVisits.length}</TerminalText>
       </View>
 
       <View className="mb-4 flex-row">

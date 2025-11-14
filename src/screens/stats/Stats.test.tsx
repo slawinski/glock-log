@@ -94,6 +94,7 @@ describe("StatsScreen", () => {
     (storage.getFirearms as jest.Mock).mockResolvedValue(mockFirearms);
     (storage.getAmmunition as jest.Mock).mockResolvedValue(mockAmmunition);
     (storage.getRangeVisits as jest.Mock).mockResolvedValue(mockRangeVisits);
+    (storage.getCurrency as jest.Mock).mockResolvedValue("USD");
   });
 
   it("shows loading state initially", async () => {
@@ -128,79 +129,69 @@ describe("StatsScreen", () => {
       render(<StatsScreen />);
 
       // First switch to the Visits tab
-      await waitFor(() => {
-        const visitsTab = screen.getByText("VISITS");
-        fireEvent.press(visitsTab);
-      });
+      const visitsTab = await screen.findByText("VISITS");
+      fireEvent.press(visitsTab);
 
-      await waitFor(() => {
-        expect(screen.getByText("TOTAL VISITS: ")).toBeTruthy();
-        // The value is rendered in the next TerminalText after the label
-        const allTwos = screen.getAllByText("2");
-        // The first '2' after the label is the total visits value
-        expect(allTwos.length).toBeGreaterThan(0);
-        expect(screen.getByText("TOTAL ROUNDS FIRED: ")).toBeTruthy();
-        expect(screen.getByText("300")).toBeTruthy(); // Total rounds fired
-        expect(screen.getByText("MOST VISITED LOCATION: ")).toBeTruthy();
-        expect(screen.getByText("AVERAGE ROUNDS PER VISIT: ")).toBeTruthy();
-        expect(screen.getByText("150.0")).toBeTruthy(); // Average rounds per visit
-      });
+      expect(await screen.findByText("TOTAL VISITS: ")).toBeTruthy();
+      // The value is rendered in the next TerminalText after the label
+      const allTwos = await screen.findAllByText("2");
+      // The first '2' after the label is the total visits value
+      expect(allTwos.length).toBeGreaterThan(0);
+      expect(await screen.findByText("TOTAL ROUNDS FIRED: ")).toBeTruthy();
+      expect(await screen.findByText("300")).toBeTruthy(); // Total rounds fired
+      expect(await screen.findByText("MOST VISITED LOCATION: ")).toBeTruthy();
+      expect(
+        await screen.findByText("AVERAGE ROUNDS PER VISIT: ")
+      ).toBeTruthy();
+      expect(await screen.findByText("150.0")).toBeTruthy(); // Average rounds per visit
     });
   });
 
   describe("Firearms Tab", () => {
     it("shows correct firearm statistics", async () => {
       render(<StatsScreen />);
-      await waitFor(() => {
-        const firearmsTab = screen.getByText("FIREARMS");
-        fireEvent.press(firearmsTab);
+      const firearmsTab = await screen.findByText("FIREARMS");
+      fireEvent.press(firearmsTab);
 
-        expect(screen.getByText("TOTAL FIREARMS: ")).toBeTruthy();
-        expect(screen.getByText("2")).toBeTruthy(); // Total firearms
-        expect(screen.getByText("TOTAL VALUE: ")).toBeTruthy();
-        expect(screen.getByText(/1800\.00/)).toBeTruthy(); // Total value
-        expect(screen.getByText("MOST COMMON CALIBER: ")).toBeTruthy();
-        expect(screen.getByText("MOST USED FIREARM: ")).toBeTruthy();
-        // Find the most used firearm text that includes both the name and rounds
-        expect(
-          screen.getByText(/AR-15\s*\(\s*1500\s*rounds\s*\)/)
-        ).toBeTruthy();
-      });
+      expect(await screen.findByText("TOTAL FIREARMS: ")).toBeTruthy();
+      expect(await screen.findByText("2")).toBeTruthy(); // Total firearms
+      expect(await screen.findByText("TOTAL VALUE: ")).toBeTruthy();
+      expect(await screen.findByText("$1,800.00")).toBeTruthy(); // Total value
+      expect(await screen.findByText("MOST COMMON CALIBER: ")).toBeTruthy();
+      expect(await screen.findByText("MOST USED FIREARM: ")).toBeTruthy();
+      // Find the most used firearm text that includes both the name and rounds
+      expect(
+        await screen.findByText(/AR-15\s*\(\s*1500\s*rounds\s*\)/)
+      ).toBeTruthy();
     });
 
     it("allows selecting firearms for timeline", async () => {
       render(<StatsScreen />);
 
       // First switch to the Firearms tab
-      await waitFor(() => {
-        const firearmsTab = screen.getByText("FIREARMS");
-        fireEvent.press(firearmsTab);
-      });
+      const firearmsTab = await screen.findByText("FIREARMS");
+      fireEvent.press(firearmsTab);
 
-      await waitFor(() => {
-        // Check for the legend entries which show the firearm names
-        expect(screen.getByText("Glock 19")).toBeTruthy();
-        expect(screen.getByText("AR-15")).toBeTruthy();
-      });
+      // Check for the legend entries which show the firearm names
+      expect(await screen.findByText("Glock 19")).toBeTruthy();
+      expect(await screen.findByText("AR-15")).toBeTruthy();
     });
   });
 
   describe("Ammunition Tab", () => {
     it("shows correct ammunition statistics", async () => {
       render(<StatsScreen />);
-      await waitFor(() => {
-        const ammunitionTab = screen.getByText("AMMUNITION");
-        fireEvent.press(ammunitionTab);
+      const ammunitionTab = await screen.findByText("AMMUNITION");
+      fireEvent.press(ammunitionTab);
 
-        expect(screen.getByText("TOTAL ROUNDS: ")).toBeTruthy();
-        expect(screen.getByText("1500")).toBeTruthy(); // Total rounds
-        expect(screen.getByText("TOTAL SPENT: ")).toBeTruthy();
-        expect(screen.getByText(/550\.00/)).toBeTruthy(); // Total spent
-        expect(screen.getByText("COST PER ROUND: ")).toBeTruthy();
-        expect(screen.getByText(/0\.37/)).toBeTruthy(); // Cost per round
-        expect(screen.getByText("MOST STOCKED CALIBER: ")).toBeTruthy();
-        expect(screen.getByText("9mm")).toBeTruthy();
-      });
+      expect(await screen.findByText("TOTAL ROUNDS: ")).toBeTruthy();
+      expect(await screen.findByText("1500")).toBeTruthy(); // Total rounds
+      expect(await screen.findByText("TOTAL SPENT: ")).toBeTruthy();
+      expect(await screen.findByText("$550.00")).toBeTruthy(); // Total spent
+      expect(await screen.findByText("COST PER ROUND: ")).toBeTruthy();
+      expect(await screen.findByText("$0.37")).toBeTruthy(); // Cost per round
+      expect(await screen.findByText("MOST STOCKED CALIBER: ")).toBeTruthy();
+      expect(await screen.findByText("9mm")).toBeTruthy();
     });
   });
 

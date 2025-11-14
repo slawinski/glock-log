@@ -11,7 +11,7 @@ import { styles } from "./styles";
 
 export const ScanlinesOverlay = () => {
   return (
-    <View style={styles.overlay}>
+    <View style={styles.overlay} testID="scanlines-overlay">
       <Svg height="100%" width="100%">
         <Defs>
           <Pattern

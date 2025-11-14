@@ -3,6 +3,7 @@ import { View, ScrollView, Dimensions } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { TerminalText, ChartToggles } from "../../components";
 import { FirearmStorage, RangeVisitStorage } from "../../validation/storageSchemas";
+import { formatCurrency } from "../../utils/currency";
 
 type Props = {
   firearms: FirearmStorage[];
@@ -11,6 +12,7 @@ type Props = {
   onToggleFirearm: (firearmId: string) => void;
   onToggleAllFirearms: () => void;
   isAllSelected: boolean;
+  currency: string;
 };
 
 export const FirearmsTab = ({
@@ -20,6 +22,7 @@ export const FirearmsTab = ({
   onToggleFirearm,
   onToggleAllFirearms,
   isAllSelected,
+  currency,
 }: Props) => {
   const calculateFirearmStats = () => {
     const totalValue = firearms.reduce(
@@ -113,6 +116,14 @@ export const FirearmsTab = ({
   const firearmStats = calculateFirearmStats();
   const timelineData = calculateFirearmRoundsTimeline();
 
+  if (firearms.length === 0) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <TerminalText>NO FIREARM DATA</TerminalText>
+      </View>
+    );
+  }
+
   return (
     <ScrollView className="flex-1">
       {timelineData.labels.length > 0 && (
@@ -187,7 +198,7 @@ export const FirearmsTab = ({
 
       <View className="mb-4 flex-row">
         <TerminalText className="text-lg">TOTAL VALUE: </TerminalText>
-        <TerminalText>${firearmStats.totalValue.toFixed(2)}</TerminalText>
+        <TerminalText>{formatCurrency(firearmStats.totalValue, currency)}</TerminalText>
       </View>
 
       <View className="mb-4 flex-row">

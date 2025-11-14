@@ -16,7 +16,7 @@ export const TerminalCalendarHeader = ({
 }: Props) => {
   return (
     <View className="flex-row justify-between items-center mb-2">
-      <TouchableOpacity onPress={onPrevMonth}>
+      <TouchableOpacity onPress={onPrevMonth} testID="prev-month-button">
         <TerminalText className="text-lg text-terminal-green">
           {"<"}
         </TerminalText>
@@ -24,7 +24,7 @@ export const TerminalCalendarHeader = ({
       <TerminalText className="text-lg text-terminal-green">
         {format(currentDate, "MMMM yyyy").toUpperCase()}
       </TerminalText>
-      <TouchableOpacity onPress={onNextMonth}>
+      <TouchableOpacity onPress={onNextMonth} testID="next-month-button">
         <TerminalText className="text-lg text-terminal-green">
           {">"}
         </TerminalText>

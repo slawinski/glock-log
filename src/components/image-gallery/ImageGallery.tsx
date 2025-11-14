@@ -99,6 +99,7 @@ export const ImageGallery = ({
             return (
               <ImageContainer
                 key={imageIndex}
+                testID="gallery-image"
                 className="relative"
                 style={{ width: imageSize, height: imageSize }}
                 onPress={

@@ -20,6 +20,7 @@ export const DeleteButton = ({ onDelete }: Props) => {
 
   return (
     <TouchableOpacity
+      testID="delete-icon"
       onPress={handleDelete}
       className="absolute -top-1 -right-1 bg-terminal-green border border-terminal-green w-5 h-5 items-center justify-center"
     >

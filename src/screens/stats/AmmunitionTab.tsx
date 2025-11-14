@@ -73,6 +73,14 @@ export const AmmunitionTab = ({ ammunition, rangeVisits }: Props) => {
   const ammoStats = calculateAmmunitionStats();
   const usageData = calculateAmmunitionUsageOverTime();
 
+  if (ammunition.length === 0) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <TerminalText>NO AMMUNITION DATA</TerminalText>
+      </View>
+    );
+  }
+
   return (
     <ScrollView className="flex-1">
       {usageData.labels.length > 0 && (

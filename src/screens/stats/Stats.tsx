@@ -30,6 +30,7 @@ export const Stats = () => {
   const [visibleFirearms, setVisibleFirearms] = useState<Set<string>>(
     new Set()
   );
+  const [currency, setCurrency] = useState("USD");
 
   useEffect(() => {
     fetchData();
@@ -66,14 +67,17 @@ export const Stats = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [firearmsData, ammunitionData, visitsData] = await Promise.all([
-        storage.getFirearms(),
-        storage.getAmmunition(),
-        storage.getRangeVisits(),
-      ]);
+      const [firearmsData, ammunitionData, visitsData, currencyData] =
+        await Promise.all([
+          storage.getFirearms(),
+          storage.getAmmunition(),
+          storage.getRangeVisits(),
+          storage.getCurrency(),
+        ]);
       setFirearms(firearmsData);
       setAmmunition(ammunitionData);
       setRangeVisits(visitsData);
+      setCurrency(currencyData);
     } catch (error) {
       handleError(error, "Stats.fetchData", { isUserFacing: true, userMessage: "Failed to load statistics." });
       setError("Failed to load statistics.");
@@ -112,6 +116,7 @@ export const Stats = () => {
           onToggleFirearm={toggleFirearm}
           onToggleAllFirearms={toggleAllFirearms}
           isAllSelected={isAllSelected}
+          currency={currency}
         />
       )}
       {activeTab === "ammunition" && (

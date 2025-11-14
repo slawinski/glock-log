@@ -38,7 +38,7 @@ export const StorageInit = ({ children }: Props) => {
   if (!isInitialized) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Initializing storage...</Text>
+        <Text testID="loading-storage-text">Initializing storage...</Text>
       </View>
     );
   }

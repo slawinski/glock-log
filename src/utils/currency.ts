@@ -12,20 +12,27 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 };
 
 export const formatCurrency = (amount: number, currencyCode: string): string => {
-  const symbol = CURRENCY_SYMBOLS[currencyCode] || currencyCode;
-  
+  const validCurrencyCode = Object.keys(CURRENCY_SYMBOLS).includes(currencyCode) ? currencyCode : "USD";
+
   // Special handling for Japanese Yen (no decimal places)
-  if (currencyCode === "JPY") {
-    return `${symbol}${Math.round(amount)}`;
+  if (validCurrencyCode === "JPY") {
+    const jpyFormatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: validCurrencyCode,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+    return jpyFormatter.format(amount);
   }
   
-  // For currencies with symbol at the end (kr)
-  if (["SEK", "NOK", "DKK"].includes(currencyCode)) {
-    return `${amount.toFixed(2)} ${symbol}`;
-  }
+  const formatter = new Intl.NumberFormat('en-US', { 
+    style: 'currency',
+    currency: validCurrencyCode,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
   
-  // For most currencies (symbol at the beginning)
-  return `${symbol}${amount.toFixed(2)}`;
+  return formatter.format(amount);
 };
 
 export const getCurrencySymbol = (currencyCode: string): string => {
