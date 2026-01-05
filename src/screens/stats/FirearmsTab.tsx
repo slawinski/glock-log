@@ -164,7 +164,7 @@ export const FirearmsTab = ({
               },
               propsForLabels: {
                 fontFamily: "VT323_400Regular",
-                fontSize: 16,
+                fontSize: 22,
               },
               propsForBackgroundLines: {
                 strokeDasharray: "",

@@ -115,7 +115,7 @@ export const AmmunitionTab = ({ ammunition, rangeVisits }: Props) => {
               barPercentage: 0.7,
               propsForLabels: {
                 fontFamily: "VT323_400Regular",
-                fontSize: 16,
+                fontSize: 22,
               },
               propsForBackgroundLines: {
                 strokeDasharray: "",

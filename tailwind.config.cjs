@@ -16,6 +16,16 @@ module.exports = {
           muted: "#666666",
         },
       },
+      fontSize: {
+        xs: "14px",
+        sm: "16px",
+        base: "18px",
+        lg: "20px",
+        xl: "24px",
+        "2xl": "30px",
+        "3xl": "36px",
+        "4xl": "42px",
+      },
       fontFamily: {
         terminal: ["VT323_400Regular", "monospace"],
       },

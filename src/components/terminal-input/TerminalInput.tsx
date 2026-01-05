@@ -80,7 +80,7 @@ export const TerminalInput = ({
     >
       <Text
         className="text-terminal-green font-terminal mr-2"
-        style={{ fontSize: 18, lineHeight: 20 }}
+        style={{ fontSize: 24, lineHeight: 28 }}
       >
         {">"}
       </Text>
@@ -88,15 +88,15 @@ export const TerminalInput = ({
         className="flex-1"
         onPress={() => textInputRef.current?.focus()}
       >
-        <View className="flex-row items-baseline min-h-[20px]">
+        <View className="flex-row items-baseline min-h-[28px]">
           {/* Show placeholder when no value and not focused */}
           {!displayValue && !isFocused && placeholder && (
             <Text
               className="font-terminal"
               style={{
                 color: COLORS.PLACEHOLDER,
-                fontSize: 18,
-                lineHeight: 20,
+                fontSize: 24,
+                lineHeight: 28,
               }}
             >
               {placeholder}
@@ -110,7 +110,7 @@ export const TerminalInput = ({
               {cursorPosition > 0 && (
                 <Text
                   className={`text-terminal-green font-terminal ${className}`}
-                  style={{ fontSize: 18, lineHeight: 20 }}
+                  style={{ fontSize: 24, lineHeight: 28 }}
                 >
                   {displayValue.slice(0, cursorPosition)}
                 </Text>
@@ -122,8 +122,8 @@ export const TerminalInput = ({
                   className="text-terminal-green font-terminal"
                   style={
                     {
-                      fontSize: 18,
-                      lineHeight: 20,
+                      fontSize: 24,
+                      lineHeight: 28,
                       backgroundColor:
                         isFocused && showCursor ? "#00ff00" : "transparent",
                       color: isFocused && showCursor ? "#0a0a0a" : "#00ff00",
@@ -138,8 +138,8 @@ export const TerminalInput = ({
                   <Text
                     className="text-terminal-green font-terminal"
                     style={{
-                      fontSize: 18,
-                      lineHeight: 20,
+                      fontSize: 24,
+                      lineHeight: 28,
                       opacity: showCursor ? 1 : 0,
                     }}
                   >
@@ -152,7 +152,7 @@ export const TerminalInput = ({
               {cursorPosition < displayValue.length - 1 && (
                 <Text
                   className={`text-terminal-green font-terminal ${className}`}
-                  style={{ fontSize: 18, lineHeight: 20 }}
+                  style={{ fontSize: 24, lineHeight: 28 }}
                 >
                   {displayValue.slice(cursorPosition + 1)}
                 </Text>
@@ -180,8 +180,8 @@ export const TerminalInput = ({
             bottom: 0,
             color: COLORS.TRANSPARENT, // Make text invisible
             backgroundColor: COLORS.TRANSPARENT,
-            fontSize: 18,
-            lineHeight: 20,
+            fontSize: 24,
+            lineHeight: 28,
             paddingVertical: 0,
             paddingHorizontal: 0,
             margin: 0,

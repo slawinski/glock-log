@@ -65,7 +65,7 @@ export default function App() {
               headerTitleStyle: {
                 fontFamily: "VT323_400Regular",
                 fontWeight: "bold",
-                fontSize: 34,
+                fontSize: 40,
               },
               contentStyle: {
                 backgroundColor: "#0a0a0a",
