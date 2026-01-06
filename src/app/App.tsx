@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { View } from "react-native";
 import { useFonts, VT323_400Regular } from "@expo-google-fonts/vt323";
-import { ScanlinesOverlay } from "../components";
+import { CRTOverlayShader } from "../components";
 
 import {
   Home,
@@ -147,7 +147,7 @@ export default function App() {
           </Stack.Navigator>
         </NavigationContainer>
         <StatusBar style="light" />
-        <ScanlinesOverlay />
+        <CRTOverlayShader />
       </View>
     </SafeAreaProvider>
   );

@@ -14,6 +14,6 @@ export { ImageGallery } from "./image-gallery/ImageGallery";
 export { DeleteButton } from "./image-gallery/DeleteButton";
 export { PlaceholderImagePicker } from "./placeholder-image-picker/PlaceholderImagePicker";
 export { FirearmsUsedInput } from "./firearms-used-input/FirearmsUsedInput";
-export { ScanlinesOverlay } from "./scanlines-overlay/ScanlinesOverlay";
+export { CRTOverlayShader } from "./crt-overlay-shader/CRTOverlayShader";
 export { HeaderButton } from "./header-button/HeaderButton";
 export { ErrorDisplay } from "./error-display/ErrorDisplay";

@@ -33,7 +33,7 @@ jest.mock("react-native-safe-area-context", () => ({
 
 // Mock components
 jest.mock("../components", () => ({
-  ScanlinesOverlay: () => null,
+  CRTOverlayShader: () => null,
 }));
 
 // Mock all screen components
@@ -142,7 +142,7 @@ describe("App", () => {
     expect(() => render(<App />)).not.toThrow();
   });
 
-  it("includes StatusBar and ScanlinesOverlay components", () => {
+  it("includes StatusBar and CRTOverlayShader components", () => {
     (useFonts as jest.Mock).mockReturnValue([true]);
 
     render(<App />);
