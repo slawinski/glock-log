@@ -1,4 +1,5 @@
 import { Canvas, Rect, Shader, Skia } from "@shopify/react-native-skia";
+import { BlurView } from "expo-blur";
 import React, { useEffect, useMemo } from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 import {
@@ -12,9 +13,14 @@ import {
 
 // Based on CRT-Royale Spec:
 // 1. Scanline Effect (Pass 4)
-// 2. Phosphor Mask Overlay (Pass 5 - Procedural approximation)
-// Note: Bloom (Pass 1-3) requires background texture access which is restricted in this overlay mode.
-// We focus on the physical CRT structure simulation (Mask + Scanlines).
+// 2. Phosphor Mask Overlay (Pass 5)
+// 3. Bloom/Diffusion (Pass 2/3 - Via expo-blur)
+//
+// STRATEGY:
+// To achieve "Phosphor Bloom", we layer the effects physically:
+// [Bottom] App Content (Source Phosphors)
+// [Middle] BlurView (Diffusion/Halation through the glass)
+// [Top]    Skia Overlay (Physical Aperture Grille/Mask & Scanlines blocking the light)
 
 const SKSL_SHADER = `
 uniform vec2 u_resolution;
@@ -33,9 +39,6 @@ vec4 main(vec2 fragCoord) {
     vec2 uv = fragCoord.xy / u_resolution.xy;
 
     // --- Pass 4: Scanline Effect ---
-    // Spec: float scan = sin(uv.y * uScanlineFrequency * 3.14159);
-    // Spec: c.rgb *= 1.0 - (scan * uScanlineIntensity);
-    
     // We adjust for overlay logic (drawing black with alpha):
     // sin oscillates -1 to 1. We want lines.
     float scan = sin(uv.y * u_scanlineDensity * 3.14159 + u_time * 0.5); // Added slow roll
@@ -43,7 +46,6 @@ vec4 main(vec2 fragCoord) {
     float scanAlpha = scanVal * u_scanlineIntensity;
 
     // --- Pass 5: Phosphor Mask Overlay ---
-    // Spec: half4 mask = sample(uMaskTexture, uv);
     // Procedural Aperture Grille (Vertical lines)
     float mask = sin(fragCoord.x * u_maskDensity * 3.14159);
     float maskVal = (mask * 0.5 + 0.5); // 0 to 1
@@ -66,14 +68,13 @@ export const CRTOverlayShader = () => {
   const { width, height } = useWindowDimensions();
   const time = useSharedValue(0);
 
-  // Configuration matching Spec concepts
-  // uScanlineFrequency -> u_scanlineDensity
-  // uScanlineIntensity -> u_scanlineIntensity
-  const scanlineDensity = 200.0; // Higher for finer lines
+  // Configuration
+  const scanlineDensity = 200.0;
   const scanlineIntensity = 0.15;
-  const maskDensity = 1.0; // Per-pixel density for aperture grille
+  const maskDensity = 1.0;
   const maskIntensity = 0.25;
-  const noiseIntensity = 0.03;
+  const noiseIntensity = 0.05;
+  const bloomStrength = 1.5; // Moderate diffusion
 
   useEffect(() => {
     time.value = withRepeat(
@@ -113,6 +114,14 @@ export const CRTOverlayShader = () => {
 
   return (
     <View style={styles.container} pointerEvents="none">
+      {/* Layer 1: Diffusion/Bloom (The Glow) */}
+      <BlurView
+        style={StyleSheet.absoluteFill}
+        intensity={bloomStrength}
+        tint="dark"
+      />
+
+      {/* Layer 2: Physical Structure (The Mask) */}
       <Canvas style={styles.canvas}>
         <Rect x={0} y={0} width={width} height={height}>
           <Shader source={runtimeEffect} uniforms={uniforms} />
