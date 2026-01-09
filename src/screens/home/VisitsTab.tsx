@@ -34,7 +34,7 @@ export const VisitsTab = ({
         onPress={() =>
           navigation.navigate("RangeVisitDetails", { id: item.id })
         }
-        className="bg-terminal-bg border border-terminal-border p-4 mb-2"
+        className="bg-terminal-bg border-2 border-terminal-border p-4 mb-2"
       >
         <View className="flex-row flex-wrap">
           <View className="w-1/2 pr-2">

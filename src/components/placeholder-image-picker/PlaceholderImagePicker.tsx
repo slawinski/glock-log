@@ -33,7 +33,7 @@ export const PlaceholderImagePicker = ({
             <Image
               testID={`placeholder-image-${item}`}
               source={placeholderImages[item]}
-              className={`w-24 h-24 border ${selectedImageKey === item ? "border-terminal-green" : "border-terminal-border"}`}
+              className={`w-24 h-24 border-2 ${selectedImageKey === item ? "border-terminal-green" : "border-terminal-border"}`}
               resizeMode="contain"
             />
           </TouchableOpacity>

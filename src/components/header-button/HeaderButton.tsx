@@ -9,7 +9,7 @@ type Props = {
 export const HeaderButton = ({ caption, className, ...props }: Props) => {
   return (
     <TouchableOpacity
-      className="border border-terminal-border px-3 py-1"
+      className="border-2 border-terminal-border px-3 py-1"
       {...props}
     >
       <TerminalText className={className}>{caption}</TerminalText>

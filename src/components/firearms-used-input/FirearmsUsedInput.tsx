@@ -48,7 +48,7 @@ export const FirearmsUsedInput: FC<
           <View key={firearm.id} className="mb-2">
             <TouchableOpacity
               onPress={() => onToggleFirearm(firearm.id)}
-              className={`border p-2 ${
+              className={`border-2 p-2 ${
                 selectedFirearms.includes(firearm.id)
                   ? "border-terminal-accent"
                   : "border-terminal-border"
@@ -121,7 +121,7 @@ export const FirearmsUsedInput: FC<
       <View className="my-4">
         <TouchableOpacity
           onPress={onAddBorrowedAmmunition}
-          className="border border-terminal-accent p-2"
+          className="border-2 border-terminal-accent p-2"
         >
           <TerminalText>+ Log ammunition for a borrowed firearm</TerminalText>
         </TouchableOpacity>
@@ -135,7 +135,7 @@ export const FirearmsUsedInput: FC<
             return (
               <View
                 key={key}
-                className="mt-2 p-2 border border-terminal-dim rounded"
+                className="mt-2 p-2 border-2 border-terminal-dim rounded"
               >
                 <View className="flex-row justify-between items-center mb-2">
                   <TerminalText>

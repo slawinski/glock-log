@@ -283,7 +283,7 @@ export const AddRangeVisit = () => {
         <TerminalText>PHOTOS</TerminalText>
         <TouchableOpacity
           onPress={handleImagePick}
-          className="border border-terminal-border p-3 mb-2"
+          className="border-2 border-terminal-border p-3 mb-2"
         >
           <TerminalText>ADD PHOTOS</TerminalText>
         </TouchableOpacity>

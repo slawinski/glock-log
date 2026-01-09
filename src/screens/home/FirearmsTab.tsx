@@ -27,7 +27,7 @@ export const FirearmsTab = ({
   const renderFirearmItem = ({ item }: { item: FirearmStorage }) => (
     <TouchableOpacity
       onPress={() => navigation.navigate("FirearmDetails", { id: item.id })}
-      className="bg-terminal-bg border border-terminal-border p-4 mb-4"
+      className="bg-terminal-bg border-2 border-terminal-border p-4 mb-4"
     >
       <View className="flex-row items-start">
         <FirearmImage photoUri={item.photos?.[0]} size={60} className="mr-4" />

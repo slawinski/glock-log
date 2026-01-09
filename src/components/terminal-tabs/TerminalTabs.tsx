@@ -43,7 +43,7 @@ export const TerminalTabs = ({
   activeTab,
   onTabPress,
 }: Props) => (
-  <View className="flex-row justify-around mb-4 bg-terminal-bg border-b border-terminal-border">
+  <View className="flex-row justify-around mb-4 bg-terminal-bg border-b-2 border-terminal-border">
     {tabs.map((tab) => (
       <Tab
         key={tab.id}
