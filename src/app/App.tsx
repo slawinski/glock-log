@@ -21,6 +21,7 @@ import {
   Menu,
   Settings,
   CurrencySelection,
+  DataTransfer,
 } from "../screens";
 
 export type RootStackParamList = {
@@ -38,6 +39,7 @@ export type RootStackParamList = {
   Menu: undefined;
   Settings: undefined;
   CurrencySelection: undefined;
+  DataTransfer: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -143,6 +145,11 @@ export default function App() {
               name="CurrencySelection"
               component={CurrencySelection}
               options={{ title: "SELECT CURRENCY" }}
+            />
+            <Stack.Screen
+              name="DataTransfer"
+              component={DataTransfer}
+              options={{ title: "DATA TRANSFER" }}
             />
           </Stack.Navigator>
         </NavigationContainer>

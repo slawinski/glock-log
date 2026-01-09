@@ -6,6 +6,7 @@ export { CurrencySelection } from "./currency-selection/CurrencySelection";
 export { EditAmmunition } from "./edit-ammunition/EditAmmunition";
 export { EditFirearm } from "./edit-firearm/EditFirearm";
 export { EditRangeVisit } from "./edit-range-visit/EditRangeVisit";
+export { DataTransfer } from "./data-transfer/DataTransfer";
 export { FirearmDetails } from "./firearm-details/FirearmDetails";
 export { Home } from "./home/Home";
 export { Menu } from "./menu/Menu";

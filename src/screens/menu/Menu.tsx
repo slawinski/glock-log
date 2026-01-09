@@ -24,9 +24,9 @@ export const Menu = () => {
       onPress: () => navigation.navigate("Settings"),
     },
     {
-      label: "EXPORT",
+      label: "DATA TRANSFER",
       onPress: () => {
-        // TODO: Export functionality
+        navigation.navigate("DataTransfer");
       },
     },
     {
@@ -34,7 +34,7 @@ export const Menu = () => {
       onPress: () => {
         Alert.alert(
           "About",
-          "Glock Log is a simple application to track your shooting hobby."
+          "TriggerNote is a simple application to track your shooting hobby."
         );
       },
     },

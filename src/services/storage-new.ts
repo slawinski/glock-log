@@ -542,4 +542,76 @@ export const storage = {
       return "USD";
     }
   },
+
+  async importData(data: {
+    firearms: FirearmStorage[];
+    ammunition: AmmunitionStorage[];
+    rangeVisits: RangeVisitStorage[];
+  }): Promise<void> {
+    try {
+      // Validate structure roughly (or assume caller did it)
+      // Here we trust the caller to have parsed the JSON, but we should validate items against schemas
+      
+      // Import Firearms
+      if (data.firearms && Array.isArray(data.firearms)) {
+        const currentFirearms = await this.getFirearms();
+        // Create a map of existing firearms for quick lookup
+        const firearmMap = new Map(currentFirearms.map((f) => [f.id, f]));
+        
+        for (const firearm of data.firearms) {
+          try {
+            // Validate imported item
+            const validated = validateBeforeSave(firearm, firearmStorageSchema);
+            // Overwrite or Add
+            firearmMap.set(validated.id, validated);
+          } catch (e) {
+            console.warn("Skipping invalid firearm import", e);
+          }
+        }
+        
+        const storage = StorageFactory.getStorage();
+        await storage.setItem(STORAGE_KEYS.FIREARMS, JSON.stringify(Array.from(firearmMap.values())));
+      }
+
+      // Import Ammunition
+      if (data.ammunition && Array.isArray(data.ammunition)) {
+        const currentAmmo = await this.getAmmunition();
+        const ammoMap = new Map(currentAmmo.map((a) => [a.id, a]));
+        
+        for (const ammo of data.ammunition) {
+          try {
+            const validated = validateBeforeSave(ammo, ammunitionStorageSchema);
+            ammoMap.set(validated.id, validated);
+          } catch (e) {
+            console.warn("Skipping invalid ammunition import", e);
+          }
+        }
+        
+        const storage = StorageFactory.getStorage();
+        await storage.setItem(STORAGE_KEYS.AMMUNITION, JSON.stringify(Array.from(ammoMap.values())));
+      }
+
+      // Import Range Visits
+      if (data.rangeVisits && Array.isArray(data.rangeVisits)) {
+        const currentVisits = await this.getRangeVisits();
+        const visitMap = new Map(currentVisits.map((v) => [v.id, v]));
+        
+        for (const visit of data.rangeVisits) {
+          try {
+            const validated = validateBeforeSave(visit, rangeVisitStorageSchema);
+            visitMap.set(validated.id, validated);
+          } catch (e) {
+            console.warn("Skipping invalid range visit import", e);
+          }
+        }
+        
+        const storage = StorageFactory.getStorage();
+        await storage.setItem(STORAGE_KEYS.RANGE_VISITS, JSON.stringify(Array.from(visitMap.values())));
+      }
+
+    } catch (error) {
+      handleError(error, "Storage.importData", { userMessage: "Failed to import data." });
+      throw error;
+    }
+  },
 };
