@@ -21,7 +21,9 @@ export const Settings = () => {
       const currency = await storage.getCurrency();
       setCurrentCurrency(currency);
     } catch (error) {
-      handleError(error, "Settings.loadCurrency", { userMessage: "Failed to load currency." });
+      handleError(error, "Settings.loadCurrency", {
+        userMessage: "Failed to load currency.",
+      });
     }
   };
 
@@ -45,30 +47,6 @@ export const Settings = () => {
     {
       label: `CURRENCY: [${currentCurrency}]`,
       onPress: () => navigation.navigate("CurrencySelection"),
-    },
-    {
-      label: "DATE_FORMAT: [MM/DD/YYYY]",
-      onPress: () => {
-        // TODO: Implement date format selection
-      },
-    },
-    {
-      label: "UNITS: [IMPERIAL]",
-      onPress: () => {
-        // TODO: Implement measurement unit selection
-      },
-    },
-    {
-      label: "BACKUP: [DISABLED]",
-      onPress: () => {
-        // TODO: Implement backup settings
-      },
-    },
-    {
-      label: "THEME: [CLASSIC]",
-      onPress: () => {
-        // TODO: Implement theme settings
-      },
     },
   ];
 
