@@ -142,8 +142,8 @@ describe("screens/index.ts", () => {
   it("maintains consistent export count", () => {
     const exportNames = Object.keys(ScreenIndex);
     
-    // Should have exactly 14 screens as defined in the barrel file
-    expect(exportNames.length).toBe(14);
+    // Should have exactly 15 screens as defined in the barrel file
+    expect(exportNames.length).toBe(15);
     
     // All export names should be strings
     exportNames.forEach(name => {

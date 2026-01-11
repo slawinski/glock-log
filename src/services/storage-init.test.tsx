@@ -1,9 +1,10 @@
 import React from "react";
-import { render, waitFor, screen, act } from "@testing-library/react-native";
+import { render, waitFor, act } from "@testing-library/react-native";
 import { View } from "react-native";
 import { StorageInit } from "./storage-init";
 import { StorageFactory } from "./storage-factory";
 import { STORAGE_CONFIG } from "./storage-config";
+import { handleError } from "./error-handler";
 
 jest.mock("../components", () => ({
   ErrorDisplay: ({ errorMessage, onRetry }: any) => {
@@ -19,6 +20,11 @@ jest.mock("../components", () => ({
       </View>
     );
   },
+}));
+
+// Mock error-handler
+jest.mock("./error-handler", () => ({
+  handleError: jest.fn(),
 }));
 
 // Deferred class to control promise resolution
@@ -51,29 +57,18 @@ jest.mock("./storage-config", () => ({
   },
 }));
 
-const mockConsoleError = jest
-  .spyOn(console, "error")
-  .mockImplementation(() => {});
-
 describe("StorageInit", () => {
   let configureDeferred: Deferred<void>;
   let getStorageDeferred: Deferred<any>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockConsoleError.mockClear();
-    jest.useFakeTimers();
 
     configureDeferred = new Deferred<void>();
     getStorageDeferred = new Deferred<any>();
 
     (StorageFactory.configure as jest.Mock).mockImplementation(() => configureDeferred.promise);
     (StorageFactory.getStorage as jest.Mock).mockImplementation(() => getStorageDeferred.promise);
-  });
-
-  afterEach(() => {
-    mockConsoleError.mockRestore();
-    jest.useRealTimers();
   });
 
   it("renders loading state initially", async () => {
@@ -165,9 +160,10 @@ describe("StorageInit", () => {
       expect(getByText("Failed to initialize storage.")).toBeTruthy();
     });
 
-    expect(mockConsoleError).toHaveBeenCalledWith(
-      "[StorageInit.initializeStorage] Storage configuration failed",
-      configError
+    expect(handleError).toHaveBeenCalledWith(
+      configError,
+      "StorageInit.initializeStorage",
+      { isUserFacing: true, userMessage: "Failed to initialize storage." }
     );
   });
 
@@ -189,9 +185,10 @@ describe("StorageInit", () => {
       expect(getByText("Failed to initialize storage.")).toBeTruthy();
     });
 
-    expect(mockConsoleError).toHaveBeenCalledWith(
-      "[StorageInit.initializeStorage] Storage instance creation failed",
-      instanceError
+    expect(handleError).toHaveBeenCalledWith(
+      instanceError,
+      "StorageInit.initializeStorage",
+      { isUserFacing: true, userMessage: "Failed to initialize storage." }
     );
   });
 
@@ -212,9 +209,10 @@ describe("StorageInit", () => {
       expect(getByText("Failed to initialize storage.")).toBeTruthy();
     });
 
-    expect(mockConsoleError).toHaveBeenCalledWith(
-      "[StorageInit.initializeStorage] String error message",
-      stringError
+    expect(handleError).toHaveBeenCalledWith(
+      stringError,
+      "StorageInit.initializeStorage",
+      { isUserFacing: true, userMessage: "Failed to initialize storage." }
     );
   });
 
@@ -234,9 +232,10 @@ describe("StorageInit", () => {
       expect(getByText("Failed to initialize storage.")).toBeTruthy();
     });
 
-    expect(mockConsoleError).toHaveBeenCalledWith(
-      "[StorageInit.initializeStorage] null",
-      null
+    expect(handleError).toHaveBeenCalledWith(
+      null,
+      "StorageInit.initializeStorage",
+      { isUserFacing: true, userMessage: "Failed to initialize storage." }
     );
   });
 

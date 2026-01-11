@@ -43,13 +43,13 @@ describe('Settings', () => {
   it('renders correctly and displays current currency', async () => {
     renderScreen();
     await waitFor(() => {
-      expect(screen.getByText('├── CURRENCY: [USD]')).toBeTruthy();
+      expect(screen.getByText('└── CURRENCY: [USD]')).toBeTruthy();
     });
   });
 
   it('navigates to CurrencySelection when currency item is pressed', async () => {
     renderScreen();
-    const currencyItem = screen.getByText('├── CURRENCY: [USD]');
+    const currencyItem = screen.getByText('└── CURRENCY: [USD]');
     fireEvent.press(currencyItem);
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('CurrencySelection');
@@ -64,7 +64,7 @@ describe('Settings', () => {
     await waitFor(() => {
       // Expect no crash, and error logged
       expect(mockConsoleError).toHaveBeenCalledWith(
-        '[Settings.loadCurrency] Failed to load currency.',
+        '[Settings.loadCurrency] Failed to load',
         expect.any(Error)
       );
     });

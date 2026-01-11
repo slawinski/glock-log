@@ -16,10 +16,10 @@ export const StorageInit = ({ children }: Props) => {
   const initializeStorage = useCallback(async () => {
     try {
       // Configure storage factory
-      StorageFactory.configure(STORAGE_CONFIG);
+      await StorageFactory.configure(STORAGE_CONFIG);
 
       // Test storage by getting an instance
-      StorageFactory.getStorage();
+      await StorageFactory.getStorage();
 
       setIsInitialized(true);
     } catch (err) {

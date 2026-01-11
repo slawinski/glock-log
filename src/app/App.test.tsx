@@ -52,6 +52,7 @@ jest.mock("../screens", () => ({
   Menu: () => null,
   Settings: () => null,
   CurrencySelection: () => null,
+  DataTransfer: () => null,
 }));
 
 describe("App", () => {

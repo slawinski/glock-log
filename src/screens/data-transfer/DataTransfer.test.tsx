@@ -1,5 +1,5 @@
 import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react-native";
+import { render, fireEvent, waitFor, screen } from "@testing-library/react-native";
 import { DataTransfer } from "./DataTransfer";
 import { storage } from "../../services/storage-new";
 import * as FileSystem from "expo-file-system";
@@ -75,13 +75,13 @@ describe("DataTransfer Screen", () => {
   });
 
   it("handles export process", async () => {
-    const { getByText, getAllByText } = render(<DataTransfer />);
+    const { getByText } = render(<DataTransfer />);
     const exportButton = getByText("EXPORT DATABASE");
 
     fireEvent.press(exportButton);
 
     await waitFor(() => {
-      expect(getAllByText("PROCESSING...").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("PROCESSING...").length).toBeGreaterThan(0);
     });
 
     await waitFor(() => {
@@ -96,7 +96,7 @@ describe("DataTransfer Screen", () => {
   });
 
   it("handles import process", async () => {
-    const { getByText, getAllByText } = render(<DataTransfer />);
+    const { getByText } = render(<DataTransfer />);
     const importButton = getByText("IMPORT DATABASE");
 
     fireEvent.press(importButton);

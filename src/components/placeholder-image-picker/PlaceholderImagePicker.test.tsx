@@ -1,7 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 import { PlaceholderImagePicker } from './PlaceholderImagePicker';
-import { PlaceholderImageKey } from '../../services/image-source-manager';
 
 describe('PlaceholderImagePicker', () => {
   it('renders all placeholder image options', () => {

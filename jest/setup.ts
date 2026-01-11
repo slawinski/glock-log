@@ -8,6 +8,30 @@
   clearTimeout(id);
 };
 
+jest.mock("@shopify/react-native-skia", () => ({
+  Canvas: "Canvas",
+  Rect: "Rect",
+  Shader: "Shader",
+  Skia: {
+    Point: (x: number, y: number) => ({ x, y }),
+    Color: (color: string) => color,
+    RuntimeShaderBuilder: jest.fn().mockImplementation(() => ({
+      setUniform: jest.fn(),
+    })),
+    RuntimeEffect: {
+      Make: jest.fn(),
+    },
+  },
+  useFont: jest.fn().mockReturnValue({}),
+  useValue: jest.fn(),
+  useComputedValue: jest.fn(),
+  vec: jest.fn(),
+}));
+
+jest.mock("expo-blur", () => ({
+  BlurView: "BlurView",
+}));
+
 // Mock console.error globally to prevent test logs from cluttering output
 const originalConsoleError = console.error;
 console.error = (..._args) => {
