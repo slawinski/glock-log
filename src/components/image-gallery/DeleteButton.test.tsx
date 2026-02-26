@@ -10,7 +10,7 @@ describe('DeleteButton', () => {
   beforeEach(() => {
     mockOnDelete.mockClear();
     alertSpy = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
-      const deleteButton = buttons?.find(button => button.text === 'Delete');
+      const deleteButton = buttons?.find((button: any) => button.text === 'Delete');
       if (deleteButton && deleteButton.onPress) {
         deleteButton.onPress();
       }
@@ -37,7 +37,7 @@ describe('DeleteButton', () => {
 
   it('does not call onDelete if the alert is cancelled', () => {
     alertSpy.mockImplementationOnce((_title, _message, buttons) => {
-      const cancelButton = buttons?.find(button => button.text === 'Cancel');
+      const cancelButton = buttons?.find((button: any) => button.text === 'Cancel');
       if (cancelButton && cancelButton.onPress) {
         cancelButton.onPress();
       }

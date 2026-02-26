@@ -16,7 +16,7 @@ describe('StorageFactory', () => {
 
   it('throws an error if getStorage is called before configure', () => {
     // Reset config to ensure it's not configured
-    StorageFactory['config'] = undefined;
+    (StorageFactory as any)['config'] = undefined;
     expect(() => StorageFactory.getStorage()).toThrow('Storage not configured. Call configure() first.');
   });
 

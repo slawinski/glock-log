@@ -45,6 +45,7 @@ describe('FirearmsTab', () => {
   it('renders firearm statistics correctly', () => {
     render(
       <FirearmsTab
+        currency="USD"
         firearms={mockFirearms}
         rangeVisits={mockRangeVisits}
         visibleFirearms={new Set(['firearm1', 'firearm2'])}
@@ -70,6 +71,7 @@ describe('FirearmsTab', () => {
   it('renders empty state when no firearms are provided', () => {
     render(
       <FirearmsTab
+        currency="USD"
         firearms={[]}
         rangeVisits={[]}
         visibleFirearms={new Set()}
@@ -84,6 +86,7 @@ describe('FirearmsTab', () => {
   it('calls onToggleFirearm when a firearm is toggled', () => {
     render(
       <FirearmsTab
+        currency="USD"
         firearms={mockFirearms}
         rangeVisits={mockRangeVisits}
         visibleFirearms={new Set(['firearm1', 'firearm2'])}
@@ -100,6 +103,7 @@ describe('FirearmsTab', () => {
   it('calls onToggleAllFirearms when the toggle all button is pressed', () => {
     render(
       <FirearmsTab
+        currency="USD"
         firearms={mockFirearms}
         rangeVisits={mockRangeVisits}
         visibleFirearms={new Set(['firearm1', 'firearm2'])}

@@ -7,7 +7,7 @@ describe('useFormChangeHandler', () => {
     const initialData = { name: 'John', age: 30 };
     const { result } = renderHook(() => {
       const [formData, setFormData] = useState(initialData);
-      const handler = useFormChangeHandler(formData, setFormData);
+      const handler = useFormChangeHandler(formData, setFormData as any);
       return { formData, handler };
     });
 
@@ -22,7 +22,7 @@ describe('useFormChangeHandler', () => {
     const initialData = { name: 'John', age: 30 };
     const { result } = renderHook(() => {
       const [formData, setFormData] = useState(initialData);
-      const handler = useFormChangeHandler(formData, setFormData);
+      const handler = useFormChangeHandler(formData, setFormData as any);
       return { formData, handler };
     });
 
@@ -37,7 +37,7 @@ describe('useFormChangeHandler', () => {
     const initialData = { user: { firstName: 'John', lastName: 'Doe' }, age: 30 };
     const { result } = renderHook(() => {
       const [formData, setFormData] = useState(initialData);
-      const handler = useFormChangeHandler(formData, setFormData);
+      const handler = useFormChangeHandler(formData, setFormData as any);
       return { formData, handler };
     });
 
@@ -54,7 +54,7 @@ describe('useFormChangeHandler', () => {
   it('does nothing if formData is null', () => {
     const { result } = renderHook(() => {
       const [formData, setFormData] = useState<any>(null);
-      const handler = useFormChangeHandler(formData, setFormData);
+      const handler = useFormChangeHandler(formData, setFormData as any);
       return { formData, handler };
     });
 
@@ -69,7 +69,7 @@ describe('useFormChangeHandler', () => {
     const initialData = { name: 'John' };
     const { result, rerender } = renderHook(() => {
       const [formData, setFormData] = useState(initialData);
-      const handler = useFormChangeHandler(formData, setFormData);
+      const handler = useFormChangeHandler(formData, setFormData as any);
       return { formData, handler };
     });
 

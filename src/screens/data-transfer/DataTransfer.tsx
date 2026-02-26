@@ -5,7 +5,7 @@ import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 import { TerminalText, TerminalButton, ErrorDisplay } from "../../components";
 import { storage } from "../../services/storage-new";
-import { handleError } from "../../services/error-handler";
+import { handleError, createAppError } from "../../services/error-handler";
 
 export const DataTransfer = () => {
   const [loading, setLoading] = useState(false);
@@ -61,8 +61,9 @@ export const DataTransfer = () => {
         Alert.alert("Export Success", `File saved to ${filePath}`);
       }
     } catch (err) {
-      const appError = handleError(err, "DataTransfer.handleExport");
+      const appError = createAppError(err, "Failed to export data.");
       setError(appError.userMessage);
+      handleError(err, "DataTransfer.handleExport");
       setStatusMessage(null);
     } finally {
       setLoading(false);
@@ -116,8 +117,9 @@ export const DataTransfer = () => {
       setStatusMessage("Import successful.");
       Alert.alert("Import Success", "Database has been updated successfully.");
     } catch (err) {
-      const appError = handleError(err, "DataTransfer.handleImport");
+      const appError = createAppError(err, "Failed to import data.");
       setError(appError.userMessage);
+      handleError(err, "DataTransfer.handleImport");
       setStatusMessage(null);
     } finally {
       setLoading(false);
