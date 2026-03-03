@@ -50,18 +50,21 @@ export const AmmunitionTab = ({
     </TouchableOpacity>
   );
 
-  return (
-    <FlatList
-      data={ammunition}
-      renderItem={renderAmmunitionItem}
-      keyExtractor={(item) => item.id}
-      onRefresh={onRefresh}
-      refreshing={refreshing}
-      ListEmptyComponent={
-        <View className="flex-1 justify-center items-center mt-8">
-          <TerminalText>NO AMMUNITION FOUND</TerminalText>
-        </View>
-      }
-    />
-  );
-};
+    const activeAmmunition = ammunition.filter((item) => item.quantity > 0);
+  
+    return (
+      <FlatList
+        data={activeAmmunition}
+        renderItem={renderAmmunitionItem}
+        keyExtractor={(item) => item.id}
+        onRefresh={onRefresh}
+        refreshing={refreshing}
+        ListEmptyComponent={
+          <View className="flex-1 justify-center items-center mt-8">
+            <TerminalText>NO AMMUNITION IN STOCK</TerminalText>
+          </View>
+        }
+      />
+    );
+  };
+  

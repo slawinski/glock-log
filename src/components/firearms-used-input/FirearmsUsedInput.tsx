@@ -76,12 +76,12 @@ export const FirearmsUsedInput: FC<
                     <TouchableOpacity
                       onPress={() => {
                         const compatibleAmmo = ammunition.filter(
-                          (a) => a.caliber === firearm.caliber
+                          (a) => a.caliber === firearm.caliber && a.quantity > 0
                         );
                         if (compatibleAmmo.length === 0) {
                           Alert.alert(
-                            "Error",
-                            "No compatible ammunition found"
+                            "No Stock",
+                            `No ${firearm.caliber} ammunition in stock.`
                           );
                           return;
                         }

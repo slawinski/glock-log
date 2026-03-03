@@ -102,7 +102,35 @@ describe("AmmunitionTab", () => {
       />
     );
 
-    expect(getByText("NO AMMUNITION FOUND")).toBeTruthy();
+    expect(getByText("NO AMMUNITION IN STOCK")).toBeTruthy();
+  });
+
+  it("filters out ammunition with zero quantity", () => {
+    const mixedAmmunition = [
+      ...mockAmmunition,
+      {
+        id: "zero",
+        brand: "Empty Brand",
+        caliber: "9mm",
+        grain: "115",
+        quantity: 0,
+        datePurchased: "2023-01-01T00:00:00.000Z",
+        amountPaid: 0,
+        createdAt: "2023-01-01T00:00:00.000Z",
+        updatedAt: "2023-01-01T00:00:00.000Z",
+      }
+    ];
+
+    const { getByText, queryByText } = renderWithNavigation(
+      <AmmunitionTab
+        ammunition={mixedAmmunition}
+        onRefresh={mockOnRefresh}
+        refreshing={false}
+      />
+    );
+
+    expect(getByText("Federal (9mm)")).toBeTruthy();
+    expect(queryByText("Empty Brand (9mm)")).toBeNull();
   });
 
   it("handles ammunition without price per round", () => {

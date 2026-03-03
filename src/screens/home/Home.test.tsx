@@ -251,7 +251,7 @@ describe("Home", () => {
     fireEvent.press(getByTestId("tab-ammunition"));
 
     await waitFor(() => {
-      expect(getByText("NO AMMUNITION FOUND")).toBeTruthy();
+      expect(getByText("NO AMMUNITION IN STOCK")).toBeTruthy();
     });
   });
 

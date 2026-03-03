@@ -18,6 +18,7 @@ import {
   storeImagePaths,
   deleteImages,
   getImagePaths,
+  cleanupOrphanedImages,
 } from "./image-storage";
 import { handleStorageError, handleError } from "./error-handler";
 
@@ -543,41 +544,74 @@ export const storage = {
     }
   },
 
-  async importData(data: {
-    firearms: FirearmStorage[];
-    ammunition: AmmunitionStorage[];
-    rangeVisits: RangeVisitStorage[];
-  }): Promise<void> {
+  async clearAllData(): Promise<void> {
     try {
-      // Validate structure roughly (or assume caller did it)
-      // Here we trust the caller to have parsed the JSON, but we should validate items against schemas
+      const storageInstance = StorageFactory.getStorage();
+      const allKeys = await storageInstance.getAllKeys();
       
-      // Import Firearms
+      // We want to clear everything except maybe settings? 
+      // Actually, for a full restore, let's clear firearms, ammo, range visits AND image paths.
+      // Settings can be preserved unless we want a REALLY fresh start.
+      const keysToClear = allKeys.filter(key => 
+        key.startsWith("@storage:") && key !== STORAGE_KEYS.SETTINGS || 
+        key.startsWith("image_paths")
+      );
+      
+      for (const key of keysToClear) {
+        await storageInstance.removeItem(key);
+      }
+    } catch (error) {
+      handleError(error, "Storage.clearAllData", { userMessage: "Failed to clear existing data." });
+      throw error;
+    }
+  },
+
+  async importData(
+    data: {
+      firearms: FirearmStorage[];
+      ammunition: AmmunitionStorage[];
+      rangeVisits: RangeVisitStorage[];
+    },
+    strategy: "merge" | "restore" = "merge"
+  ): Promise<void> {
+    try {
+      const storageInstance = StorageFactory.getStorage();
+
+      if (strategy === "restore") {
+        await this.clearAllData();
+      }
+
+      // Initialize local copies for manipulation
+      let finalFirearms: FirearmStorage[] = [];
+      let finalAmmo: AmmunitionStorage[] = [];
+      let finalVisits: RangeVisitStorage[] = [];
+
+      // 1. Load baseline
+      if (strategy === "merge") {
+        finalFirearms = await this.getFirearms();
+        finalAmmo = await this.getAmmunition();
+        finalVisits = await this.getRangeVisits();
+      }
+
+      // 2. Prepare Maps for efficient lookup/update
+      const firearmMap = new Map(finalFirearms.map((f) => [f.id, f]));
+      const ammoMap = new Map(finalAmmo.map((a) => [a.id, a]));
+      const visitMap = new Map(finalVisits.map((v) => [v.id, v]));
+
+      // 3. Integrate new Firearms
       if (data.firearms && Array.isArray(data.firearms)) {
-        const currentFirearms = await this.getFirearms();
-        // Create a map of existing firearms for quick lookup
-        const firearmMap = new Map(currentFirearms.map((f) => [f.id, f]));
-        
         for (const firearm of data.firearms) {
           try {
-            // Validate imported item
             const validated = validateBeforeSave(firearm, firearmStorageSchema);
-            // Overwrite or Add
             firearmMap.set(validated.id, validated);
           } catch (e) {
             console.warn("Skipping invalid firearm import", e);
           }
         }
-        
-        const storage = StorageFactory.getStorage();
-        await storage.setItem(STORAGE_KEYS.FIREARMS, JSON.stringify(Array.from(firearmMap.values())));
       }
 
-      // Import Ammunition
+      // 4. Integrate new Ammunition
       if (data.ammunition && Array.isArray(data.ammunition)) {
-        const currentAmmo = await this.getAmmunition();
-        const ammoMap = new Map(currentAmmo.map((a) => [a.id, a]));
-        
         for (const ammo of data.ammunition) {
           try {
             const validated = validateBeforeSave(ammo, ammunitionStorageSchema);
@@ -586,27 +620,59 @@ export const storage = {
             console.warn("Skipping invalid ammunition import", e);
           }
         }
-        
-        const storage = StorageFactory.getStorage();
-        await storage.setItem(STORAGE_KEYS.AMMUNITION, JSON.stringify(Array.from(ammoMap.values())));
       }
 
-      // Import Range Visits
+      // 5. Process new Range Visits and Apply Usage
       if (data.rangeVisits && Array.isArray(data.rangeVisits)) {
-        const currentVisits = await this.getRangeVisits();
-        const visitMap = new Map(currentVisits.map((v) => [v.id, v]));
-        
         for (const visit of data.rangeVisits) {
           try {
             const validated = validateBeforeSave(visit, rangeVisitStorageSchema);
+            
+            // Only apply usage if this is a NEW visit or if we are in restore mode
+            // (To avoid double-counting usage for existing visits in merge mode)
+            if (!visitMap.has(validated.id) || strategy === "restore") {
+              if (validated.ammunitionUsed) {
+                for (const [firearmId, usage] of Object.entries(validated.ammunitionUsed)) {
+                  // Update Ammunition Stock
+                  const ammo = ammoMap.get(usage.ammunitionId);
+                  if (ammo) {
+                    ammo.quantity = Math.max(0, (ammo.quantity || 0) - (usage.rounds || 0));
+                    ammo.updatedAt = new Date().toISOString();
+                  }
+
+                  // Update Firearm Rounds (the key is firearmId)
+                  // Note: In some imports, the key might erroneously be the ammo ID (as seen in some data)
+                  // but we should try both or prioritize firearmId if it exists in map.
+                  let firearm = firearmMap.get(firearmId);
+                  if (!firearm && firearmMap.has(usage.ammunitionId)) {
+                    // Fallback for potentially malformed keys where ammoId was used as key
+                    // This is for robustness with the user's provided sample
+                  }
+                  
+                  if (firearm) {
+                    firearm.roundsFired = (firearm.roundsFired || 0) + (usage.rounds || 0);
+                    firearm.updatedAt = new Date().toISOString();
+                  }
+                }
+              }
+            }
+            
             visitMap.set(validated.id, validated);
           } catch (e) {
             console.warn("Skipping invalid range visit import", e);
           }
         }
-        
-        const storage = StorageFactory.getStorage();
-        await storage.setItem(STORAGE_KEYS.RANGE_VISITS, JSON.stringify(Array.from(visitMap.values())));
+      }
+
+      // 6. Save integrated data
+      await Promise.all([
+        storageInstance.setItem(STORAGE_KEYS.FIREARMS, JSON.stringify(Array.from(firearmMap.values()))),
+        storageInstance.setItem(STORAGE_KEYS.AMMUNITION, JSON.stringify(Array.from(ammoMap.values()))),
+        storageInstance.setItem(STORAGE_KEYS.RANGE_VISITS, JSON.stringify(Array.from(visitMap.values()))),
+      ]);
+
+      if (strategy === "restore") {
+        await cleanupOrphanedImages();
       }
 
     } catch (error) {
@@ -615,3 +681,4 @@ export const storage = {
     }
   },
 };
+

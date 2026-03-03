@@ -110,16 +110,67 @@ export const DataTransfer = () => {
         throw new Error("Invalid import file format.");
       }
 
-      // 4. Import Data
-      setStatusMessage("Importing records...");
-      await storage.importData(parsedData.data);
+      setLoading(false);
+      setStatusMessage(null);
 
-      setStatusMessage("Import successful.");
-      Alert.alert("Import Success", "Database has been updated successfully.");
+      // 4. Ask for strategy
+      Alert.alert(
+        "Import Strategy",
+        "Choose how to import the data:\n\nMERGE: Keep existing data, update records with matching IDs.\n\nRESTORE: WIPE ALL existing data and replace it with records from this file.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "MERGE",
+            onPress: () => performImport(parsedData.data, "merge"),
+          },
+          {
+            text: "FULL RESTORE",
+            style: "destructive",
+            onPress: () => {
+              Alert.alert(
+                "Confirm Full Restore",
+                "THIS WILL DELETE ALL EXISTING DATA. This action cannot be undone. Are you sure?",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "YES, WIPE AND RESTORE",
+                    style: "destructive",
+                    onPress: () => performImport(parsedData.data, "restore"),
+                  },
+                ]
+              );
+            },
+          },
+        ]
+      );
     } catch (err) {
       const appError = createAppError(err, "Failed to import data.");
       setError(appError.userMessage);
       handleError(err, "DataTransfer.handleImport");
+      setStatusMessage(null);
+      setLoading(false);
+    }
+  };
+
+  const performImport = async (data: any, strategy: "merge" | "restore") => {
+    try {
+      setLoading(true);
+      setError(null);
+      setStatusMessage(`Importing (${strategy})...`);
+
+      await storage.importData(data, strategy);
+
+      setStatusMessage("Import successful.");
+      Alert.alert(
+        "Import Success",
+        strategy === "restore"
+          ? "Database has been fully restored."
+          : "Database has been updated successfully."
+      );
+    } catch (err) {
+      const appError = createAppError(err, "Failed to import data.");
+      setError(appError.userMessage);
+      handleError(err, "DataTransfer.performImport");
       setStatusMessage(null);
     } finally {
       setLoading(false);
@@ -165,8 +216,9 @@ export const DataTransfer = () => {
           Restore or update your database from a previously exported JSON file.
         </TerminalText>
         <TerminalText className="text-terminal-warning mb-4">
-          WARNING: Existing records with the same ID will be overwritten. New
-          records will be added.
+          CHOOSE STRATEGY: Merge will add new records and update existing ones.
+          Full Restore will WIPE your current database and replace it with the
+          imported file.
         </TerminalText>
         <TerminalButton
           caption={loading ? "PROCESSING..." : "IMPORT DATABASE"}

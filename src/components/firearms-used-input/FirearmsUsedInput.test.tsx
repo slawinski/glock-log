@@ -210,10 +210,46 @@ describe("FirearmsUsedInput", () => {
       />
     );
 
-    fireEvent.press(getByText("Select Ammunition"));
-    expect(Alert.alert).toHaveBeenCalledWith(
-      "Error",
-      "No compatible ammunition found"
-    );
-  });
-});
+            fireEvent.press(getByText("Select Ammunition"));
+            expect(Alert.alert).toHaveBeenCalledWith(
+              "No Stock",
+              "No 12ga ammunition in stock."
+            );
+          });
+        
+          it("filters out zero-quantity ammunition from selection", () => {
+            const ammoWithZero = [
+              ...mockAmmunition,
+              {
+                id: "a4",
+                brand: "Empty Brand",
+                caliber: "9mm",
+                quantity: 0,
+                datePurchased: "2023-01-01",
+                amountPaid: 0,
+                createdAt: "2023-01-01T00:00:00Z",
+                updatedAt: "2023-01-01T00:00:00Z",
+                grain: "115",
+              },
+            ];
+        
+            const { getByText } = render(
+              <FirearmsUsedInput
+                {...defaultProps}
+                ammunition={ammoWithZero}
+                selectedFirearms={["f1"]}
+              />
+            );
+        
+            fireEvent.press(getByText("Select Ammunition"));
+            
+            // Should show Federal and Winchester but NOT Empty Brand
+            const alertCalls = (Alert.alert as jest.Mock).mock.calls;
+            const alertButtons = alertCalls[0][2];
+            
+            expect(alertButtons.find((b: any) => b.text.includes("Federal"))).toBeTruthy();
+            expect(alertButtons.find((b: any) => b.text.includes("Winchester"))).toBeTruthy();
+            expect(alertButtons.find((b: any) => b.text.includes("Empty Brand"))).toBeFalsy();
+          });
+        });
+        
