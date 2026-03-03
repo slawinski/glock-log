@@ -640,13 +640,24 @@ export const storage = {
                     ammo.updatedAt = new Date().toISOString();
                   }
 
-                  // Update Firearm Rounds (the key is firearmId)
-                  // Note: In some imports, the key might erroneously be the ammo ID (as seen in some data)
-                  // but we should try both or prioritize firearmId if it exists in map.
+                  // Update Firearm Rounds
+                  // Robustness: If the key isn't a firearm ID, try to find a firearm that uses this caliber
+                  // or just pick the first firearm if there's only one used in the visit.
                   let firearm = firearmMap.get(firearmId);
-                  if (!firearm && firearmMap.has(usage.ammunitionId)) {
-                    // Fallback for potentially malformed keys where ammoId was used as key
-                    // This is for robustness with the user's provided sample
+                  
+                  if (!firearm) {
+                    if (validated.firearmsUsed.length === 1) {
+                      firearm = firearmMap.get(validated.firearmsUsed[0]);
+                    } else {
+                      // Try to find a firearm in the visit that matches the ammo's caliber
+                      for (const fId of validated.firearmsUsed) {
+                        const f = firearmMap.get(fId);
+                        if (f && f.caliber === ammo.caliber) {
+                          firearm = f;
+                          break;
+                        }
+                      }
+                    }
                   }
                   
                   if (firearm) {
