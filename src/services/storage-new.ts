@@ -629,40 +629,56 @@ export const storage = {
             const validated = validateBeforeSave(visit, rangeVisitStorageSchema);
             
             // Only apply usage if this is a NEW visit or if we are in restore mode
-            // (To avoid double-counting usage for existing visits in merge mode)
-            if (!visitMap.has(validated.id) || strategy === "restore") {
+            // AND the firearm wasn't already imported with these rounds included.
+            // Actually, if we are importing a bundle (firearms + visits), the firearms
+            // already have the rounds from these visits.
+            // We only need to apply usage if we are merging and the visit is NEW
+            // to the system, but the firearm already existed.
+            
+            const isNewVisit = !visitMap.has(validated.id);
+
+            if (isNewVisit || strategy === "restore") {
               if (validated.ammunitionUsed) {
                 for (const [firearmId, usage] of Object.entries(validated.ammunitionUsed)) {
                   // Update Ammunition Stock
                   const ammo = ammoMap.get(usage.ammunitionId);
                   if (ammo) {
-                    ammo.quantity = Math.max(0, (ammo.quantity || 0) - (usage.rounds || 0));
-                    ammo.updatedAt = new Date().toISOString();
+                    // Only subtract if it's a new visit being merged into existing data
+                    if (isNewVisit && strategy === "merge") {
+                      ammo.quantity = Math.max(0, (ammo.quantity || 0) - (usage.rounds || 0));
+                      ammo.updatedAt = new Date().toISOString();
+                    }
                   }
 
                   // Update Firearm Rounds
-                  // Robustness: If the key isn't a firearm ID, try to find a firearm that uses this caliber
-                  // or just pick the first firearm if there's only one used in the visit.
-                  let firearm = firearmMap.get(firearmId);
+                  // We ONLY update the firearm rounds if this is a NEW visit being merged
+                  // into an EXISTING firearm that WAS NOT part of this import's firearm list.
+                  // If the firearm IS in the import list, it already has the rounds.
                   
-                  if (!firearm) {
-                    if (validated.firearmsUsed.length === 1) {
-                      firearm = firearmMap.get(validated.firearmsUsed[0]);
-                    } else {
-                      // Try to find a firearm in the visit that matches the ammo's caliber
-                      for (const fId of validated.firearmsUsed) {
-                        const f = firearmMap.get(fId);
-                        if (f && f.caliber === ammo.caliber) {
-                          firearm = f;
-                          break;
+                  const isFirearmInImport = data.firearms?.some(f => f.id === firearmId);
+
+                  if (isNewVisit && strategy === "merge" && !isFirearmInImport) {
+                    let firearm = firearmMap.get(firearmId);
+                    
+                    if (!firearm) {
+                      if (validated.firearmsUsed.length === 1) {
+                        firearm = firearmMap.get(validated.firearmsUsed[0]);
+                      } else {
+                        // Try to find a firearm in the visit that matches the ammo's caliber
+                        for (const fId of validated.firearmsUsed) {
+                          const f = firearmMap.get(fId);
+                          if (f && f.caliber === ammo.caliber) {
+                            firearm = f;
+                            break;
+                          }
                         }
                       }
                     }
-                  }
-                  
-                  if (firearm) {
-                    firearm.roundsFired = (firearm.roundsFired || 0) + (usage.rounds || 0);
-                    firearm.updatedAt = new Date().toISOString();
+                    
+                    if (firearm) {
+                      firearm.roundsFired = (firearm.roundsFired || 0) + (usage.rounds || 0);
+                      firearm.updatedAt = new Date().toISOString();
+                    }
                   }
                 }
               }
