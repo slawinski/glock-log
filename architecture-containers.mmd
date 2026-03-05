@@ -1,0 +1,57 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor': '#4f46e5', 'primaryTextColor': '#ffffff',
+  'primaryBorderColor': '#3730a3', 'lineColor': '#94a3b8',
+  'secondaryColor': '#10b981', 'tertiaryColor': '#f59e0b',
+  'background': '#ffffff', 'mainBkg': '#f8fafc',
+  'nodeBorder': '#cbd5e1', 'clusterBkg': '#f1f5f9',
+  'clusterBorder': '#e2e8f0', 'titleColor': '#1e293b',
+  'edgeLabelBackground': '#ffffff', 'textColor': '#334155'
+}}}%%
+C4Container
+    title Container Diagram — Triggernote Mobile App
+
+    Person(user, "User", "Firearm owner / Range enthusiast")
+
+    System_Boundary(app, "Triggernote Mobile Application") {
+        Container(ui, "UI Layer", "React Native / Expo", "Thematic terminal interface")
+        
+        Boundary(logic, "Business Logic Layer") {
+            Container(storageNew, "Storage God Service", "TypeScript", "CURRENT: Handles Firearms, Ammo, Visits, and Images")
+            
+            Container(firearmSvc, "Firearm Service", "TypeScript", "PROPOSED: Domain logic for Firearms")
+            Container(ammoSvc, "Ammunition Service", "TypeScript", "PROPOSED: Domain logic for Ammo")
+            Container(visitSvc, "Range Visit Service", "TypeScript", "PROPOSED: Domain logic for Visits")
+            Container(mediaMgr, "Media Manager", "TypeScript", "PROPOSED: Filesystem / Image logic")
+        }
+
+        ContainerDb(mmkv, "Local Storage", "MMKV", "Encrypted key-value store")
+        Container(fs, "File System", "Expo FileSystem", "Stores encrypted/plain images")
+    }
+
+    Rel(user, ui, "Interacts with", "Touch")
+    Rel(ui, storageNew, "Uses", "TS Method Calls")
+    Rel(storageNew, mmkv, "Reads/Writes", "JSON/String")
+    Rel(storageNew, fs, "Saves/Deletes", "File I/O")
+
+    %% Proposed connections (dashed/light)
+    Rel(ui, firearmSvc, "PROPOSED", "TS")
+    Rel(ui, ammoSvc, "PROPOSED", "TS")
+    Rel(ui, visitSvc, "PROPOSED", "TS")
+    
+    Rel(firearmSvc, mmkv, "PROPOSED", "JSON")
+    Rel(ammoSvc, mmkv, "PROPOSED", "JSON")
+    Rel(visitSvc, mmkv, "PROPOSED", "JSON")
+    Rel(visitSvc, mediaMgr, "PROPOSED", "Internal")
+    Rel(mediaMgr, fs, "PROPOSED", "File I/O")
+
+    UpdateRelStyle(user, ui, $textColor="#1e40af", $lineColor="#3b82f6")
+    UpdateRelStyle(ui, storageNew, $textColor="#dc2626", $lineColor="#ef4444")
+    UpdateRelStyle(storageNew, mmkv, $textColor="#475569", $lineColor="#94a3b8")
+    UpdateRelStyle(storageNew, fs, $textColor="#475569", $lineColor="#94a3b8")
+
+    %% Proposed styles
+    UpdateRelStyle(ui, firearmSvc, $textColor="#10b981", $lineColor="#6ee7b7")
+    UpdateRelStyle(ui, ammoSvc, $textColor="#10b981", $lineColor="#6ee7b7")
+    UpdateRelStyle(ui, visitSvc, $textColor="#10b981", $lineColor="#6ee7b7")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
