@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { View, Text } from "react-native";
 import { StorageFactory } from "./storage-factory";
-import { STORAGE_CONFIG } from "./storage-config";
+import { getSecureStorageConfig } from "./storage-config";
+import { initializeImageStorage } from "./image-storage";
 import { handleError } from "./error-handler";
 import { ErrorDisplay } from "../components";
 
@@ -15,15 +16,19 @@ export const StorageInit = ({ children }: Props) => {
 
   const initializeStorage = useCallback(async () => {
     try {
-      // Configure storage factory
-      await StorageFactory.configure(STORAGE_CONFIG);
+      // 1. Initialize image storage (directory and no-backup flag)
+      await initializeImageStorage();
 
-      // Test storage by getting an instance
+      // 2. Configure storage factory with secure encryption key
+      const secureConfig = await getSecureStorageConfig();
+      await StorageFactory.configure(secureConfig);
+
+      // 3. Test storage by getting an instance
       await StorageFactory.getStorage();
 
       setIsInitialized(true);
     } catch (err) {
-      handleError(err, "StorageInit.initializeStorage", { isUserFacing: true, userMessage: "Failed to initialize storage." });
+      handleError(err, "StorageInit.initializeStorage", { isUserFacing: true, userMessage: "Failed to initialize storage. Please check device security settings." });
       setError("Failed to initialize storage.");
     }
   }, []);

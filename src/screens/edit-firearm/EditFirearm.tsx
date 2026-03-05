@@ -8,6 +8,7 @@ import * as ImagePicker from "react-native-image-picker";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import { useFormChangeHandler } from "../../hooks";
+import { normalizeImagePath } from "../../services/image-source-manager";
 
 import {
   BottomButtonGroup,
@@ -51,7 +52,7 @@ export const EditFirearm = () => {
       if (firearm) {
         setFormData({
           ...firearm,
-          photos: firearm.photos || [],
+          photos: (firearm.photos || []).map(normalizeImagePath),
         });
         setThumbnailIndex(0); // Reset thumbnail index when loading firearm
       } else {

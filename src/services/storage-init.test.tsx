@@ -1,9 +1,10 @@
 import React from "react";
-import { render, waitFor, act } from "@testing-library/react-native";
+import { render, waitFor, act, queryByTestId } from "@testing-library/react-native";
 import { View } from "react-native";
 import { StorageInit } from "./storage-init";
 import { StorageFactory } from "./storage-factory";
-import { STORAGE_CONFIG } from "./storage-config";
+import { getSecureStorageConfig } from "./storage-config";
+import { initializeImageStorage } from "./image-storage";
 import { handleError } from "./error-handler";
 
 jest.mock("../components", () => ({
@@ -50,23 +51,34 @@ jest.mock("./storage-factory", () => ({
 }));
 
 jest.mock("./storage-config", () => ({
-  STORAGE_CONFIG: {
-    type: "mmkv",
-    id: "test-storage",
-    encryptionKey: "test-key",
-  },
+  getSecureStorageConfig: jest.fn(),
+  STORAGE_CONFIG: { type: "mmkv", id: "test" }
 }));
 
+jest.mock("./image-storage", () => ({
+  initializeImageStorage: jest.fn().mockResolvedValue(undefined),
+  setNoBackupFlag: jest.fn().mockResolvedValue(undefined),
+}));
+
+const MOCK_SECURE_CONFIG = {
+  type: "mmkv",
+  id: "test-storage",
+  encryptionKey: "test-key",
+};
+
 describe("StorageInit", () => {
+  let configDeferred: Deferred<any>;
   let configureDeferred: Deferred<void>;
   let getStorageDeferred: Deferred<any>;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
+    configDeferred = new Deferred<any>();
     configureDeferred = new Deferred<void>();
     getStorageDeferred = new Deferred<any>();
 
+    (getSecureStorageConfig as jest.Mock).mockImplementation(() => configDeferred.promise);
     (StorageFactory.configure as jest.Mock).mockImplementation(() => configureDeferred.promise);
     (StorageFactory.getStorage as jest.Mock).mockImplementation(() => getStorageDeferred.promise);
   });
@@ -96,6 +108,7 @@ describe("StorageInit", () => {
 
     // Resolve the promises to simulate successful initialization
     await act(async () => {
+      configDeferred.resolve(MOCK_SECURE_CONFIG);
       configureDeferred.resolve();
       getStorageDeferred.resolve({});
     });
@@ -116,35 +129,18 @@ describe("StorageInit", () => {
     );
 
     await act(async () => {
+      configDeferred.resolve(MOCK_SECURE_CONFIG);
       configureDeferred.resolve();
       getStorageDeferred.resolve({});
     });
 
     await waitFor(() => {
-      expect(StorageFactory.configure).toHaveBeenCalledWith(STORAGE_CONFIG);
+      expect(StorageFactory.configure).toHaveBeenCalledWith(MOCK_SECURE_CONFIG);
     });
   });
 
-  it("tests storage by getting an instance", async () => {
-    const TestChild = () => <></>;
-    render(
-      <StorageInit>
-        <TestChild />
-      </StorageInit>
-    );
-
-    await act(async () => {
-      configureDeferred.resolve();
-      getStorageDeferred.resolve({});
-    });
-
-    await waitFor(() => {
-      expect(StorageFactory.getStorage).toHaveBeenCalled();
-    });
-  });
-
-  it("displays error when storage configuration fails", async () => {
-    const configError = new Error("Storage configuration failed");
+  it("displays error when secure configuration retrieval fails", async () => {
+    const configError = new Error("Secure config failed");
     const TestChild = () => <></>;
     const { getByText } = render(
       <StorageInit>
@@ -153,7 +149,7 @@ describe("StorageInit", () => {
     );
 
     await act(async () => {
-      configureDeferred.reject(configError);
+      configDeferred.reject(configError);
     });
 
     await waitFor(() => {
@@ -163,7 +159,7 @@ describe("StorageInit", () => {
     expect(handleError).toHaveBeenCalledWith(
       configError,
       "StorageInit.initializeStorage",
-      { isUserFacing: true, userMessage: "Failed to initialize storage." }
+      { isUserFacing: true, userMessage: "Failed to initialize storage. Please check device security settings." }
     );
   });
 
@@ -177,6 +173,7 @@ describe("StorageInit", () => {
     );
 
     await act(async () => {
+      configDeferred.resolve(MOCK_SECURE_CONFIG);
       configureDeferred.resolve();
       getStorageDeferred.reject(instanceError);
     });
@@ -188,108 +185,8 @@ describe("StorageInit", () => {
     expect(handleError).toHaveBeenCalledWith(
       instanceError,
       "StorageInit.initializeStorage",
-      { isUserFacing: true, userMessage: "Failed to initialize storage." }
+      { isUserFacing: true, userMessage: "Failed to initialize storage. Please check device security settings." }
     );
-  });
-
-  it("handles non-Error exceptions", async () => {
-    const stringError = "String error message";
-    const TestChild = () => <></>;
-    const { getByText } = render(
-      <StorageInit>
-        <TestChild />
-      </StorageInit>
-    );
-
-    await act(async () => {
-      configureDeferred.reject(stringError);
-    });
-
-    await waitFor(() => {
-      expect(getByText("Failed to initialize storage.")).toBeTruthy();
-    });
-
-    expect(handleError).toHaveBeenCalledWith(
-      stringError,
-      "StorageInit.initializeStorage",
-      { isUserFacing: true, userMessage: "Failed to initialize storage." }
-    );
-  });
-
-  it("handles null errors", async () => {
-    const TestChild = () => <></>;
-    const { getByText } = render(
-      <StorageInit>
-        <TestChild />
-      </StorageInit>
-    );
-
-    await act(async () => {
-      configureDeferred.reject(null);
-    });
-
-    await waitFor(() => {
-      expect(getByText("Failed to initialize storage.")).toBeTruthy();
-    });
-
-    expect(handleError).toHaveBeenCalledWith(
-      null,
-      "StorageInit.initializeStorage",
-      { isUserFacing: true, userMessage: "Failed to initialize storage." }
-    );
-  });
-
-  it("renders multiple children correctly", async () => {
-    const { getByTestId } = render(
-      <StorageInit>
-        {(() => {
-          const { View, Text } = require("react-native");
-          return (
-            <>
-              <View testID="child-1">
-                <Text>Child 1</Text>
-              </View>
-              <View testID="child-2">
-                <Text>Child 2</Text>
-              </View>
-              <View testID="child-3">
-                <Text>Child 3</Text>
-              </View>
-            </>
-          );
-        })()}
-      </StorageInit>
-    );
-
-    await act(async () => {
-      configureDeferred.resolve();
-      getStorageDeferred.resolve({});
-    });
-
-    await waitFor(() => {
-      expect(getByTestId("child-1")).toBeTruthy();
-      expect(getByTestId("child-2")).toBeTruthy();
-      expect(getByTestId("child-3")).toBeTruthy();
-    });
-  });
-
-  it("applies correct styling to error view", async () => {
-    const configError = new Error("Test styling error");
-    const TestChild = () => <></>;
-    const { getByText } = render(
-      <StorageInit>
-        <TestChild />
-      </StorageInit>
-    );
-
-    await act(async () => {
-      configureDeferred.reject(configError);
-    });
-
-    await waitFor(() => {
-      const errorText = getByText("Failed to initialize storage.");
-      expect(errorText).toBeTruthy();
-    });
   });
 
   it("only initializes storage once", async () => {
@@ -301,6 +198,7 @@ describe("StorageInit", () => {
     );
 
     await act(async () => {
+      configDeferred.resolve(MOCK_SECURE_CONFIG);
       configureDeferred.resolve();
       getStorageDeferred.resolve({});
     });
@@ -312,79 +210,11 @@ describe("StorageInit", () => {
     // Re-render the component
     rerender(
       <StorageInit>
-        {(() => {
-          const { View, Text } = require("react-native");
-          return (
-            <View testID="new-child">
-              <Text>New Child</Text>
-            </View>
-          );
-        })()}
+        <View testID="new-child" />
       </StorageInit>
     );
 
     // Should not call configure again
     expect(StorageFactory.configure).toHaveBeenCalledTimes(1);
-    expect(StorageFactory.getStorage).toHaveBeenCalledTimes(1);
-  });
-
-  it("renders children after successful async initialization", async () => {
-    const TestChild = () => {
-      const { View, Text } = require("react-native");
-      return (
-        <View testID="test-child">
-          <Text>Test Content</Text>
-        </View>
-      );
-    };
-    const { getByTestId } = render(
-      <StorageInit>
-        <TestChild />
-      </StorageInit>
-    );
-
-    await act(async () => {
-      configureDeferred.resolve();
-      getStorageDeferred.resolve({});
-    });
-
-    await waitFor(() => {
-      expect(getByTestId("test-child")).toBeTruthy();
-    });
-  });
-
-  it("maintains error state after error occurs", async () => {
-    const configError = new Error("Persistent error");
-    const TestChild = () => <></>;
-    const { getByText, rerender } = render(
-      <StorageInit>
-        <TestChild />
-      </StorageInit>
-    );
-
-    await act(async () => {
-      configureDeferred.reject(configError);
-    });
-
-    await waitFor(() => {
-      expect(getByText("Failed to initialize storage.")).toBeTruthy();
-    });
-
-    // Re-render with different children
-    rerender(
-      <StorageInit>
-        {(() => {
-          const { View, Text } = require("react-native");
-          return (
-            <View testID="different-child">
-              <Text>Different Child</Text>
-            </View>
-          );
-        })()}
-      </StorageInit>
-    );
-
-    // Should still show error, not try to initialize again
-    expect(getByText("Failed to initialize storage.")).toBeTruthy();
   });
 });

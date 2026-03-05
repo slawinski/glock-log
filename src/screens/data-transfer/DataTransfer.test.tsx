@@ -7,7 +7,7 @@ import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 import { Alert } from "react-native";
 
-// Mock dependencies
+// Mock navigation
 jest.mock("@react-navigation/native", () => ({
   useNavigation: () => ({
     navigate: jest.fn(),
@@ -20,29 +20,8 @@ jest.mock("../../services/storage-new", () => ({
     getAmmunition: jest.fn().mockResolvedValue([]),
     getRangeVisits: jest.fn().mockResolvedValue([]),
     importData: jest.fn().mockResolvedValue(undefined),
+    clearAllData: jest.fn().mockResolvedValue(undefined),
   },
-}));
-
-jest.mock("expo-file-system", () => ({
-  documentDirectory: "file:///test/docs/",
-  writeAsStringAsync: jest.fn().mockResolvedValue(undefined),
-  readAsStringAsync: jest.fn().mockResolvedValue(JSON.stringify({
-    version: "1.0.0",
-    data: { firearms: [], ammunition: [], rangeVisits: [] }
-  })),
-  EncodingType: { UTF8: "utf8" },
-}));
-
-jest.mock("expo-sharing", () => ({
-  isAvailableAsync: jest.fn().mockResolvedValue(true),
-  shareAsync: jest.fn().mockResolvedValue(undefined),
-}));
-
-jest.mock("expo-document-picker", () => ({
-  getDocumentAsync: jest.fn().mockResolvedValue({
-    canceled: false,
-    assets: [{ uri: "file:///test/import.json" }]
-  }),
 }));
 
 jest.mock("../../components", () => {
@@ -72,19 +51,30 @@ const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
 describe("DataTransfer Screen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Default mocks for DocumentPicker and FileSystem
+    (DocumentPicker.getDocumentAsync as jest.Mock).mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: "file:///test/import.zip" }]
+    });
+    
+    (FileSystem.readAsStringAsync as jest.Mock).mockResolvedValue(JSON.stringify({
+      version: "1.1.0",
+      data: { firearms: [], ammunition: [], rangeVisits: [] }
+    }));
   });
 
   it("renders correctly", () => {
     const { getByText } = render(<DataTransfer />);
-    expect(getByText("DATA EXPORT")).toBeTruthy();
-    expect(getByText("DATA IMPORT")).toBeTruthy();
-    expect(getByText("EXPORT DATABASE")).toBeTruthy();
-    expect(getByText("IMPORT DATABASE")).toBeTruthy();
+    expect(getByText("SECURE DATA EXPORT")).toBeTruthy();
+    expect(getByText("SECURE DATA IMPORT")).toBeTruthy();
+    expect(getByText("EXPORT SECURE BACKUP")).toBeTruthy();
+    expect(getByText("IMPORT SECURE BACKUP")).toBeTruthy();
   });
 
   it("handles export process", async () => {
     const { getByText } = render(<DataTransfer />);
-    const exportButton = getByText("EXPORT DATABASE");
+    const exportButton = getByText("EXPORT SECURE BACKUP");
 
     fireEvent.press(exportButton);
 
@@ -100,12 +90,12 @@ describe("DataTransfer Screen", () => {
       expect(Sharing.shareAsync).toHaveBeenCalled();
     });
 
-    expect(getByText("EXPORT DATABASE")).toBeTruthy();
+    expect(getByText("EXPORT SECURE BACKUP")).toBeTruthy();
   });
 
   it("handles import process (MERGE)", async () => {
     const { getByText } = render(<DataTransfer />);
-    const importButton = getByText("IMPORT DATABASE");
+    const importButton = getByText("IMPORT SECURE BACKUP");
 
     fireEvent.press(importButton);
 
@@ -127,12 +117,12 @@ describe("DataTransfer Screen", () => {
       expect(storage.importData).toHaveBeenCalledWith(expect.any(Object), "merge");
     });
 
-    expect(getByText("IMPORT DATABASE")).toBeTruthy();
+    expect(getByText("IMPORT SECURE BACKUP")).toBeTruthy();
   });
 
   it("handles import process (FULL RESTORE)", async () => {
     const { getByText } = render(<DataTransfer />);
-    const importButton = getByText("IMPORT DATABASE");
+    const importButton = getByText("IMPORT SECURE BACKUP");
 
     fireEvent.press(importButton);
 

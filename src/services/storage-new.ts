@@ -1,4 +1,5 @@
 import { z } from "zod";
+import * as FileSystem from "expo-file-system";
 import { StorageFactory } from "./storage-factory";
 import {
   firearmStorageSchema,
@@ -549,17 +550,28 @@ export const storage = {
       const storageInstance = StorageFactory.getStorage();
       const allKeys = await storageInstance.getAllKeys();
       
-      // We want to clear everything except maybe settings? 
-      // Actually, for a full restore, let's clear firearms, ammo, range visits AND image paths.
-      // Settings can be preserved unless we want a REALLY fresh start.
+      // Clear everything except settings
       const keysToClear = allKeys.filter(key => 
-        key.startsWith("@storage:") && key !== STORAGE_KEYS.SETTINGS || 
+        (key.startsWith("@storage:") && key !== STORAGE_KEYS.SETTINGS) || 
         key.startsWith("image_paths")
       );
       
       for (const key of keysToClear) {
         await storageInstance.removeItem(key);
       }
+
+      // Also delete all image files for a clean start
+      const imagesDir = `${FileSystem.documentDirectory}images/`;
+      const dirInfo = await FileSystem.getInfoAsync(imagesDir);
+      if (dirInfo.exists) {
+        await FileSystem.deleteAsync(imagesDir, { idempotent: true });
+      }
+      
+      // Re-create directory and set no-backup flag
+      await FileSystem.makeDirectoryAsync(imagesDir, { intermediates: true });
+      const { setNoBackupFlag } = await import("./image-storage");
+      await setNoBackupFlag(imagesDir);
+      
     } catch (error) {
       handleError(error, "Storage.clearAllData", { userMessage: "Failed to clear existing data." });
       throw error;

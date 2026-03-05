@@ -1,8 +1,47 @@
 import { handleError } from "./error-handler";
 import * as FileSystem from "expo-file-system";
+import { Platform } from "react-native";
 import { StorageFactory } from "./storage-factory";
 
 const IMAGE_PATHS_KEY = "image_paths";
+
+/**
+ * Set the iCloud No Backup flag for a file or directory on iOS.
+ * This prevents sensitive data from being uploaded to unencrypted cloud backups.
+ */
+export const setNoBackupFlag = async (uri: string): Promise<void> => {
+  if (Platform.OS === "ios") {
+    try {
+      // Check if setInfoAsync exists in this version of expo-file-system
+      if (typeof (FileSystem as any).setInfoAsync === 'function') {
+        await (FileSystem as any).setInfoAsync(uri, { iCloudNoBackup: true });
+      } else {
+        // Log once that it's unavailable, but don't fail
+        // In newer Expo versions, documentDirectory might be backed up by default
+        // while cacheDirectory is not.
+      }
+    } catch (error) {
+      console.warn(`Failed to set no-backup flag for ${uri}:`, error);
+    }
+  }
+};
+
+/**
+ * Initialize image storage by creating the directory and setting the no-backup flag.
+ */
+export const initializeImageStorage = async (): Promise<void> => {
+  try {
+    const imagesDir = `${FileSystem.documentDirectory}images/`;
+    const dirInfo = await FileSystem.getInfoAsync(imagesDir);
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(imagesDir, { intermediates: true });
+    }
+    // Always set/re-set the flag to be safe
+    await setNoBackupFlag(imagesDir);
+  } catch (error) {
+    console.error("Failed to initialize image storage:", error);
+  }
+};
 
 /**
  * Save image to file system and return the file path
@@ -17,6 +56,13 @@ export const saveImageToFileSystem = async (
   entityId: string
 ): Promise<string> => {
   try {
+    const imagesDir = `${FileSystem.documentDirectory}images/`;
+    
+    // If the URI is already in our images directory, don't re-save it
+    if (uri.startsWith(imagesDir)) {
+      return uri;
+    }
+
     const timestamp = Date.now();
     const randomSuffix = typeof crypto !== 'undefined' && crypto.getRandomValues
       ? Array.from(crypto.getRandomValues(new Uint8Array(3)))
@@ -24,20 +70,19 @@ export const saveImageToFileSystem = async (
           .join('')
       : Math.random().toString(36).slice(2, 5);
     const fileName = `${entityType}_${entityId}_${timestamp}_${randomSuffix}.jpg`;
-    const filePath = `${FileSystem.documentDirectory}images/${fileName}`;
+    const filePath = `${imagesDir}${fileName}`;
 
-    // Ensure images directory exists
-    const imagesDir = `${FileSystem.documentDirectory}images/`;
-    const dirInfo = await FileSystem.getInfoAsync(imagesDir);
-    if (!dirInfo.exists) {
-      await FileSystem.makeDirectoryAsync(imagesDir, { intermediates: true });
-    }
+    // Ensure images directory exists and is excluded from backup
+    await initializeImageStorage();
 
     // Copy image to file system
     await FileSystem.copyAsync({
       from: uri,
       to: filePath,
     });
+
+    // Mark specific image as no-backup as well
+    await setNoBackupFlag(filePath);
 
     return filePath;
   } catch (error) {

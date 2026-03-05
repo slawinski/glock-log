@@ -32,6 +32,43 @@ jest.mock("expo-blur", () => ({
   BlurView: "BlurView",
 }));
 
+jest.mock("expo-secure-store", () => ({
+  getItemAsync: jest.fn(),
+  setItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
+
+jest.mock("react-native-zip-archive", () => ({
+  zip: jest.fn().mockResolvedValue("zip-path"),
+  unzip: jest.fn().mockResolvedValue("unzip-path"),
+  subscribe: jest.fn(),
+}));
+
+jest.mock("expo-sharing", () => ({
+  isAvailableAsync: jest.fn().mockResolvedValue(true),
+  shareAsync: jest.fn().mockResolvedValue({}),
+}));
+
+jest.mock("expo-document-picker", () => ({
+  getDocumentAsync: jest.fn(),
+}));
+
+jest.mock("expo-file-system", () => ({
+  documentDirectory: "file:///test-docs/",
+  cacheDirectory: "file:///test-cache/",
+  makeDirectoryAsync: jest.fn().mockResolvedValue(undefined),
+  deleteAsync: jest.fn().mockResolvedValue(undefined),
+  copyAsync: jest.fn().mockResolvedValue(undefined),
+  writeAsStringAsync: jest.fn().mockResolvedValue(undefined),
+  readAsStringAsync: jest.fn().mockResolvedValue("{}"),
+  readDirectoryAsync: jest.fn().mockResolvedValue([]),
+  getInfoAsync: jest.fn().mockResolvedValue({ exists: true }),
+  setInfoAsync: jest.fn().mockResolvedValue(undefined),
+  EncodingType: {
+    UTF8: "utf8",
+  },
+}));
+
 // Mock console.error globally to prevent test logs from cluttering output
 const originalConsoleError = console.error;
 console.error = (..._args) => {
