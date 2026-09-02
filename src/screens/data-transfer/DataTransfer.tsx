@@ -1,95 +1,69 @@
 import React, { useState } from "react";
-import { View, Alert, ScrollView, Platform } from "react-native";
+import { View, Alert, ScrollView } from "react-native";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
-import { zip, unzip } from "react-native-zip-archive";
+import {
+  unzip,
+  unzipWithPassword,
+  isPasswordProtected,
+} from "react-native-zip-archive";
 import { TerminalText, TerminalButton, ErrorDisplay } from "../../components";
 import { storage } from "../../services/storage-new";
 import { setNoBackupFlag } from "../../services/image-storage";
 import { handleError, createAppError } from "../../services/error-handler";
+import {
+  ImportData,
+  ImportFileTooLargeError,
+  checkImportFileSize,
+  cleanPath,
+  isImportData,
+  isPathInside,
+} from "../../services/data-transfer-service";
+import { TerminalPasswordInput } from "./TerminalPasswordInput";
 
-// Helper to remove 'file://' prefix for react-native-zip-archive on some platforms if needed
-const cleanPath = (path: string) => {
-  if (Platform.OS === 'android' && path.startsWith('file://')) {
-    return path.substring(7);
-  }
-  return path;
+type PendingImport = {
+  zipUri: string;
+  tempExtractDir: string;
 };
 
 export const DataTransfer = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [exportPassword, setExportPassword] = useState("");
+  const [exportPasswordConfirm, setExportPasswordConfirm] = useState("");
+  const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
+  const [importPassword, setImportPassword] = useState("");
+
+  const cleanupTempDir = async (dir: string) => {
+    try {
+      await FileSystem.deleteAsync(dir, { idempotent: true });
+    } catch { /* ignore cleanup errors */ }
+  };
 
   const handleExport = async () => {
-    let tempDir = "";
-    let zipPath = "";
+    // Validate the passphrase before doing any work (B7)
+    if (exportPassword.length < 4) {
+      setError("Passphrase must be at least 4 characters.");
+      return;
+    }
+    if (exportPassword !== exportPasswordConfirm) {
+      setError("Passphrases do not match.");
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
       setStatusMessage("Collecting data...");
 
-      // 1. Fetch all data
-      const [firearms, ammunition, rangeVisits] = await Promise.all([
-        storage.getFirearms(),
-        storage.getAmmunition(),
-        storage.getRangeVisits(),
-      ]);
+      // Build the AES-256 encrypted archive (passphrase is used in memory
+      // only and never stored).
+      const zipPath = await storage.exportData(exportPassword);
 
-      const exportData = {
-        version: "1.1.0", // Bumped version for image support
-        timestamp: new Date().toISOString(),
-        data: {
-          firearms,
-          ammunition,
-          rangeVisits,
-        },
-      };
-
-      // 2. Prepare temporary directory
-      tempDir = `${FileSystem.cacheDirectory}triggernote_export_${Date.now()}`;
-      await FileSystem.makeDirectoryAsync(tempDir, { intermediates: true });
-      await FileSystem.makeDirectoryAsync(`${tempDir}/images`, { intermediates: true });
-
-      // 3. Write JSON data
-      setStatusMessage("Writing database...");
-      const jsonData = JSON.stringify(exportData, null, 2);
-      await FileSystem.writeAsStringAsync(`${tempDir}/data.json`, jsonData);
-
-      // 4. Copy images
-      setStatusMessage("Bundling images...");
-      const appImagesDir = `${FileSystem.documentDirectory}images/`;
-      
-      // Collect all unique image paths referenced in the database
-      const imageSet = new Set<string>();
-      firearms.forEach(f => f.photos?.forEach(p => !p.startsWith('placeholder:') && imageSet.add(p)));
-      rangeVisits.forEach(v => v.photos?.forEach(p => !p.startsWith('placeholder:') && imageSet.add(p)));
-      // Ammunition doesn't have photos in current schema but good to be ready
-      
-      for (const imgPath of imageSet) {
-        try {
-          // Extract filename from path
-          const fileName = imgPath.split('/').pop();
-          if (fileName) {
-            const destPath = `${tempDir}/images/${fileName}`;
-            await FileSystem.copyAsync({ from: imgPath, to: destPath });
-          }
-        } catch (e) {
-          console.warn(`Could not bundle image: ${imgPath}`, e);
-        }
-      }
-
-      // 5. Create ZIP archive
-      setStatusMessage("Creating archive...");
-      const zipFileName = `triggernote_backup_${new Date()
-        .toISOString()
-        .replace(/[:.]/g, "-")}.zip`;
-      zipPath = `${FileSystem.cacheDirectory}${zipFileName}`;
-
-      await zip(cleanPath(tempDir), cleanPath(zipPath));
-
-      // 6. Share ZIP
+      // Share ZIP
+      setStatusMessage("Sharing archive...");
       const isAvailable = await Sharing.isAvailableAsync();
       if (isAvailable) {
         await Sharing.shareAsync(zipPath, {
@@ -108,18 +82,73 @@ export const DataTransfer = () => {
       handleError(err, "DataTransfer.handleExport");
       setStatusMessage(null);
     } finally {
-      // Cleanup
-      try {
-        if (tempDir) await FileSystem.deleteAsync(tempDir, { idempotent: true });
-        // We don't delete zipPath immediately as Sharing might still need it on some platforms
-        // but we can schedule it or just let it sit in cache.
-      } catch (e) { /* ignore cleanup errors */ }
+      // The passphrase must not outlive the export operation (B7).
+      setExportPassword("");
+      setExportPasswordConfirm("");
+      setLoading(false);
+    }
+  };
+
+  const handleCancelPendingImport = async () => {
+    const pending = pendingImport;
+    setPendingImport(null);
+    setImportPassword("");
+    setStatusMessage(null);
+    if (pending) {
+      await cleanupTempDir(pending.tempExtractDir);
+    }
+  };
+
+  const handleUnlockArchive = async () => {
+    const pending = pendingImport;
+    if (!pending) {
+      return;
+    }
+
+    if (!importPassword) {
+      setError("Enter the archive passphrase.");
+      return;
+    }
+
+    setError(null);
+    setLoading(true);
+    setStatusMessage("Extracting...");
+
+    try {
+      // B7: password-protected archives are extracted with the user-supplied
+      // passphrase (used in memory only, never stored).
+      await unzipWithPassword(
+        cleanPath(pending.zipUri),
+        cleanPath(pending.tempExtractDir),
+        importPassword
+      );
+
+      setPendingImport(null);
+      setImportPassword("");
+      setLoading(false);
+      setStatusMessage(null);
+
+      await continueImport(pending.tempExtractDir);
+    } catch (err) {
+      const appError = createAppError(
+        err,
+        "Failed to unlock archive. Check the passphrase and try again."
+      );
+      setError(appError.userMessage);
+      handleError(err, "DataTransfer.handleUnlockArchive");
+      setStatusMessage(null);
       setLoading(false);
     }
   };
 
   const handleImport = async () => {
+    let tempExtractDir = "";
     try {
+      // Starting a new import supersedes a pending passphrase prompt.
+      if (pendingImport) {
+        await handleCancelPendingImport();
+      }
+
       setError(null);
       setStatusMessage(null);
 
@@ -138,70 +167,132 @@ export const DataTransfer = () => {
 
       const asset = result.assets[0];
       const zipUri = asset.uri;
-      const tempExtractDir = `${FileSystem.cacheDirectory}triggernote_import_${Date.now()}`;
+
+      // 2. Reject oversized archives before touching the filesystem (C19)
+      await checkImportFileSize(zipUri);
+
+      // 3. Detect password protection (B7)
+      const passwordProtected = await isPasswordProtected(cleanPath(zipUri));
+
+      tempExtractDir = `${FileSystem.cacheDirectory}triggernote_import_${Date.now()}`;
       await FileSystem.makeDirectoryAsync(tempExtractDir, { intermediates: true });
 
-      // 2. Unzip
+      if (passwordProtected) {
+        // Hold the archive and ask for the passphrase before extracting.
+        setLoading(false);
+        setStatusMessage(null);
+        setPendingImport({ zipUri, tempExtractDir });
+        return;
+      }
+
+      // 4. Unzip (legacy unencrypted archives keep working)
       setStatusMessage("Extracting...");
       await unzip(cleanPath(zipUri), cleanPath(tempExtractDir));
-
-      // 3. Read data.json
-      const dataJsonPath = `${tempExtractDir}/data.json`;
-      const jsonExists = await FileSystem.getInfoAsync(dataJsonPath);
-      if (!jsonExists.exists) {
-        throw new Error("Invalid backup: data.json missing.");
-      }
-
-      const fileContent = await FileSystem.readAsStringAsync(dataJsonPath);
-      const parsedData = JSON.parse(fileContent);
-
-      if (!parsedData.version || !parsedData.data) {
-        throw new Error("Invalid import file format.");
-      }
 
       setLoading(false);
       setStatusMessage(null);
 
-      // 4. Ask for strategy
-      Alert.alert(
-        "Import Strategy",
-        "Choose how to import the data:\n\nMERGE: Keep existing data, update records with matching IDs. Images will be added.\n\nRESTORE: WIPE ALL existing data and replace it with records from this backup.",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "MERGE",
-            onPress: () => performImport(parsedData.data, "merge", tempExtractDir),
-          },
-          {
-            text: "FULL RESTORE",
-            style: "destructive",
-            onPress: () => {
-              Alert.alert(
-                "Confirm Full Restore",
-                "THIS WILL DELETE ALL EXISTING DATA AND IMAGES. This action cannot be undone. Are you sure?",
-                [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "YES, WIPE AND RESTORE",
-                    style: "destructive",
-                    onPress: () => performImport(parsedData.data, "restore", tempExtractDir),
-                  },
-                ]
-              );
-            },
-          },
-        ]
-      );
+      await continueImport(tempExtractDir);
     } catch (err) {
-      const appError = createAppError(err, "Failed to import data.");
+      const userMessage =
+        err instanceof ImportFileTooLargeError
+          ? err.message
+          : "Failed to import data.";
+      const appError = createAppError(err, userMessage);
       setError(appError.userMessage);
       handleError(err, "DataTransfer.handleImport");
       setStatusMessage(null);
       setLoading(false);
+      if (tempExtractDir) {
+        await cleanupTempDir(tempExtractDir);
+      }
     }
   };
 
-  const performImport = async (data: any, strategy: "merge" | "restore", tempDir: string) => {
+  /**
+   * Post-extraction steps shared by the legacy and password-protected import
+   * paths: read and validate data.json, then ask for the import strategy.
+   */
+  const continueImport = async (tempExtractDir: string) => {
+    // Read data.json — verify the resolved path stays inside the extraction
+    // root before reading (C18 zip-slip defense).
+    const dataJsonPath = `${tempExtractDir}/data.json`;
+    if (!isPathInside(tempExtractDir, dataJsonPath)) {
+      throw new Error("Invalid backup: archive contains unsafe paths.");
+    }
+
+    const jsonExists = await FileSystem.getInfoAsync(dataJsonPath);
+    if (!jsonExists.exists) {
+      throw new Error("Invalid backup: data.json missing.");
+    }
+
+    const fileContent = await FileSystem.readAsStringAsync(dataJsonPath);
+    const parsed = JSON.parse(fileContent) as unknown;
+
+    if (typeof parsed !== "object" || parsed === null) {
+      throw new Error("Invalid import file format.");
+    }
+
+    const candidate = parsed as Record<string, unknown>;
+    const rawData = candidate.data;
+    if (!candidate.version || !isImportData(rawData)) {
+      throw new Error("Invalid import file format.");
+    }
+
+    const bundle: ImportData = rawData;
+
+    setLoading(false);
+    setStatusMessage(null);
+
+    // Ask for strategy
+    Alert.alert(
+      "Import Strategy",
+      "Choose how to import the data:\n\nMERGE: Keep existing data, update records with matching IDs. Images will be added.\n\nRESTORE: WIPE ALL existing data and replace it with records from this backup.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+          onPress: () => {
+            void cleanupTempDir(tempExtractDir);
+          },
+        },
+        {
+          text: "MERGE",
+          onPress: () => performImport(bundle, "merge", tempExtractDir),
+        },
+        {
+          text: "FULL RESTORE",
+          style: "destructive",
+          onPress: () => {
+            Alert.alert(
+              "Confirm Full Restore",
+              "THIS WILL DELETE ALL EXISTING DATA AND IMAGES. This action cannot be undone. Are you sure?",
+              [
+                {
+                  text: "Cancel",
+                  style: "cancel",
+                  onPress: () => {
+                    void cleanupTempDir(tempExtractDir);
+                  },
+                },
+                {
+                  text: "YES, WIPE AND RESTORE",
+                  style: "destructive",
+                  onPress: () => performImport(bundle, "restore", tempExtractDir),
+                },
+              ]
+            );
+          },
+        },
+      ]
+    );
+  };
+
+  const performImport = async (
+    data: ImportData,
+    strategy: "merge" | "restore",
+    tempDir: string
+  ) => {
     try {
       setLoading(true);
       setError(null);
@@ -212,14 +303,16 @@ export const DataTransfer = () => {
         await storage.clearAllData();
       }
 
-      // 2. Restore images from the temp directory
+      // 2. Restore images from the temp directory. Every entry path is
+      //    resolved and checked against both the extraction root and the
+      //    destination images directory (C18 zip-slip defense).
       const extractedImagesDir = `${tempDir}/images/`;
       const imagesExist = await FileSystem.getInfoAsync(extractedImagesDir);
-      
+
       if (imagesExist.exists) {
         setStatusMessage("Restoring images...");
         const appImagesDir = `${FileSystem.documentDirectory}images/`;
-        
+
         // Ensure dir exists
         const dirInfo = await FileSystem.getInfoAsync(appImagesDir);
         if (!dirInfo.exists) {
@@ -231,6 +324,16 @@ export const DataTransfer = () => {
         for (const file of files) {
           const from = `${extractedImagesDir}${file}`;
           const to = `${appImagesDir}${file}`;
+
+          if (!isPathInside(extractedImagesDir, from)) {
+            console.warn(`Skipping archive entry outside the extraction root: ${file}`);
+            continue;
+          }
+          if (!isPathInside(appImagesDir, to)) {
+            console.warn(`Skipping archive entry with an unsafe name: ${file}`);
+            continue;
+          }
+
           await FileSystem.copyAsync({ from, to });
           await setNoBackupFlag(to);
         }
@@ -254,9 +357,7 @@ export const DataTransfer = () => {
       setStatusMessage(null);
     } finally {
       // Cleanup temp directory
-      try {
-        await FileSystem.deleteAsync(tempDir, { idempotent: true });
-      } catch (e) { /* ignore */ }
+      await cleanupTempDir(tempDir);
       setLoading(false);
     }
   };
@@ -285,6 +386,31 @@ export const DataTransfer = () => {
         <TerminalText className="text-terminal-highlight text-sm italic mb-4">
           * Backups are bundled with images for full portability.
         </TerminalText>
+
+        <TerminalText className="text-terminal-highlight mb-2">
+          ENCRYPTION PASSPHRASE (MIN 4 CHARACTERS):
+        </TerminalText>
+        <TerminalPasswordInput
+          value={exportPassword}
+          onChangeText={setExportPassword}
+          placeholder="ENTER PASSPHRASE"
+          label="Export passphrase"
+          testID="export-password-input"
+        />
+        <TerminalText className="text-terminal-highlight mb-2 mt-4">
+          CONFIRM PASSPHRASE:
+        </TerminalText>
+        <TerminalPasswordInput
+          value={exportPasswordConfirm}
+          onChangeText={setExportPasswordConfirm}
+          placeholder="CONFIRM PASSPHRASE"
+          label="Confirm export passphrase"
+          testID="export-password-confirm-input"
+        />
+        <TerminalText className="text-terminal-warning text-sm mt-2 mb-4">
+          * The archive is AES-256 encrypted. The passphrase is never stored.
+        </TerminalText>
+
         <TerminalButton
           caption={loading ? "PROCESSING..." : "EXPORT SECURE BACKUP"}
           onPress={handleExport}
@@ -294,6 +420,38 @@ export const DataTransfer = () => {
       </View>
 
       <View className="border-t border-terminal-dim my-4" />
+
+      {pendingImport && (
+        <View className="mb-8 border-2 border-terminal-warning p-4">
+          <TerminalText className="text-terminal-warning text-xl mb-2">
+            ARCHIVE IS PASSWORD PROTECTED
+          </TerminalText>
+          <TerminalText className="mb-4">
+            Enter the passphrase used to encrypt this backup:
+          </TerminalText>
+          <TerminalPasswordInput
+            value={importPassword}
+            onChangeText={setImportPassword}
+            placeholder="ENTER ARCHIVE PASSPHRASE"
+            label="Archive passphrase"
+            testID="import-password-input"
+          />
+          <View className="flex-row mt-4">
+            <TerminalButton
+              caption={loading ? "PROCESSING..." : "UNLOCK ARCHIVE"}
+              onPress={handleUnlockArchive}
+              disabled={loading}
+              className="flex-1 mr-2"
+            />
+            <TerminalButton
+              caption="CANCEL"
+              onPress={handleCancelPendingImport}
+              disabled={loading}
+              className="flex-1 ml-2 border-terminal-warning"
+            />
+          </View>
+        </View>
+      )}
 
       <View className="mb-8">
         <TerminalText className="text-xl mb-4">SECURE DATA IMPORT</TerminalText>

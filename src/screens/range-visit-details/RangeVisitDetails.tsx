@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { View, ScrollView } from "react-native";
 import {
   useNavigation,
   useRoute,
@@ -14,6 +14,7 @@ import {
   BottomButtonGroup,
   ErrorDisplay,
   ImageGallery,
+  LoadingScreen,
   TerminalText,
 } from "../../components";
 import {
@@ -21,6 +22,7 @@ import {
   RangeVisitStorage,
   AmmunitionStorage,
 } from "../../validation/storageSchemas";
+import { useDeleteEntity } from "../../hooks";
 
 type RangeVisitDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -95,35 +97,22 @@ export const RangeVisitDetails = () => {
     }, [fetchVisit])
   );
 
-  const handleDelete = async () => {
-    Alert.alert(
-      "Confirm Delete",
-      "Are you sure you want to delete this range visit?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await storage.deleteRangeVisit(route.params.id);
-              navigation.goBack();
-            } catch (error) {
-              handleError(error, "RangeVisitDetails.handleDelete", { isUserFacing: true, userMessage: "Failed to delete range visit." });
-            }
-          },
-        },
-      ]
-    );
-  };
+  const { confirmDelete } = useDeleteEntity(
+    async () => {
+      await storage.deleteRangeVisit(route.params.id);
+    },
+    {
+      label: "Range Visit",
+      confirmTitle: "Confirm Delete",
+      confirmMessage: "Are you sure you want to delete this range visit?",
+      errorContext: "RangeVisitDetails.handleDelete",
+      errorUserMessage: "Failed to delete range visit.",
+    },
+    () => navigation.goBack()
+  );
 
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <ActivityIndicator size="large" color="#00ff00" />
-        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (error || !visit) {
@@ -212,7 +201,7 @@ export const RangeVisitDetails = () => {
               },
               {
                 caption: "DELETE",
-                onPress: handleDelete,
+                onPress: confirmDelete,
               },
               {
                 caption: "BACK",

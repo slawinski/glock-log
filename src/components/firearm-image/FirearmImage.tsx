@@ -1,5 +1,6 @@
 import React from "react";
-import { Image, View } from "react-native";
+import { View } from "react-native";
+import { Image } from "expo-image";
 import { resolveImageSource } from "../../services/image-source-manager";
 
 interface FirearmImageProps {
@@ -9,12 +10,12 @@ interface FirearmImageProps {
   testID?: string;
 }
 
-export function FirearmImage({
+export const FirearmImage = ({
   size = 120,
   className = "",
   photoUri,
   testID,
-}: FirearmImageProps) {
+}: FirearmImageProps) => {
   const imageSource = photoUri
     ? resolveImageSource(photoUri)
     : resolveImageSource("placeholder:pistol-placeholder.png");
@@ -30,7 +31,8 @@ export function FirearmImage({
     >
       <Image
         source={imageSource}
-        resizeMode="contain"
+        contentFit="contain"
+        cachePolicy="disk"
         style={{
           width: size * 0.9,
           height: size * 0.9,
@@ -39,6 +41,4 @@ export function FirearmImage({
       />
     </View>
   );
-}
-
-export default FirearmImage;
+};

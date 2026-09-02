@@ -11,6 +11,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { EditFirearm as EditFirearmScreen } from "./EditFirearm";
 import { storage } from "../../services/storage-new";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { formatDate } from "../../utils";
 import * as ImagePicker from "react-native-image-picker";
 import { FirearmStorage } from "../../validation/storageSchemas";
 
@@ -107,13 +108,10 @@ describe("EditFirearmScreen", () => {
   it("handles date picker interaction", async () => {
     renderScreen();
     await waitFor(() => {
-      const formattedDate = new Date(
-        mockFirearm.datePurchased
-      ).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
+      const formattedDate = formatDate(
+        new Date(mockFirearm.datePurchased),
+        "MMM d, yyyy"
+      );
       const dateButton = screen.getByText(formattedDate);
       fireEvent.press(dateButton);
       const datePickerElement = screen.UNSAFE_getByType(DateTimePicker);
@@ -141,18 +139,18 @@ describe("EditFirearmScreen", () => {
     });
   });
 
-  it("shows validation error when required fields are missing", async () => {
+  it("shows field error when required fields are missing", async () => {
     renderScreen();
     await waitFor(() => {
-      const modelInput = screen.getByDisplayValue("Glock 19");
-      fireEvent.changeText(modelInput, "");
-      const saveButton = screen.getByText(/SAVE CHANGES/);
-      fireEvent.press(saveButton);
-      expect(Alert.alert).toHaveBeenCalledWith(
-        "Validation error",
-        expect.any(String)
-      );
+      expect(screen.getByDisplayValue("Glock 19")).toBeTruthy();
     });
+
+    fireEvent.changeText(screen.getByDisplayValue("Glock 19"), "");
+    fireEvent.press(screen.getByText(/SAVE CHANGES/));
+
+    expect(await screen.findByText(/Model name is required/)).toBeTruthy();
+    expect(storage.saveFirearm).not.toHaveBeenCalled();
+    expect(Alert.alert).not.toHaveBeenCalled();
   });
 
   it("saves firearm when form is valid", async () => {

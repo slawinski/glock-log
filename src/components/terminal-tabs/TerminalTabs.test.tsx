@@ -30,4 +30,13 @@ describe('TerminalTabs', () => {
     fireEvent.press(tab2);
     expect(mockOnTabPress).toHaveBeenCalledWith('tab2');
   });
+
+  it('exposes tab roles and selected state to screen readers', () => {
+    render(<TerminalTabs tabs={mockTabs} activeTab='tab1' onTabPress={mockOnTabPress} />);
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs).toHaveLength(3);
+    expect(tabs[0].props.accessibilityState).toEqual({ selected: true });
+    expect(tabs[1].props.accessibilityState).toEqual({ selected: false });
+    expect(screen.getByLabelText('Tab Two')).toBeTruthy();
+  });
 });

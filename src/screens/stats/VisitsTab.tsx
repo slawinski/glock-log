@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, ScrollView } from "react-native";
 import { TerminalText, TerminalCalendar } from "../../components";
 import { RangeVisitStorage } from "../../validation/storageSchemas";
@@ -8,7 +8,7 @@ type Props = {
 };
 
 export const VisitsTab = ({ rangeVisits }: Props) => {
-  const calculateVisitStats = () => {
+  const visitStats = useMemo(() => {
     const visitsByMonth = rangeVisits.reduce((acc, visit) => {
       const month = new Date(visit.date).toLocaleString("default", {
         month: "long",
@@ -47,9 +47,8 @@ export const VisitsTab = ({ rangeVisits }: Props) => {
       mostVisitedLocation,
       averageRoundsPerVisit,
     };
-  };
+  }, [rangeVisits]);
 
-  const visitStats = calculateVisitStats();
   const visitDates = rangeVisits.map((visit) => new Date(visit.date));
 
   if (rangeVisits.length === 0) {

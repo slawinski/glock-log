@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { View, ScrollView, Alert } from "react-native";
+import React from "react";
+import { View, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Controller, useWatch } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
 import {
   TerminalText,
@@ -9,10 +10,11 @@ import {
   TerminalDatePicker,
   BottomButtonGroup,
 } from "../../components";
-import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
+import { useEntityForm } from "../../hooks";
 import {
-  ammunitionInputSchema,
+  ammunitionFormSchema,
+  AmmunitionFormData,
   AmmunitionInput,
 } from "../../validation/inputSchemas";
 
@@ -21,73 +23,45 @@ type AddAmmunitionScreenNavigationProp = NativeStackNavigationProp<
   "AddAmmunition"
 >;
 
-type AmmunitionFormData = Omit<
-  AmmunitionInput,
-  "quantity" | "amountPaid" | "grain"
-> & {
-  quantity: number | null;
-  amountPaid: number | null;
-  grain: string | null;
-};
-
 export const AddAmmunition = () => {
   const navigation = useNavigation<AddAmmunitionScreenNavigationProp>();
-  const [formData, setFormData] = useState<AmmunitionFormData>({
-    caliber: "",
-    brand: "",
-    grain: null,
-    quantity: null,
-    datePurchased: new Date().toISOString(),
-    amountPaid: null,
-    notes: "",
-    photos: [],
-  });
-  const [saving, setSaving] = useState(false);
-  const [dateError, setDateError] = useState<string | null>(null);
-  const [pricePerRound, setPricePerRound] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (formData.amountPaid && formData.quantity) {
-      setPricePerRound(formData.amountPaid / formData.quantity);
-    } else {
-      setPricePerRound(null);
-    }
-  }, [formData.amountPaid, formData.quantity]);
-
-  const handleSubmit = async () => {
-    try {
-      setSaving(true);
-      setDateError(null);
-
-      const purchaseDate = new Date(formData.datePurchased);
-      if (purchaseDate > new Date()) {
-        setDateError("Purchase date cannot be in the future");
-        return;
-      }
-
-      const dataToValidate = {
-        ...formData,
-        grain: formData.grain || "",
-        quantity: formData.quantity || 0,
-        amountPaid: formData.amountPaid || 0,
-        pricePerRound: pricePerRound,
-      };
-
-      const validationResult = ammunitionInputSchema.safeParse(dataToValidate);
-      if (!validationResult.success) {
-        const errorMessage = validationResult.error.errors[0].message;
-        Alert.alert("Validation error", errorMessage);
-        return;
-      }
-
-      await storage.saveAmmunition(validationResult.data);
-      navigation.goBack();
-    } catch (error) {
-      handleError(error, "AddAmmunition.handleSubmit", { isUserFacing: true, userMessage: "Failed to create ammunition. Please try again." });
-    } finally {
-      setSaving(false);
-    }
+  const saveAmmunition = async (data: AmmunitionInput) => {
+    const pricePerRound =
+      data.amountPaid && data.quantity
+        ? data.amountPaid / data.quantity
+        : undefined;
+    await storage.saveAmmunition({ ...data, pricePerRound });
+    navigation.goBack();
   };
+
+  const { form, isSaving, onSubmit } = useEntityForm<
+    AmmunitionInput,
+    AmmunitionFormData
+  >(ammunitionFormSchema, saveAmmunition, {
+      defaultValues: {
+        caliber: "",
+        brand: "",
+        grain: "",
+        quantity: null,
+        datePurchased: new Date().toISOString(),
+        amountPaid: null,
+        notes: "",
+      },
+      entityName: "create ammunition",
+    }
+  );
+  const {
+    control,
+    formState: { errors },
+  } = form;
+
+  const watchedAmountPaid = useWatch({ control, name: "amountPaid" });
+  const watchedQuantity = useWatch({ control, name: "quantity" });
+  const pricePerRound =
+    watchedAmountPaid && watchedQuantity
+      ? watchedAmountPaid / watchedQuantity
+      : null;
 
   return (
     <View className="flex-1 bg-terminal-bg">
@@ -95,113 +69,169 @@ export const AddAmmunition = () => {
         <View className="flex-1">
           <View className="mb-4">
             <TerminalText>CALIBER</TerminalText>
-            <TerminalInput
-              value={formData.caliber}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, caliber: text }))
-              }
-              placeholder="e.g., 9mm"
-              testID="caliber-input"
+            <Controller
+              control={control}
+              name="caliber"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="e.g., 9mm"
+                  testID="caliber-input"
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.caliber && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.caliber.message}
+              </TerminalText>
+            )}
           </View>
 
-      <View className="mb-4">
-        <TerminalText>BRAND</TerminalText>
-        <TerminalInput
-          value={formData.brand}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, brand: text }))
-          }
-          placeholder="e.g., Federal"
-          testID="brand-input"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>BRAND</TerminalText>
+            <Controller
+              control={control}
+              name="brand"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="e.g., Federal"
+                  testID="brand-input"
+                  error={error?.message}
+                />
+              )}
+            />
+            {errors.brand && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.brand.message}
+              </TerminalText>
+            )}
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>GRAIN</TerminalText>
-        <TerminalInput
-          value={formData.grain}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, grain: text }))
-          }
-          placeholder="e.g., 115"
-          keyboardType="numeric"
-          testID="grain-input"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>GRAIN</TerminalText>
+            <Controller
+              control={control}
+              name="grain"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="e.g., 115"
+                  keyboardType="numeric"
+                  testID="grain-input"
+                  error={error?.message}
+                />
+              )}
+            />
+            {errors.grain && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.grain.message}
+              </TerminalText>
+            )}
+          </View>
 
-      <TerminalDatePicker
-        label="DATE PURCHASED"
-        value={new Date(formData.datePurchased)}
-        onChange={(date) => {
-          setDateError(null);
-          setFormData((prev) => ({
-            ...prev,
-            datePurchased: date.toISOString(),
-          }));
-        }}
-        error={dateError || undefined}
-        maxDate={new Date()}
-        allowClear={false}
-        placeholder="Select purchase date"
-      />
+          <Controller
+            control={control}
+            name="datePurchased"
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <TerminalDatePicker
+                label="DATE PURCHASED"
+                value={new Date(value)}
+                onChange={(date) => onChange(date.toISOString())}
+                error={error?.message}
+                maxDate={new Date()}
+                allowClear={false}
+                placeholder="Select purchase date"
+              />
+            )}
+          />
 
-      <View className="mb-4">
-        <TerminalText>QUANTITY</TerminalText>
-        <TerminalInput
-          value={formData.quantity}
-          onChangeText={(text) => {
-            const quantity = parseInt(text);
-            setFormData((prev) => ({
-              ...prev,
-              quantity: isNaN(quantity) ? null : quantity,
-            }));
-          }}
-          placeholder="e.g., 1000"
-          keyboardType="numeric"
-          testID="quantity-input"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>QUANTITY</TerminalText>
+            <Controller
+              control={control}
+              name="quantity"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={(text) => {
+                    const quantity = parseInt(text);
+                    onChange(isNaN(quantity) ? null : quantity);
+                  }}
+                  placeholder="e.g., 1000"
+                  keyboardType="numeric"
+                  testID="quantity-input"
+                  error={error?.message}
+                />
+              )}
+            />
+            {errors.quantity && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.quantity.message}
+              </TerminalText>
+            )}
+          </View>
 
-      <View className="mb-4">
-        <TerminalText>AMOUNT PAID</TerminalText>
-        <TerminalInput
-          value={formData.amountPaid}
-          onChangeText={(text) => {
-            const amountPaid = parseFloat(text);
-            setFormData((prev) => ({
-              ...prev,
-              amountPaid: isNaN(amountPaid) ? null : amountPaid,
-            }));
-          }}
-          placeholder="e.g., 299.99"
-          keyboardType="numeric"
-          testID="amount-paid-input"
-        />
-      </View>
+          <View className="mb-4">
+            <TerminalText>AMOUNT PAID</TerminalText>
+            <Controller
+              control={control}
+              name="amountPaid"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={(text) => {
+                    const amountPaid = parseFloat(text);
+                    onChange(isNaN(amountPaid) ? null : amountPaid);
+                  }}
+                  placeholder="e.g., 299.99"
+                  keyboardType="numeric"
+                  testID="amount-paid-input"
+                  error={error?.message}
+                />
+              )}
+            />
+            {errors.amountPaid && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.amountPaid.message}
+              </TerminalText>
+            )}
+          </View>
 
-      {pricePerRound !== null && (
-        <View className="mb-4">
-          <TerminalText>
-            PRICE PER ROUND: ${pricePerRound.toFixed(2)}
-          </TerminalText>
-        </View>
-      )}
+          {pricePerRound !== null && (
+            <View className="mb-4">
+              <TerminalText>
+                PRICE PER ROUND: ${pricePerRound.toFixed(2)}
+              </TerminalText>
+            </View>
+          )}
 
-      <View className="mb-4">
-        <TerminalText>NOTES</TerminalText>
-        <TerminalInput
-          value={formData.notes || ""}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, notes: text }))
-          }
-          placeholder="Optional notes"
-          multiline
-          testID="notes-input"
-        />
-      </View>
-
-
+          <View className="mb-4">
+            <TerminalText>NOTES</TerminalText>
+            <Controller
+              control={control}
+              name="notes"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value ?? ""}
+                  onChangeText={onChange}
+                  placeholder="Optional notes"
+                  multiline
+                  testID="notes-input"
+                  error={error?.message}
+                />
+              )}
+            />
+            {errors.notes && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.notes.message}
+              </TerminalText>
+            )}
+          </View>
 
           <View className="flex-1" />
 
@@ -212,9 +242,9 @@ export const AddAmmunition = () => {
                 onPress: () => navigation.goBack(),
               },
               {
-                caption: saving ? "SAVING..." : "SAVE AMMUNITION",
-                onPress: handleSubmit,
-                disabled: saving,
+                caption: isSaving ? "SAVING..." : "SAVE AMMUNITION",
+                onPress: onSubmit,
+                disabled: isSaving,
               },
             ]}
           />

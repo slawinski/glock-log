@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity, Image, FlatList } from "react-native";
+import { View, Pressable, Image, FlatList } from "react-native";
 import { TerminalText } from "../terminal-text/TerminalText";
 import {
   placeholderImages,
@@ -25,10 +25,15 @@ export const PlaceholderImagePicker = ({
         horizontal
         keyExtractor={(item) => item}
         renderItem={({ item }) => (
-          <TouchableOpacity
+          <Pressable
             testID={`placeholder-image-option-${item}`}
             onPress={() => onSelect(item)}
             className="mr-2"
+            accessibilityRole="button"
+            accessibilityLabel={`Select ${item.replace(/\.(png|jpg|jpeg|webp)$/i, "")} placeholder image`}
+            accessibilityState={{
+              selected: selectedImageKey === item,
+            }}
           >
             <Image
               testID={`placeholder-image-${item}`}
@@ -36,7 +41,7 @@ export const PlaceholderImagePicker = ({
               className={`w-24 h-24 border-2 ${selectedImageKey === item ? "border-terminal-green" : "border-terminal-border"}`}
               resizeMode="contain"
             />
-          </TouchableOpacity>
+          </Pressable>
         )}
       />
     </View>

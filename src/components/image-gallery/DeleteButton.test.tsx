@@ -26,6 +26,13 @@ describe('DeleteButton', () => {
     expect(screen.getByTestId('delete-icon')).toBeTruthy();
   });
 
+  it('exposes button role and label to screen readers', () => {
+    render(<DeleteButton onDelete={mockOnDelete} />);
+    const button = screen.getByTestId('delete-icon');
+    expect(button.props.accessibilityRole).toBe('button');
+    expect(button.props.accessibilityLabel).toBe('Delete image');
+  });
+
   it('calls onDelete when the button is pressed and confirmed', () => {
     render(<DeleteButton onDelete={mockOnDelete} />);
     const button = screen.getByTestId('delete-icon');

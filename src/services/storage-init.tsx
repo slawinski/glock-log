@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { StorageFactory } from "./storage-factory";
 import { getSecureStorageConfig } from "./storage-config";
 import { initializeImageStorage } from "./image-storage";
 import { handleError } from "./error-handler";
-import { ErrorDisplay } from "../components";
+import { ErrorDisplay, TerminalText } from "../components";
 
 type Props = {
   children: React.ReactNode;
@@ -42,8 +42,10 @@ export const StorageInit = ({ children }: Props) => {
 
   if (!isInitialized) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text testID="loading-storage-text">Initializing storage...</Text>
+      <View className="flex-1 bg-terminal-bg justify-center items-center">
+        <TerminalText testID="loading-storage-text">
+          Initializing storage...
+        </TerminalText>
       </View>
     );
   }

@@ -1,70 +1,64 @@
-import React from "react";
-import { View, TouchableOpacity, FlatList } from "react-native";
+import React, { useCallback, useMemo } from "react";
+import { View, FlatList, ListRenderItemInfo } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../app/App";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 import { TerminalText } from "../../components";
-
-type HomeScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Home"
->;
+import { AmmunitionListItem } from "./AmmunitionListItem";
+import { HomeScreenNavigationProp } from "../../types/navigation";
 
 type Props = {
   ammunition: AmmunitionStorage[];
   onRefresh: () => void;
   refreshing: boolean;
+  currency?: string;
 };
 
 export const AmmunitionTab = ({
   ammunition,
   onRefresh,
   refreshing,
+  currency,
 }: Props) => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
-  const renderAmmunitionItem = ({ item }: { item: AmmunitionStorage }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("AmmunitionDetails", { id: item.id })}
-      className="bg-terminal-bg border-2 border-terminal-border p-4 mb-2"
-    >
-      <View className="flex-row flex-wrap">
-        <View className="w-1/2 pr-2">
-          <TerminalText className="text-lg" numberOfLines={1}>
-            {item.brand} ({item.caliber})
-          </TerminalText>
-        </View>
-        <View className="w-1/2 items-end">
-          <TerminalText>{item.quantity} rounds</TerminalText>
-        </View>
-        <View className="w-1/2 pr-2 mt-1">
-          <TerminalText>
-            {item.pricePerRound && `$${item.pricePerRound.toFixed(2)}/rd`}
-          </TerminalText>
-        </View>
-        <View className="w-1/2 items-end justify-end">
-          <TerminalText className="text-lg">{">"}</TerminalText>
-        </View>
-      </View>
-    </TouchableOpacity>
+  const activeAmmunition = useMemo(
+    () => ammunition.filter((item) => item.quantity > 0),
+    [ammunition]
   );
 
-    const activeAmmunition = ammunition.filter((item) => item.quantity > 0);
-  
-    return (
-      <FlatList
-        data={activeAmmunition}
-        renderItem={renderAmmunitionItem}
-        keyExtractor={(item) => item.id}
-        onRefresh={onRefresh}
-        refreshing={refreshing}
-        ListEmptyComponent={
-          <View className="flex-1 justify-center items-center mt-8">
-            <TerminalText>NO AMMUNITION IN STOCK</TerminalText>
-          </View>
-        }
+  const handleAmmunitionPress = useCallback(
+    (ammunitionId: string) => {
+      navigation.navigate("AmmunitionDetails", { id: ammunitionId });
+    },
+    [navigation]
+  );
+
+  const renderAmmunitionItem = useCallback(
+    ({ item }: ListRenderItemInfo<AmmunitionStorage>) => (
+      <AmmunitionListItem
+        ammunition={item}
+        onPress={handleAmmunitionPress}
+        currency={currency}
       />
-    );
-  };
-  
+    ),
+    [handleAmmunitionPress, currency]
+  );
+
+  // Note: getItemLayout intentionally omitted. Item height varies because the
+  // price-per-round row renders an empty Text when pricePerRound is falsy,
+  // which collapses that row's height.
+  return (
+    <FlatList
+      data={activeAmmunition}
+      renderItem={renderAmmunitionItem}
+      keyExtractor={(item) => item.id}
+      onRefresh={onRefresh}
+      refreshing={refreshing}
+      ListEmptyComponent={
+        <View className="flex-1 justify-center items-center mt-8">
+          <TerminalText>NO AMMUNITION IN STOCK</TerminalText>
+        </View>
+      }
+    />
+  );
+};

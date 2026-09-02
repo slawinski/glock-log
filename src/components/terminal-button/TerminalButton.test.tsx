@@ -34,4 +34,21 @@ describe('TerminalButton', () => {
     // This test primarily ensures the prop is passed without crashing.
     expect(getByText(caption)).toBeTruthy();
   });
+
+  it('exposes button role and caption as label to screen readers', () => {
+    render(<TerminalButton caption='Click Me' onPress={() => {}} />);
+    const button = screen.getByRole('button');
+    expect(button.props.accessibilityLabel).toBe('Click Me');
+  });
+
+  it('allows overriding the accessibility label', () => {
+    render(
+      <TerminalButton
+        caption='Click Me'
+        onPress={() => {}}
+        accessibilityLabel='Save firearm'
+      />
+    );
+    expect(screen.getByLabelText('Save firearm')).toBeTruthy();
+  });
 });

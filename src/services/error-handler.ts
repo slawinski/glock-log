@@ -82,13 +82,27 @@ export function handleImageError(error: unknown, operation: string): AppError {
 
 /**
  * Logs a technical error for debugging purposes.
+ *
+ * In production builds only the error name, message, and context are logged.
+ * The raw error object is never logged because it may contain sensitive
+ * payloads (e.g., firearms inventory data).
+ *
  * @param error The error object or message.
  * @param context A string indicating where the error occurred.
  * @param userMessage A user-friendly message associated with the error.
  */
 const logError = (error: unknown, context: string, _userMessage: string): void => {
   const errorMessage = error instanceof Error ? error.message : String(error);
-  console.error(`[${context}] ${errorMessage}`, error);
+
+  if (__DEV__ && process.env.NODE_ENV !== "production") {
+    // Development: keep the raw error for full debugging context.
+    console.error(`[${context}] ${errorMessage}`, error);
+    return;
+  }
+
+  // Production: log only sanitized details, never the raw object/payload.
+  const errorName = error instanceof Error ? `${error.name}: ` : "";
+  console.error(`[${context}] ${errorName}${errorMessage}`);
 };
 
 /**

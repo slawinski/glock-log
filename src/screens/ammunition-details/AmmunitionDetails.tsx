@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
+import React, { useState, useCallback } from "react";
+import { View, ScrollView } from "react-native";
 import {
   useNavigation,
   useRoute,
@@ -10,9 +10,10 @@ import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 import { storage } from "../../services/storage-new";
-import { BottomButtonGroup, ErrorDisplay, TerminalText } from "../../components";
+import { BottomButtonGroup, ErrorDisplay, LoadingScreen, TerminalText } from "../../components";
 import { handleError } from "../../services/error-handler";
-import { formatCurrency } from "../../utils/currency";
+import { formatCurrency } from "../../utils";
+import { useDeleteEntity } from "../../hooks";
 
 type AmmunitionDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -56,50 +57,27 @@ export const AmmunitionDetails = () => {
     }
   }, [route.params]);
 
-  useEffect(() => {
-    fetchAmmunition();
-  }, [fetchAmmunition]);
-
   useFocusEffect(
     useCallback(() => {
       fetchAmmunition();
     }, [fetchAmmunition])
   );
 
-  const handleDelete = async () => {
-    if (!ammunition) return;
-
-    Alert.alert(
-      "Delete Ammunition",
-      "Are you sure you want to delete this ammunition? This action cannot be undone.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await storage.deleteAmmunition(ammunition.id);
-              navigation.goBack();
-            } catch (error) {
-              handleError(error, "AmmunitionDetails.handleDelete", { isUserFacing: true, userMessage: "Failed to delete ammunition. Please try again." });
-            }
-          },
-        },
-      ]
-    );
-  };
+  const { confirmDelete } = useDeleteEntity(
+    async () => {
+      if (!ammunition) return;
+      await storage.deleteAmmunition(ammunition.id);
+    },
+    {
+      label: "Ammunition",
+      errorContext: "AmmunitionDetails.handleDelete",
+      errorUserMessage: "Failed to delete ammunition. Please try again.",
+    },
+    () => navigation.goBack()
+  );
 
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <ActivityIndicator size="large" color="#00ff00" />
-        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (error || !ammunition) {
@@ -179,7 +157,7 @@ export const AmmunitionDetails = () => {
               },
               {
                 caption: "DELETE",
-                onPress: handleDelete,
+                onPress: confirmDelete,
               },
               {
                 caption: "BACK",

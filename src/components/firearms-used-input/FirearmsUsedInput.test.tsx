@@ -92,7 +92,9 @@ describe("FirearmsUsedInput", () => {
     expect(getByText("FIREARMS USED")).toBeTruthy();
     expect(getByText("Glock 19")).toBeTruthy();
     expect(getByText("AR-15")).toBeTruthy();
-    expect(queryByText("Rounds used")).toBeNull();
+    expect(
+      queryByText("Rounds used", { includeHiddenElements: true })
+    ).toBeNull();
     expect(getByText("+ Log ammunition for a borrowed firearm")).toBeTruthy();
   });
 
@@ -109,7 +111,9 @@ describe("FirearmsUsedInput", () => {
 
     expect(getByText("Glock 19")).toBeTruthy();
     expect(getByText("AMMUNITION USED")).toBeTruthy();
-    expect(getByText("Rounds used")).toBeTruthy();
+    // Placeholder lives in TerminalInput's CRT visual layer which is hidden
+    // from screen readers, so include hidden elements.
+    expect(getByText("Rounds used", { includeHiddenElements: true })).toBeTruthy();
     expect(getByText("Select Ammunition")).toBeTruthy();
   });
 

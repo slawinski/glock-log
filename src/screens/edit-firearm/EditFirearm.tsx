@@ -1,28 +1,26 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
+import { Controller } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
-import * as ImagePicker from "react-native-image-picker";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
-import { useFormChangeHandler } from "../../hooks";
+import { useEntityForm, useImagePicker } from "../../hooks";
 import { normalizeImagePath } from "../../services/image-source-manager";
 
 import {
   BottomButtonGroup,
   ErrorDisplay,
   ImageGallery,
+  LoadingScreen,
   TerminalButton,
   TerminalDatePicker,
   TerminalInput,
   TerminalText,
 } from "../../components";
-import {
-  firearmInputSchema,
-  FirearmInput,
-} from "../../validation/inputSchemas";
+import { firearmInputSchema, FirearmFormData, FirearmInput } from "../../validation/inputSchemas";
 
 type EditFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -30,19 +28,47 @@ type EditFirearmScreenNavigationProp = NativeStackNavigationProp<
 >;
 type EditFirearmScreenRouteProp = RouteProp<RootStackParamList, "EditFirearm">;
 
-type FirearmFormData = Omit<FirearmInput, "amountPaid"> & {
-  amountPaid: number | null;
-};
-
 export const EditFirearm = () => {
   const navigation = useNavigation<EditFirearmScreenNavigationProp>();
   const route = useRoute<EditFirearmScreenRouteProp>();
-  const [formData, setFormData] = useState<FirearmFormData | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [thumbnailIndex, setThumbnailIndex] = useState(0);
-  const handleFormChange = useFormChangeHandler(formData, setFormData);
+  const { pickImages, isPicking } = useImagePicker();
+
+  const saveFirearm = async (data: FirearmInput) => {
+    // Reorder photos to put thumbnail first
+    const reorderedPhotos = [...photos];
+    if (thumbnailIndex > 0 && thumbnailIndex < reorderedPhotos.length) {
+      const thumbnailPhoto = reorderedPhotos[thumbnailIndex];
+      reorderedPhotos.splice(thumbnailIndex, 1);
+      reorderedPhotos.unshift(thumbnailPhoto);
+    }
+
+    await storage.saveFirearm({ ...data, photos: reorderedPhotos });
+    navigation.goBack();
+  };
+
+  const { form, isSaving, onSubmit } = useEntityForm<
+    FirearmInput,
+    FirearmFormData
+  >(firearmInputSchema, saveFirearm, {
+      defaultValues: {
+        modelName: "",
+        caliber: "",
+        datePurchased: new Date().toISOString(),
+        amountPaid: null,
+        notes: "",
+      },
+      entityName: "update firearm",
+    }
+  );
+  const {
+    control,
+    reset,
+    formState: { errors },
+  } = form;
 
   const fetchFirearm = useCallback(async () => {
     try {
@@ -50,10 +76,15 @@ export const EditFirearm = () => {
       const firearms = await storage.getFirearms();
       const firearm = firearms.find((f) => f.id === route.params!.id);
       if (firearm) {
-        setFormData({
-          ...firearm,
-          photos: (firearm.photos || []).map(normalizeImagePath),
+        reset({
+          id: firearm.id,
+          modelName: firearm.modelName,
+          caliber: firearm.caliber,
+          datePurchased: firearm.datePurchased,
+          amountPaid: firearm.amountPaid,
+          notes: firearm.notes ?? "",
         });
+        setPhotos((firearm.photos || []).map(normalizeImagePath));
         setThumbnailIndex(0); // Reset thumbnail index when loading firearm
       } else {
         setError("Firearm not found");
@@ -64,7 +95,7 @@ export const EditFirearm = () => {
     } finally {
       setLoading(false);
     }
-  }, [route.params]);
+  }, [route.params, reset]);
 
   useEffect(() => {
     if (route.params?.id) {
@@ -72,64 +103,14 @@ export const EditFirearm = () => {
     }
   }, [route.params?.id, fetchFirearm]);
 
-  const handleImagePick = () => {
-    ImagePicker.launchImageLibrary(
-      {
-        mediaType: "photo",
-        quality: 0.8,
-      },
-      (response) => {
-        if (response.assets && response.assets[0].uri) {
-          setFormData((prev) => ({
-            ...prev!,
-            photos: [...(prev!.photos || []), response.assets![0].uri!],
-          }));
-        }
-      }
-    );
-  };
-
-  const handleSubmit = async () => {
-    if (!formData) return;
-
-    try {
-      setSaving(true);
-
-      // Reorder photos to put thumbnail first
-      let reorderedPhotos = [...(formData.photos || [])];
-      if (thumbnailIndex > 0 && thumbnailIndex < reorderedPhotos.length) {
-        const thumbnailPhoto = reorderedPhotos[thumbnailIndex];
-        reorderedPhotos.splice(thumbnailIndex, 1);
-        reorderedPhotos.unshift(thumbnailPhoto);
-      }
-
-      const dataToValidate = {
-        ...formData,
-        amountPaid: formData.amountPaid || 0,
-        photos: reorderedPhotos,
-      };
-
-      // Validate form data using Zod
-      const validationResult = firearmInputSchema.safeParse(dataToValidate);
-      if (!validationResult.success) {
-        const errorMessage = validationResult.error.errors[0].message;
-        Alert.alert("Validation error", errorMessage);
-        setSaving(false);
-        return;
-      }
-
-      await storage.saveFirearm(validationResult.data);
-      navigation.goBack();
-    } catch (error) {
-      handleError(error, "EditFirearm.handleSubmit", { isUserFacing: true, userMessage: "Failed to update firearm. Please try again." });
-    } finally {
-      setSaving(false);
+  const handleImagePick = async () => {
+    const assets = await pickImages();
+    if (assets.length > 0 && assets[0].uri) {
+      setPhotos((prev) => [...prev, assets[0].uri!]);
     }
   };
 
   const handleDeletePhoto = (index: number) => {
-    if (!formData) return;
-
     // Adjust thumbnail index if needed
     if (index === thumbnailIndex) {
       setThumbnailIndex(0); // Reset to first image
@@ -137,10 +118,7 @@ export const EditFirearm = () => {
       setThumbnailIndex(thumbnailIndex - 1); // Shift thumbnail index down
     }
 
-    setFormData({
-      ...formData,
-      photos: (formData.photos || []).filter((_, i: number) => i !== index),
-    });
+    setPhotos((prev) => prev.filter((_, i: number) => i !== index));
   };
 
   const handleSelectThumbnail = (index: number) => {
@@ -148,18 +126,13 @@ export const EditFirearm = () => {
   };
 
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <ActivityIndicator size="large" color="#00ff00" />
-        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
-  if (error || !formData) {
+  if (error) {
     return (
       <ErrorDisplay
-        errorMessage={error || "Firearm data could not be loaded."}
+        errorMessage={error}
         onRetry={fetchFirearm}
       />
     );
@@ -171,45 +144,85 @@ export const EditFirearm = () => {
         <View className="flex-1">
           <View className="mb-4">
             <TerminalText>MODEL NAME</TerminalText>
-            <TerminalInput
-              value={formData.modelName}
-              onChangeText={(text) => handleFormChange("modelName", text)}
-              placeholder="e.g., Glock 19"
+            <Controller
+              control={control}
+              name="modelName"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="e.g., Glock 19"
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.modelName && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.modelName.message}
+              </TerminalText>
+            )}
           </View>
 
           <View className="mb-4">
             <TerminalText>CALIBER</TerminalText>
-            <TerminalInput
-              value={formData.caliber}
-              onChangeText={(text) => handleFormChange("caliber", text)}
-              placeholder="e.g., 9mm"
+            <Controller
+              control={control}
+              name="caliber"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="e.g., 9mm"
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.caliber && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.caliber.message}
+              </TerminalText>
+            )}
           </View>
 
           <View className="mb-4">
             <TerminalText>AMOUNT PAID</TerminalText>
-            <TerminalInput
-              value={formData.amountPaid}
-              onChangeText={(text) => {
-                const amount = parseFloat(text);
-                handleFormChange("amountPaid", isNaN(amount) ? null : amount);
-              }}
-              placeholder="Enter amount paid"
-              keyboardType="numeric"
+            <Controller
+              control={control}
+              name="amountPaid"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={(text) => {
+                    const amount = parseFloat(text);
+                    onChange(isNaN(amount) ? null : amount);
+                  }}
+                  placeholder="Enter amount paid"
+                  keyboardType="numeric"
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.amountPaid && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.amountPaid.message}
+              </TerminalText>
+            )}
           </View>
 
           <View className="mb-4">
-            <TerminalText>DATE PURCHASED</TerminalText>
-            <TerminalDatePicker
-              value={new Date(formData.datePurchased)}
-              onChange={(date) =>
-                handleFormChange("datePurchased", date.toISOString())
-              }
-              label="PURCHASE DATE"
-              maxDate={new Date()}
-              placeholder="Select purchase date"
+            <Controller
+              control={control}
+              name="datePurchased"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalDatePicker
+                  value={new Date(value)}
+                  onChange={(date) => onChange(date.toISOString())}
+                  label="PURCHASE DATE"
+                  maxDate={new Date()}
+                  placeholder="Select purchase date"
+                  error={error?.message}
+                />
+              )}
             />
           </View>
 
@@ -222,10 +235,11 @@ export const EditFirearm = () => {
               onPress={handleImagePick}
               className="p-3 mb-2"
               caption="ADD PHOTO"
+              disabled={isPicking}
             />
-            {formData.photos && formData.photos.length > 0 && (
+            {photos.length > 0 && (
               <ImageGallery
-                images={formData.photos}
+                images={photos}
                 onDeleteImage={handleDeletePhoto}
                 size="medium"
                 showDeleteButton={true}
@@ -245,9 +259,9 @@ export const EditFirearm = () => {
                 onPress: () => navigation.goBack(),
               },
               {
-                caption: saving ? "SAVING..." : "SAVE CHANGES",
-                onPress: handleSubmit,
-                disabled: saving,
+                caption: isSaving ? "SAVING..." : "SAVE CHANGES",
+                onPress: onSubmit,
+                disabled: isSaving,
               },
             ]}
           />

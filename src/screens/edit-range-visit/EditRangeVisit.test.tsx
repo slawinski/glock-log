@@ -12,6 +12,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { EditRangeVisit as EditRangeVisitScreen } from "./EditRangeVisit";
 import { storage } from "../../services/storage-new";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { formatDate } from "../../utils";
 import * as ImagePicker from "react-native-image-picker";
 import {
   RangeVisitStorage,
@@ -151,9 +152,9 @@ describe("EditRangeVisitScreen", () => {
   it("handles date picker interaction", async () => {
     renderScreen();
     await waitFor(() => {
-      const formattedDate = new Date(mockRangeVisit.date).toLocaleDateString(
-        undefined,
-        { year: "numeric", month: "short", day: "numeric" }
+      const formattedDate = formatDate(
+        new Date(mockRangeVisit.date),
+        "MMM d, yyyy"
       );
       const dateButton = screen.getByText(formattedDate);
       fireEvent.press(dateButton);
@@ -201,18 +202,18 @@ describe("EditRangeVisitScreen", () => {
     });
   });
 
-  it("shows validation error when required fields are missing", async () => {
+  it("shows field error when required fields are missing", async () => {
     renderScreen();
     await waitFor(() => {
-      const locationInput = screen.getByDisplayValue("Test Range");
-      fireEvent.changeText(locationInput, "");
-      const saveButton = screen.getByText(/SAVE/);
-      fireEvent.press(saveButton);
-      expect(Alert.alert).toHaveBeenCalledWith(
-        "Validation error",
-        expect.any(String)
-      );
+      expect(screen.getByDisplayValue("Test Range")).toBeTruthy();
     });
+
+    fireEvent.changeText(screen.getByDisplayValue("Test Range"), "");
+    fireEvent.press(screen.getByText(/SAVE/));
+
+    expect(await screen.findByText(/Location is required/)).toBeTruthy();
+    expect(storage.saveRangeVisitWithAmmunition).not.toHaveBeenCalled();
+    expect(Alert.alert).not.toHaveBeenCalled();
   });
 
   it("saves range visit when form is valid", async () => {

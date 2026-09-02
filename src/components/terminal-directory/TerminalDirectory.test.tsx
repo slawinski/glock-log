@@ -36,4 +36,18 @@ describe('TerminalDirectory', () => {
     render(<TerminalDirectory title='EMPTY_DIRECTORY/' items={[]} />);
     expect(screen.queryByText('Item 1')).toBeNull();
   });
+
+  it('exposes button roles and labels to screen readers', () => {
+    const itemsWithDisabled = [
+      ...mockItems,
+      { label: 'Disabled Item', onPress: jest.fn(), disabled: true },
+    ];
+    render(<TerminalDirectory title='TEST_DIRECTORY/' items={itemsWithDisabled} />);
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(4);
+    expect(screen.getByLabelText('Item 1')).toBeTruthy();
+    expect(
+      screen.getByLabelText('Disabled Item').props.accessibilityState
+    ).toEqual({ disabled: true });
+  });
 });

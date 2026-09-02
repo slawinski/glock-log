@@ -1,6 +1,6 @@
 import React from "react";
 import { render, fireEvent, act } from "@testing-library/react-native";
-import TerminalDatePicker from "../terminal-date-picker/TerminalDatePicker";
+import { TerminalDatePicker } from "../terminal-date-picker/TerminalDatePicker";
 
 // Mock the DateTimePickerModal component
 jest.mock("react-native-modal-datetime-picker", () => {

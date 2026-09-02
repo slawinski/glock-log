@@ -1,12 +1,24 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
-import FirearmImage from "../firearm-image/FirearmImage";
+import { FirearmImage } from "../firearm-image/FirearmImage";
 import { resolveImageSource } from "../../services/image-source-manager";
 
 // Mock the image source manager
 jest.mock("../../services/image-source-manager", () => ({
   resolveImageSource: jest.fn(),
 }));
+
+// Mock expo-image's Image as a passthrough host component so tests assert on
+// what FirearmImage passes down (source/contentFit/cachePolicy) rather than
+// expo-image's internal source resolution.
+jest.mock("expo-image", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return {
+    Image: (props: React.ComponentProps<typeof View>) =>
+      React.createElement(View, props),
+  };
+});
 
 const mockResolveImageSource = resolveImageSource as jest.MockedFunction<typeof resolveImageSource>;
 
@@ -162,13 +174,14 @@ describe("FirearmImage", () => {
   });
 
   describe("Image Properties", () => {
-    it("sets correct resizeMode on image", () => {
+    it("sets correct contentFit and cachePolicy on image", () => {
       mockResolveImageSource.mockReturnValue({ uri: "test-image" });
       
       const { getByTestId } = render(<FirearmImage testID="firearm-image" />);
       const image = getByTestId("firearm-image-image");
       
-      expect(image.props.resizeMode).toBe("contain");
+      expect(image.props.contentFit).toBe("contain");
+      expect(image.props.cachePolicy).toBe("disk");
     });
 
     it("generates correct testID for image element", () => {

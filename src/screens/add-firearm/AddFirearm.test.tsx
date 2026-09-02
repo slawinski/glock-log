@@ -101,7 +101,7 @@ describe("AddFirearmScreen", () => {
     expect(ImagePicker.launchImageLibrary).toHaveBeenCalled();
   });
 
-  it("shows validation error when required fields are missing", async () => {
+  it("shows field errors when required fields are missing", async () => {
     (storage.saveFirearm as jest.Mock).mockResolvedValue(undefined);
     renderScreen();
 
@@ -109,11 +109,11 @@ describe("AddFirearmScreen", () => {
     fireEvent.press(saveButton);
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        "Validation error",
-        expect.any(String)
-      );
+      expect(screen.getByText(/Model name is required/)).toBeTruthy();
+      expect(screen.getByText(/Caliber is required/)).toBeTruthy();
     });
+    expect(storage.saveFirearm).not.toHaveBeenCalled();
+    expect(Alert.alert).not.toHaveBeenCalled();
   });
 
   it("saves firearm when form is valid", async () => {

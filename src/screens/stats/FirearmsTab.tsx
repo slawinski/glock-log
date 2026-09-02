@@ -1,5 +1,5 @@
-import React from "react";
-import { View, ScrollView, Dimensions } from "react-native";
+import React, { useMemo } from "react";
+import { View, ScrollView, useWindowDimensions } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { TerminalText, ChartToggles } from "../../components";
 import { FirearmStorage, RangeVisitStorage } from "../../validation/storageSchemas";
@@ -24,7 +24,9 @@ export const FirearmsTab = ({
   isAllSelected,
   currency,
 }: Props) => {
-  const calculateFirearmStats = () => {
+  const { width } = useWindowDimensions();
+
+  const firearmStats = useMemo(() => {
     const totalValue = firearms.reduce(
       (sum, firearm) => sum + firearm.amountPaid,
       0
@@ -36,7 +38,8 @@ export const FirearmsTab = ({
     const mostCommonCaliber =
       Object.entries(caliberCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ||
       "None";
-    const mostUsedFirearm = firearms.sort(
+    // Copy before sorting to avoid mutating the `firearms` prop array in place.
+    const mostUsedFirearm = [...firearms].sort(
       (a, b) => b.roundsFired - a.roundsFired
     )[0];
 
@@ -45,9 +48,9 @@ export const FirearmsTab = ({
       mostCommonCaliber,
       mostUsedFirearm,
     };
-  };
+  }, [firearms]);
 
-  const calculateFirearmRoundsTimeline = () => {
+  const timelineData = useMemo(() => {
     const sortedVisits = [...rangeVisits].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
@@ -111,10 +114,7 @@ export const FirearmsTab = ({
           return `${style.label} ${f.modelName}`;
         }),
     };
-  };
-
-  const firearmStats = calculateFirearmStats();
-  const timelineData = calculateFirearmRoundsTimeline();
+  }, [firearms, rangeVisits, visibleFirearms]);
 
   if (firearms.length === 0) {
     return (
@@ -145,7 +145,7 @@ export const FirearmsTab = ({
                       },
                     ],
             }}
-            width={Dimensions.get("window").width - 32}
+            width={width - 32}
             height={220}
             chartConfig={{
               backgroundColor: "#0a0a0a",

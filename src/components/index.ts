@@ -17,3 +17,5 @@ export { FirearmsUsedInput } from "./firearms-used-input/FirearmsUsedInput";
 export { CRTOverlayShader } from "./crt-overlay-shader/CRTOverlayShader";
 export { HeaderButton } from "./header-button/HeaderButton";
 export { ErrorDisplay } from "./error-display/ErrorDisplay";
+export { BiometricLock } from "./biometric-lock/BiometricLock";
+export { LoadingScreen } from "./loading-screen/LoadingScreen";

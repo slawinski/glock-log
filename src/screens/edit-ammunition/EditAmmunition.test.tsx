@@ -11,6 +11,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { EditAmmunition as EditAmmunitionScreen } from "./EditAmmunition";
 import { storage } from "../../services/storage-new";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { formatDate } from "../../utils";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 
 // Mock the storage module
@@ -105,13 +106,10 @@ describe("EditAmmunitionScreen", () => {
   it("handles date picker interaction", async () => {
     renderScreen();
     await waitFor(() => {
-      const formattedDate = new Date(
-        mockAmmunition.datePurchased
-      ).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
+      const formattedDate = formatDate(
+        new Date(mockAmmunition.datePurchased),
+        "MMM d, yyyy"
+      );
       const dateButton = screen.getByText(formattedDate);
       fireEvent.press(dateButton);
       const datePickerElement = screen.UNSAFE_getByType(DateTimePicker);
@@ -119,18 +117,18 @@ describe("EditAmmunitionScreen", () => {
     });
   });
 
-  it("shows validation error when required fields are missing", async () => {
+  it("shows field error when required fields are missing", async () => {
     renderScreen();
     await waitFor(() => {
-      const caliberInput = screen.getByDisplayValue("9mm");
-      fireEvent.changeText(caliberInput, "");
-      const saveButton = screen.getByText(/SAVE CHANGES/);
-      fireEvent.press(saveButton);
-      expect(Alert.alert).toHaveBeenCalledWith(
-        "Validation error",
-        expect.any(String)
-      );
+      expect(screen.getByDisplayValue("9mm")).toBeTruthy();
     });
+
+    fireEvent.changeText(screen.getByDisplayValue("9mm"), "");
+    fireEvent.press(screen.getByText(/SAVE CHANGES/));
+
+    expect(await screen.findByText(/Caliber is required/)).toBeTruthy();
+    expect(storage.saveAmmunition).not.toHaveBeenCalled();
+    expect(Alert.alert).not.toHaveBeenCalled();
   });
 
   it("saves ammunition when form is valid", async () => {

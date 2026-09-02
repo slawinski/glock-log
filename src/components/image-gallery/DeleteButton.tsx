@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, Alert } from "react-native";
+import { Pressable, Alert } from "react-native";
 import { TerminalText } from "../terminal-text/TerminalText";
 
 type Props = {
@@ -19,12 +19,15 @@ export const DeleteButton = ({ onDelete }: Props) => {
   };
 
   return (
-    <TouchableOpacity
+    <Pressable
       testID="delete-icon"
       onPress={handleDelete}
       className="absolute -top-1 -right-1 bg-terminal-green border border-terminal-green w-5 h-5 items-center justify-center"
+      accessibilityRole="button"
+      accessibilityLabel="Delete image"
+      accessibilityHint="Opens a confirmation dialog to delete this image"
     >
       <TerminalText className="text-terminal-bg text-xs">X</TerminalText>
-    </TouchableOpacity>
+    </Pressable>
   );
 };

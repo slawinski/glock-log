@@ -50,4 +50,18 @@ describe('TerminalCalendarHeader', () => {
     fireEvent.press(nextMonthButton);
     expect(mockOnNextMonth).toHaveBeenCalledTimes(1);
   });
+
+  it('exposes button roles and labels to screen readers', () => {
+    render(
+      <TerminalCalendarHeader
+        currentDate={new Date(2024, 0, 1)}
+        onPrevMonth={mockOnPrevMonth}
+        onNextMonth={mockOnNextMonth}
+      />
+    );
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(2);
+    expect(screen.getByLabelText('Previous month')).toBeTruthy();
+    expect(screen.getByLabelText('Next month')).toBeTruthy();
+  });
 });

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, TouchableOpacity } from "react-native";
+import { View, Pressable } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { TerminalText } from "../terminal-text/TerminalText";
+import { formatDate } from "../../utils";
 
 type TerminalDatePickerProps = {
   value: Date | null;
@@ -39,14 +40,6 @@ export function TerminalDatePicker({
     hideDatePicker();
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   const handleClear = () => {
     onChange(new Date());
   };
@@ -56,18 +49,18 @@ export function TerminalDatePicker({
       <View className="flex-row justify-between items-center mb-1">
         <TerminalText>{label}</TerminalText>
         {allowClear && value && (
-          <TouchableOpacity
+          <Pressable
             onPress={handleClear}
             accessibilityLabel="Clear date"
             accessibilityRole="button"
             className="border border-terminal-border px-2 py-1"
           >
             <TerminalText className="text-xs">CLEAR</TerminalText>
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
 
-      <TouchableOpacity
+      <Pressable
         onPress={showDatePicker}
         className={`border ${
           error ? "border-terminal-error" : "border-terminal-border"
@@ -77,10 +70,10 @@ export function TerminalDatePicker({
         accessibilityHint="Opens date picker"
       >
         <TerminalText className={!value ? "text-terminal-muted" : ""}>
-          {value ? formatDate(value) : placeholder}
+          {value ? formatDate(value, "MMM d, yyyy") : placeholder}
         </TerminalText>
         <TerminalText className="text-terminal-muted">▼</TerminalText>
-      </TouchableOpacity>
+      </Pressable>
 
       {error && (
         <TerminalText className="text-terminal-error text-sm mt-1">
@@ -99,6 +92,4 @@ export function TerminalDatePicker({
       />
     </View>
   );
-}
-
-export default TerminalDatePicker;
+};

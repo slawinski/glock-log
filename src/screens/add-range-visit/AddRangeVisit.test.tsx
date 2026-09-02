@@ -12,6 +12,7 @@ import { AddRangeVisit as AddRangeVisitScreen } from "./AddRangeVisit";
 import { storage } from "../../services/storage-new";
 import * as ImagePicker from "react-native-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { formatDate } from "../../utils";
 import {
   FirearmStorage,
   AmmunitionStorage,
@@ -234,18 +235,14 @@ describe("AddRangeVisitScreen", () => {
     });
   });
 
-  it("shows validation error when required fields are missing", async () => {
+  it("shows field error when required fields are missing", async () => {
     await renderScreen();
 
     const saveButton = screen.getByText(/SAVE/);
     fireEvent.press(saveButton);
 
-    await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        "Validation error",
-        expect.any(String)
-      );
-    });
+    expect(await screen.findByText(/Location is required/)).toBeTruthy();
+    expect(storage.saveRangeVisitWithAmmunition).not.toHaveBeenCalled();
   });
 
   it("handles firearm selection, ammunition selection, and form save", async () => {
@@ -340,11 +337,7 @@ describe("AddRangeVisitScreen", () => {
   it("handles date picker interaction", async () => {
     await renderScreen();
 
-    const formattedToday = new Date().toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    const formattedToday = formatDate(new Date(), "MMM d, yyyy");
     const dateButton = screen.getByText(formattedToday);
     fireEvent.press(dateButton);
 

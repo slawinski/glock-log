@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor, act, queryByTestId } from "@testing-library/react-native";
+import { render, waitFor, act } from "@testing-library/react-native";
 import { View } from "react-native";
 import { StorageInit } from "./storage-init";
 import { StorageFactory } from "./storage-factory";
@@ -7,21 +7,26 @@ import { getSecureStorageConfig } from "./storage-config";
 import { initializeImageStorage } from "./image-storage";
 import { handleError } from "./error-handler";
 
-jest.mock("../components", () => ({
-  ErrorDisplay: ({ errorMessage, onRetry }: any) => {
-    const { View, Text, TouchableOpacity } = require("react-native");
-    return (
-      <View>
-        <Text>{errorMessage}</Text>
-        {onRetry && (
-          <TouchableOpacity onPress={onRetry}>
-            <Text>Retry</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    );
-  },
-}));
+jest.mock("../components", () => {
+  const { View, Text, TouchableOpacity } = require("react-native");
+  return {
+    ErrorDisplay: ({ errorMessage, onRetry }: any) => {
+      return (
+        <View>
+          <Text>{errorMessage}</Text>
+          {onRetry && (
+            <TouchableOpacity onPress={onRetry}>
+              <Text>Retry</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      );
+    },
+    TerminalText: ({ children, testID }: any) => (
+      <Text testID={testID}>{children}</Text>
+    ),
+  };
+});
 
 // Mock error-handler
 jest.mock("./error-handler", () => ({

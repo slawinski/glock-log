@@ -272,6 +272,8 @@ PODS:
     - ExpoModulesCore
   - ExpoBlur (15.0.8):
     - ExpoModulesCore
+  - ExpoCrypto (14.1.5):
+    - ExpoModulesCore
   - ExpoDocumentPicker (13.1.6):
     - ExpoModulesCore
   - ExpoFileSystem (18.1.11):
@@ -285,6 +287,8 @@ PODS:
     - SDWebImageAVIFCoder (~> 0.11.0)
     - SDWebImageSVGCoder (~> 1.7.0)
     - SDWebImageWebPCoder (~> 0.14.6)
+  - ExpoLocalAuthentication (16.0.5):
+    - ExpoModulesCore
   - ExpoModulesCore (2.4.0):
     - DoubleConversion
     - glog
@@ -2442,10 +2446,12 @@ DEPENDENCIES:
   - expo-dev-menu-interface (from `../node_modules/expo-dev-menu-interface/ios`)
   - ExpoAsset (from `../node_modules/expo-asset/ios`)
   - ExpoBlur (from `../node_modules/expo-blur/ios`)
+  - ExpoCrypto (from `../node_modules/expo-crypto/ios`)
   - ExpoDocumentPicker (from `../node_modules/expo-document-picker/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
   - ExpoImage (from `../node_modules/expo-image/ios`)
+  - ExpoLocalAuthentication (from `../node_modules/expo-local-authentication/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - ExpoSecureStore (from `../node_modules/expo-secure-store/ios`)
   - ExpoSharing (from `../node_modules/expo-sharing/ios`)
@@ -2568,6 +2574,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-asset/ios"
   ExpoBlur:
     :path: "../node_modules/expo-blur/ios"
+  ExpoCrypto:
+    :path: "../node_modules/expo-crypto/ios"
   ExpoDocumentPicker:
     :path: "../node_modules/expo-document-picker/ios"
   ExpoFileSystem:
@@ -2576,6 +2584,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-font/ios"
   ExpoImage:
     :path: "../node_modules/expo-image/ios"
+  ExpoLocalAuthentication:
+    :path: "../node_modules/expo-local-authentication/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
   ExpoSecureStore:
@@ -2755,10 +2765,12 @@ SPEC CHECKSUMS:
   expo-dev-menu-interface: 609c35ae8b97479cdd4c9e23c8cf6adc44beea0e
   ExpoAsset: ef06e880126c375f580d4923fdd1cdf4ee6ee7d6
   ExpoBlur: b90747a3f22a8b6ceffd9cb0dc41a4184efdc656
+  ExpoCrypto: a9f1d75baeea6ef8b03c1660621585196c382e85
   ExpoDocumentPicker: b263a279685b6640b8c8bc70d71c83067aeaae55
   ExpoFileSystem: 7f92f7be2f5c5ed40a7c9efc8fa30821181d9d63
   ExpoFont: cf508bc2e6b70871e05386d71cab927c8524cc8e
   ExpoImage: 785f7673cfecd97045cf333fd6486b57ccab4b71
+  ExpoLocalAuthentication: c35f18692dcb35775a1be0f37b2131096951a6bd
   ExpoModulesCore: d431ffe83c8673d02cb38425594a5f5480fd3061
   ExpoSecureStore: 3f1b632d6d40bcc62b4983ef9199cd079592a50a
   ExpoSharing: b0377be82430d07398c6a4cd60b5a15696accbd3

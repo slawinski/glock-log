@@ -1,5 +1,5 @@
 import React, { FC, PropsWithChildren } from "react";
-import { View, TouchableOpacity, Alert } from "react-native";
+import { View, Pressable, Alert } from "react-native";
 import { TerminalText, TerminalInput } from "../";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 
@@ -40,22 +40,34 @@ export const FirearmsUsedInput: FC<
   onRemoveBorrowedAmmunition,
   onBorrowedAmmunitionRoundsChange,
 }) => {
+  const getAmmunitionSelectionLabel = (firearmId: string) => {
+    const ammoId = ammunitionUsed[firearmId]?.ammunitionId;
+    return ammoId
+      ? ammunition.find((a) => a.id === ammoId)?.brand ?? "Select Ammunition"
+      : "Select Ammunition";
+  };
+
   return (
     <View>
       <View className="mb-4">
         <TerminalText>FIREARMS USED</TerminalText>
         {firearms.map((firearm) => (
           <View key={firearm.id} className="mb-2">
-            <TouchableOpacity
+            <Pressable
               onPress={() => onToggleFirearm(firearm.id)}
               className={`border-2 p-2 ${
                 selectedFirearms.includes(firearm.id)
                   ? "border-terminal-accent"
                   : "border-terminal-border"
               }`}
+              accessibilityRole="button"
+              accessibilityLabel={firearm.modelName}
+              accessibilityState={{
+                selected: selectedFirearms.includes(firearm.id),
+              }}
             >
               <TerminalText>{firearm.modelName}</TerminalText>
-            </TouchableOpacity>
+            </Pressable>
             {selectedFirearms.includes(firearm.id) && (
               <View className="mt-2">
                 <TerminalText>AMMUNITION USED</TerminalText>
@@ -73,7 +85,7 @@ export const FirearmsUsedInput: FC<
                     />
                   </View>
                   <View className="flex-1">
-                    <TouchableOpacity
+                    <Pressable
                       onPress={() => {
                         const compatibleAmmo = ammunition.filter(
                           (a) => a.caliber === firearm.caliber && a.quantity > 0
@@ -99,17 +111,14 @@ export const FirearmsUsedInput: FC<
                           ]
                         );
                       }}
+                      accessibilityRole="button"
+                      accessibilityLabel={getAmmunitionSelectionLabel(firearm.id)}
+                      accessibilityHint="Opens a list of compatible ammunition in stock"
                     >
                       <TerminalText className="text-terminal-accent">
-                        {ammunitionUsed[firearm.id]?.ammunitionId
-                          ? ammunition.find(
-                              (a) =>
-                                a.id ===
-                                ammunitionUsed[firearm.id]?.ammunitionId
-                            )?.brand
-                          : "Select Ammunition"}
+                        {getAmmunitionSelectionLabel(firearm.id)}
                       </TerminalText>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                 </View>
               </View>
@@ -119,12 +128,14 @@ export const FirearmsUsedInput: FC<
       </View>
 
       <View className="my-4">
-        <TouchableOpacity
+        <Pressable
           onPress={onAddBorrowedAmmunition}
           className="border-2 border-terminal-accent p-2"
+          accessibilityRole="button"
+          accessibilityLabel="Log ammunition for a borrowed firearm"
         >
           <TerminalText>+ Log ammunition for a borrowed firearm</TerminalText>
-        </TouchableOpacity>
+        </Pressable>
 
         {Object.entries(ammunitionUsed)
           .filter(([key]) => key.startsWith("borrowed-"))
@@ -143,11 +154,19 @@ export const FirearmsUsedInput: FC<
                       ? `${ammoDetails.brand} ${ammoDetails.caliber}`
                       : "Borrowed Firearm"}
                   </TerminalText>
-                  <TouchableOpacity onPress={() => onRemoveBorrowedAmmunition(key)}>
+                  <Pressable
+                    onPress={() => onRemoveBorrowedAmmunition(key)}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      ammoDetails
+                        ? `Remove ${ammoDetails.brand} ${ammoDetails.caliber}`
+                        : "Remove borrowed firearm"
+                    }
+                  >
                     <TerminalText className="text-terminal-error">
                       Remove
                     </TerminalText>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
                 <TerminalInput
                   value={usage.rounds?.toString() || ""}

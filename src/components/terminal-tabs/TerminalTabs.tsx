@@ -1,5 +1,5 @@
 import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import { View, Pressable } from "react-native";
 import { TerminalText } from "../terminal-text/TerminalText";
 
 export type TabId = string;
@@ -16,7 +16,13 @@ type TabProps = {
 };
 
 const Tab = ({ title, active, onPress }: TabProps) => (
-  <TouchableOpacity onPress={onPress} className="flex-1 items-center py-3">
+  <Pressable
+    onPress={onPress}
+    className="flex-1 items-center py-3"
+    accessibilityRole="tab"
+    accessibilityLabel={title}
+    accessibilityState={{ selected: active }}
+  >
     {active ? (
       <TerminalText
         testID="active-tab-text"
@@ -29,7 +35,7 @@ const Tab = ({ title, active, onPress }: TabProps) => (
         {title}
       </TerminalText>
     )}
-  </TouchableOpacity>
+  </Pressable>
 );
 
 type Props = {

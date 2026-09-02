@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, Dimensions } from "react-native";
+import { View, Pressable, Dimensions } from "react-native";
 import { Image } from "expo-image";
 import { TerminalText } from "../terminal-text/TerminalText";
 import { resolveImageSource } from "../../services/image-source-manager";
@@ -93,7 +93,7 @@ export const ImageGallery = ({
             const isThumbnail =
               allowThumbnailSelection && imageIndex === thumbnailIndex;
             const ImageContainer = allowThumbnailSelection
-              ? TouchableOpacity
+              ? Pressable
               : View;
 
             return (
@@ -101,13 +101,32 @@ export const ImageGallery = ({
                 key={imageIndex}
                 testID="gallery-image"
                 className="relative"
-                style={{ width: imageSize, height: imageSize }}
+                style={
+                  allowThumbnailSelection
+                    ? ({ pressed }: { pressed: boolean }) => [
+                        { width: imageSize, height: imageSize },
+                        pressed ? { opacity: 0.7 } : null,
+                      ]
+                    : { width: imageSize, height: imageSize }
+                }
                 onPress={
                   allowThumbnailSelection
                     ? () => onSelectThumbnail?.(imageIndex)
                     : undefined
                 }
-                activeOpacity={allowThumbnailSelection ? 0.7 : 1}
+                accessibilityRole={
+                  allowThumbnailSelection ? "button" : undefined
+                }
+                accessibilityLabel={
+                  allowThumbnailSelection
+                    ? `Select image ${imageIndex + 1} as thumbnail`
+                    : undefined
+                }
+                accessibilityState={
+                  allowThumbnailSelection
+                    ? { selected: isThumbnail }
+                    : undefined
+                }
               >
                 <Image
                   source={resolveImageSource(imageIdentifier)}

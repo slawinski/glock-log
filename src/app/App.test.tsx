@@ -1,6 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
-import App from "./App";
+import { App } from "./App";
 import { useFonts } from "@expo-google-fonts/vt323";
 
 // Mock expo-google-fonts
@@ -34,6 +34,12 @@ jest.mock("react-native-safe-area-context", () => ({
 // Mock components
 jest.mock("../components", () => ({
   CRTOverlayShader: () => null,
+  BiometricLock: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+// Mock storage initialization gate
+jest.mock("../services/storage-init", () => ({
+  StorageInit: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 // Mock all screen components

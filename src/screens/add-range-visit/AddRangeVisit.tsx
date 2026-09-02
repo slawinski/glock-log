@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, ScrollView, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Controller } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
-import * as ImagePicker from "react-native-image-picker";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
+import { useEntityForm, useImagePicker } from "../../hooks";
 import {
   BottomButtonGroup,
   ErrorDisplay,
   FirearmsUsedInput,
   ImageGallery,
+  TerminalButton,
   TerminalDatePicker,
   TerminalInput,
   TerminalText,
 } from "../../components";
 import {
   rangeVisitInputSchema,
+  RangeVisitFormData,
   RangeVisitInput,
 } from "../../validation/inputSchemas";
 import {
@@ -39,16 +42,61 @@ export const AddRangeVisit = () => {
   const [ammunitionUsed, setAmmunitionUsed] = useState<{
     [key: string]: { ammunitionId?: string; rounds: number | null };
   }>({});
-  const [formData, setFormData] = useState<RangeVisitInput>({
-    date: new Date().toISOString(),
-    location: "",
-    notes: "",
-    photos: [],
-    firearmsUsed: [],
-    ammunitionUsed: {},
-  });
-  const [saving, setSaving] = useState(false);
+  const [photos, setPhotos] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const { pickImages, isPicking } = useImagePicker({ selectionLimit: 10 });
+
+  const saveRangeVisit = async (data: RangeVisitInput) => {
+    const finalAmmunitionUsed: NonNullable<RangeVisitInput["ammunitionUsed"]> =
+      {};
+    for (const [key, value] of Object.entries(ammunitionUsed)) {
+      if (value.rounds && value.rounds > 0 && value.ammunitionId) {
+        finalAmmunitionUsed[key] = {
+          ammunitionId: value.ammunitionId,
+          rounds: value.rounds,
+        };
+      }
+    }
+
+    for (const [firearmId, usage] of Object.entries(finalAmmunitionUsed)) {
+      const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
+      if (!ammo) {
+        throw new Error(`Ammunition not found for firearm ${firearmId}`);
+      }
+      if (ammo.quantity < usage.rounds) {
+        throw new Error(
+          `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
+        );
+      }
+    }
+
+    await storage.saveRangeVisitWithAmmunition({
+      ...data,
+      firearmsUsed: selectedFirearms,
+      ammunitionUsed: finalAmmunitionUsed,
+      photos,
+    });
+    navigation.goBack();
+  };
+
+  const { form, isSaving, onSubmit } = useEntityForm<
+    RangeVisitInput,
+    RangeVisitFormData
+  >(rangeVisitInputSchema, saveRangeVisit, {
+      defaultValues: {
+        date: new Date().toISOString(),
+        location: "",
+        notes: "",
+        firearmsUsed: [],
+        ammunitionUsed: {},
+      },
+      entityName: "create range visit",
+    }
+  );
+  const {
+    control,
+    formState: { errors },
+  } = form;
 
   const loadData = async () => {
     try {
@@ -111,84 +159,18 @@ export const AddRangeVisit = () => {
     );
   };
 
-  const handleImagePick = () => {
-    ImagePicker.launchImageLibrary(
-      {
-        mediaType: "photo",
-        quality: 0.8,
-        selectionLimit: 10,
-      },
-      (response) => {
-        if (response.assets && response.assets.length > 0) {
-          const newImageUris = response.assets
-            .map((asset) => asset.uri!)
-            .filter(Boolean);
-          setFormData((prev) => ({
-            ...prev,
-            photos: [...(prev.photos || []), ...newImageUris],
-          }));
-        }
-      }
-    );
+  const handleImagePick = async () => {
+    const assets = await pickImages();
+    if (assets.length > 0) {
+      const newImageUris = assets
+        .map((asset) => asset.uri!)
+        .filter(Boolean);
+      setPhotos((prev) => [...prev, ...newImageUris]);
+    }
   };
 
   const handleDeleteImage = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      photos: (prev.photos || []).filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleSubmit = async () => {
-    try {
-      setSaving(true);
-
-      const finalAmmunitionUsed: RangeVisitInput["ammunitionUsed"] = {};
-      if (ammunitionUsed) {
-        for (const [key, value] of Object.entries(ammunitionUsed)) {
-          if (value.rounds && value.rounds > 0 && value.ammunitionId) {
-            finalAmmunitionUsed[key] = {
-              ammunitionId: value.ammunitionId,
-              rounds: value.rounds,
-            };
-          }
-        }
-      }
-
-      const visitData: RangeVisitInput = {
-        ...formData,
-        firearmsUsed: selectedFirearms,
-        ammunitionUsed: finalAmmunitionUsed,
-      };
-
-      const validationResult = rangeVisitInputSchema.safeParse(visitData);
-      if (!validationResult.success) {
-        const errorMessage = validationResult.error.errors[0].message;
-        Alert.alert("Validation error", errorMessage);
-        return;
-      }
-
-      if (finalAmmunitionUsed) {
-        for (const [firearmId, usage] of Object.entries(finalAmmunitionUsed)) {
-          const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
-          if (!ammo) {
-            throw new Error(`Ammunition not found for firearm ${firearmId}`);
-          }
-          if (ammo.quantity < usage.rounds) {
-            throw new Error(
-              `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
-            );
-          }
-        }
-      }
-
-      await storage.saveRangeVisitWithAmmunition(visitData);
-      navigation.goBack();
-    } catch (error) {
-      handleError(error, "AddRangeVisit.handleSubmit", { isUserFacing: true, userMessage: "Failed to create range visit. Please try again." });
-    } finally {
-      setSaving(false);
-    }
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
   if (error) {
@@ -201,28 +183,40 @@ export const AddRangeVisit = () => {
         <View className="flex-1">
           <View className="mb-4 p-4">
             <TerminalText>LOCATION</TerminalText>
-            <TerminalInput
-              value={formData.location}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, location: text }))
-              }
-              placeholder="Enter range location"
-              testID="location-input"
+            <Controller
+              control={control}
+              name="location"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="Enter range location"
+                  testID="location-input"
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.location && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.location.message}
+              </TerminalText>
+            )}
           </View>
 
           <View className="mb-4 p-4">
-            <TerminalDatePicker
-              value={new Date(formData.date)}
-              onChange={(date) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  date: date.toISOString(),
-                }))
-              }
-              label="VISIT DATE"
-              maxDate={new Date()}
-              placeholder="Select visit date"
+            <Controller
+              control={control}
+              name="date"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalDatePicker
+                  value={new Date(value)}
+                  onChange={(date) => onChange(date.toISOString())}
+                  label="VISIT DATE"
+                  maxDate={new Date()}
+                  placeholder="Select visit date"
+                  error={error?.message}
+                />
+              )}
             />
           </View>
 
@@ -283,18 +277,18 @@ export const AddRangeVisit = () => {
 
           <View className="mb-4 p-4">
             <TerminalText>PHOTOS</TerminalText>
-            <TouchableOpacity
+            <TerminalButton
               onPress={handleImagePick}
-              className="border-2 border-terminal-border p-3 mb-2"
-            >
-              <TerminalText>ADD PHOTOS</TerminalText>
-            </TouchableOpacity>
+              className="mb-2"
+              caption="ADD PHOTOS"
+              disabled={isPicking}
+            />
 
-            {formData.photos && formData.photos.length > 0 && (
+            {photos.length > 0 && (
               <View className="mt-4">
                 <TerminalText className="mb-2">SELECTED PHOTOS</TerminalText>
                 <ImageGallery
-                  images={formData.photos}
+                  images={photos}
                   onDeleteImage={handleDeleteImage}
                   size="medium"
                   showDeleteButton={true}
@@ -305,14 +299,24 @@ export const AddRangeVisit = () => {
 
           <View className="mb-4 p-4">
             <TerminalText>NOTES</TerminalText>
-            <TerminalInput
-              value={formData.notes || ""}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, notes: text }))
-              }
-              placeholder="Add any notes about this range visit"
-              multiline
+            <Controller
+              control={control}
+              name="notes"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value ?? ""}
+                  onChangeText={onChange}
+                  placeholder="Add any notes about this range visit"
+                  multiline
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.notes && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.notes.message}
+              </TerminalText>
+            )}
           </View>
 
           <View className="flex-1" />
@@ -324,9 +328,9 @@ export const AddRangeVisit = () => {
                 onPress: () => navigation.goBack(),
               },
               {
-                caption: saving ? "SAVING..." : "SAVE",
-                onPress: handleSubmit,
-                disabled: saving,
+                caption: isSaving ? "SAVING..." : "SAVE",
+                onPress: onSubmit,
+                disabled: isSaving,
               },
             ]}
           />

@@ -5,26 +5,32 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0a0a0a"
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pietrucha.triggernote",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": true,
+        "NSPhotoLibraryUsageDescription": "TriggerNote needs access to your photo library to attach images to firearms, ammunition, and range visit logs.",
+        "NSFaceIDUsageDescription": "TriggerNote uses Face ID to protect your firearms inventory and range data.",
+        "UIUserInterfaceStyle": "Dark",
+        "UIStatusBarStyle": "UIStatusBarStyleLightContent",
+        "UIViewControllerBasedStatusBarAppearance": true
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0a0a0a"
       },
-      "package": "com.pietrucha.triggernote"
+      "package": "com.pietrucha.triggernote",
+      "allowBackup": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -37,7 +43,13 @@
     "plugins": [
       "expo-font",
       "expo-asset",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "TriggerNote uses Face ID to protect your firearms inventory and range data."
+        }
+      ]
     ]
   }
 }

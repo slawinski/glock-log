@@ -1,18 +1,23 @@
+import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import { StorageConfig } from "./storage-interface";
 
 const ENCRYPTION_KEY_STORAGE_KEY = "triggernote_encryption_key";
 
 /**
- * Generates a random 32-character hex key for encryption.
+ * Converts a byte array into a lowercase hex string.
+ */
+const bytesToHex = (bytes: Uint8Array): string => {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+};
+
+/**
+ * Generates a random 32-character hex key (128-bit) for encryption using a
+ * cryptographically secure random number generator (expo-crypto).
  */
 const generateSecureKey = (): string => {
-  const chars = "0123456789abcdef";
-  let key = "";
-  for (let i = 0; i < 32; i++) {
-    key += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return key;
+  const bytes = Crypto.getRandomBytes(16);
+  return bytesToHex(bytes);
 };
 
 /**

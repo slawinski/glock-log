@@ -30,4 +30,11 @@ describe('ToggleButton', () => {
     // With Tailwind, direct style assertion is complex. We primarily check for existence.
     expect(button).toBeTruthy();
   });
+
+  it('exposes button role, label and selected state to screen readers', () => {
+    render(<ToggleButton title='Toggle Option' onPress={() => {}} active={true} />);
+    const button = screen.getByRole('button');
+    expect(button.props.accessibilityLabel).toBe('Toggle Option');
+    expect(button.props.accessibilityState).toEqual({ selected: true });
+  });
 });

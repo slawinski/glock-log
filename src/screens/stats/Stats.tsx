@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View } from "react-native";
 import { handleError } from "../../services/error-handler";
-import { ErrorDisplay, TerminalTabs, TerminalText } from "../../components";
+import { ErrorDisplay, LoadingScreen, TerminalTabs } from "../../components";
 import {
   FirearmStorage,
   RangeVisitStorage,
@@ -88,12 +88,7 @@ export const Stats = () => {
 
 
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <ActivityIndicator size="large" color="#00ff00" />
-        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (error) {
@@ -120,7 +115,11 @@ export const Stats = () => {
         />
       )}
       {activeTab === "ammunition" && (
-        <AmmunitionTab ammunition={ammunition} rangeVisits={rangeVisits} />
+        <AmmunitionTab
+          ammunition={ammunition}
+          rangeVisits={rangeVisits}
+          currency={currency}
+        />
       )}
     </View>
   );

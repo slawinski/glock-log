@@ -1,4 +1,5 @@
 import React from "react";
+import { TextInput } from "react-native";
 import { render, fireEvent } from "@testing-library/react-native";
 import { TerminalInput } from "../terminal-input/TerminalInput";
 
@@ -36,7 +37,9 @@ describe("TerminalInput", () => {
           placeholder={placeholder}
         />
       );
-      expect(getByText(placeholder)).toBeTruthy();
+      // The CRT visual layer is hidden from screen readers, so include hidden
+      // elements to assert the visual rendering.
+      expect(getByText(placeholder, { includeHiddenElements: true })).toBeTruthy();
     });
 
     it("hides placeholder when focused even with no value", () => {
@@ -53,7 +56,9 @@ describe("TerminalInput", () => {
       const input = getByTestId("terminal-input");
       fireEvent(input, "focus");
 
-      expect(queryByText(placeholder)).toBeNull();
+      expect(
+        queryByText(placeholder, { includeHiddenElements: true })
+      ).toBeNull();
     });
 
     it("renders with numeric keyboard type", () => {
@@ -91,7 +96,9 @@ describe("TerminalInput", () => {
           className={customClass}
         />
       );
-      const textElement = getByText("test value");
+      // The CRT visual layer is hidden from screen readers, so include hidden
+      // elements to assert the visual rendering.
+      const textElement = getByText("test value", { includeHiddenElements: true });
       expect(textElement.props.className).toContain(customClass);
     });
   });
@@ -178,8 +185,10 @@ describe("TerminalInput", () => {
       const input = getByTestId("terminal-input");
       fireEvent(input, "focus");
 
-      // Cursor should be visible when focused at end of empty input
-      expect(getByText("▋")).toBeTruthy();
+      // Cursor should be visible when focused at end of empty input.
+      // The CRT visual layer is hidden from screen readers, so include hidden
+      // elements to assert the visual rendering.
+      expect(getByText("▋", { includeHiddenElements: true })).toBeTruthy();
     });
 
     it("hides cursor when blurred", () => {
@@ -195,7 +204,7 @@ describe("TerminalInput", () => {
       fireEvent(input, "focus");
       fireEvent(input, "blur");
 
-      expect(queryByText("▋")).toBeNull();
+      expect(queryByText("▋", { includeHiddenElements: true })).toBeNull();
     });
   });
 
@@ -319,8 +328,10 @@ describe("TerminalInput", () => {
         nativeEvent: { selection: { start: 2, end: 2 } },
       });
 
-      // Should render "he" before cursor
-      expect(getByText("he")).toBeTruthy();
+      // Should render "he" before cursor.
+      // The CRT visual layer is hidden from screen readers, so include hidden
+      // elements to assert the visual rendering.
+      expect(getByText("he", { includeHiddenElements: true })).toBeTruthy();
     });
 
     it("renders character at cursor position with highlighting", () => {
@@ -358,8 +369,10 @@ describe("TerminalInput", () => {
         nativeEvent: { selection: { start: 2, end: 2 } },
       });
 
-      // Should render "lo" after cursor (position 3 to end)
-      expect(getByText("lo")).toBeTruthy();
+      // Should render "lo" after cursor (position 3 to end).
+      // The CRT visual layer is hidden from screen readers, so include hidden
+      // elements to assert the visual rendering.
+      expect(getByText("lo", { includeHiddenElements: true })).toBeTruthy();
     });
   });
 
@@ -432,6 +445,79 @@ describe("TerminalInput", () => {
 
       const input = getByTestId("terminal-input");
       expect(input.props.value).toBe(specialText);
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("is reachable to screen readers by its accessibility label", () => {
+      const { getByLabelText } = render(
+        <TerminalInput
+          value=""
+          onChangeText={mockOnChangeText}
+          label="Model name"
+        />
+      );
+      expect(getByLabelText("Model name")).toBeTruthy();
+    });
+
+    it("falls back to placeholder as accessibility label", () => {
+      const { getByLabelText } = render(
+        <TerminalInput
+          value=""
+          onChangeText={mockOnChangeText}
+          placeholder="e.g., Glock 19"
+        />
+      );
+      expect(getByLabelText("e.g., Glock 19")).toBeTruthy();
+    });
+
+    it("does not hide the inner text input from screen readers", () => {
+      const { getByTestId } = render(
+        <TerminalInput
+          value=""
+          onChangeText={mockOnChangeText}
+          testID="terminal-input"
+        />
+      );
+      const input = getByTestId("terminal-input");
+      expect(input.props.accessible).not.toBe(false);
+    });
+
+    it("exposes disabled state to screen readers", () => {
+      const { getByLabelText } = render(
+        <TerminalInput
+          value=""
+          onChangeText={mockOnChangeText}
+          label="Caliber"
+          disabled
+        />
+      );
+      expect(getByLabelText("Caliber").props.accessibilityState).toEqual({
+        disabled: true,
+      });
+    });
+
+    it("exposes error hint to screen readers", () => {
+      const { getByLabelText } = render(
+        <TerminalInput
+          value=""
+          onChangeText={mockOnChangeText}
+          label="Caliber"
+          error="Caliber is required"
+        />
+      );
+      expect(getByLabelText("Caliber").props.accessibilityHint).toBe(
+        "Caliber is required"
+      );
+    });
+
+    it("forwards a ref to the inner text input (React 19 ref as prop)", () => {
+      const ref = React.createRef<TextInput>();
+      render(
+        <TerminalInput value="" onChangeText={mockOnChangeText} ref={ref} />
+      );
+      expect(ref.current).toBeTruthy();
+      expect(typeof ref.current?.focus).toBe("function");
     });
   });
 });

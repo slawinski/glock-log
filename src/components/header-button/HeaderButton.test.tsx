@@ -25,4 +25,10 @@ describe('HeaderButton', () => {
     // This test primarily ensures the prop is passed without crashing.
     expect(getByText(caption)).toBeTruthy();
   });
+
+  it('exposes button role and caption as label to screen readers', () => {
+    render(<HeaderButton caption='Test Caption' onPress={() => {}} />);
+    const button = screen.getByRole('button');
+    expect(button.props.accessibilityLabel).toBe('Test Caption');
+  });
 });

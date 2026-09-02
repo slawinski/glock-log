@@ -1,21 +1,30 @@
-import React from "react";
-import { View, TouchableOpacity, FlatList } from "react-native";
+import React, { useCallback } from "react";
+import { View, FlatList, ListRenderItemInfo } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../app/App";
 import { RangeVisitStorage } from "../../validation/storageSchemas";
 import { TerminalText } from "../../components";
-
-type HomeScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Home"
->;
+import { VisitListItem } from "./VisitListItem";
+import { HomeScreenNavigationProp } from "../../types/navigation";
 
 type Props = {
   rangeVisits: RangeVisitStorage[];
   onRefresh: () => void;
   refreshing: boolean;
 };
+
+// Item layout: border-2 (2px top + bottom) + p-4 (16px top + bottom)
+// + content 44px (two 20px text lines + 4px mt-1) = 80px,
+// plus mb-2 (8px) spacing = 88px stride between items.
+const VISIT_ITEM_HEIGHT = 88;
+
+const getVisitItemLayout = (
+  _data: ArrayLike<RangeVisitStorage> | null | undefined,
+  index: number
+) => ({
+  length: VISIT_ITEM_HEIGHT,
+  offset: VISIT_ITEM_HEIGHT * index,
+  index,
+});
 
 export const VisitsTab = ({
   rangeVisits,
@@ -24,37 +33,19 @@ export const VisitsTab = ({
 }: Props) => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
-  const renderVisitItem = ({ item }: { item: RangeVisitStorage }) => {
-    const totalRounds = Object.values(item.ammunitionUsed || {}).reduce(
-      (sum, usage) => sum + usage.rounds,
-      0
-    );
-    return (
-      <TouchableOpacity
-        onPress={() =>
-          navigation.navigate("RangeVisitDetails", { id: item.id })
-        }
-        className="bg-terminal-bg border-2 border-terminal-border p-4 mb-2"
-      >
-        <View className="flex-row flex-wrap">
-          <View className="w-1/2 pr-2">
-            <TerminalText className="text-lg">{item.location}</TerminalText>
-          </View>
-          <View className="w-1/2 items-end">
-            <TerminalText>{totalRounds} rounds</TerminalText>
-          </View>
-          <View className="w-1/2 pr-2 mt-1">
-            <TerminalText>
-              {new Date(item.date).toLocaleDateString()}
-            </TerminalText>
-          </View>
-          <View className="w-1/2 items-end justify-end">
-            <TerminalText className="text-lg">{">"}</TerminalText>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  const handleVisitPress = useCallback(
+    (rangeVisitId: string) => {
+      navigation.navigate("RangeVisitDetails", { id: rangeVisitId });
+    },
+    [navigation]
+  );
+
+  const renderVisitItem = useCallback(
+    ({ item }: ListRenderItemInfo<RangeVisitStorage>) => (
+      <VisitListItem rangeVisit={item} onPress={handleVisitPress} />
+    ),
+    [handleVisitPress]
+  );
 
   return (
     <FlatList
@@ -63,6 +54,7 @@ export const VisitsTab = ({
       keyExtractor={(item) => item.id}
       onRefresh={onRefresh}
       refreshing={refreshing}
+      getItemLayout={getVisitItemLayout}
       ListEmptyComponent={
         <View className="flex-1 justify-center items-center mt-8">
           <TerminalText>NO RANGE VISITS FOUND</TerminalText>

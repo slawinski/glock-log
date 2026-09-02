@@ -1,21 +1,24 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
+import { Controller } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
 import {
   BottomButtonGroup,
   ErrorDisplay,
+  LoadingScreen,
   TerminalDatePicker,
   TerminalInput,
   TerminalText,
 } from "../../components";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
-import { useFormChangeHandler } from "../../hooks";
+import { useEntityForm } from "../../hooks";
 import {
   ammunitionInputSchema,
+  AmmunitionFormData,
   AmmunitionInput,
 } from "../../validation/inputSchemas";
 
@@ -29,24 +32,39 @@ type EditAmmunitionScreenRouteProp = RouteProp<
   "EditAmmunition"
 >;
 
-type AmmunitionFormData = Omit<
-  AmmunitionInput,
-  "quantity" | "amountPaid" | "grain"
-> & {
-  quantity: number | null;
-  amountPaid: number | null;
-  grain: string | null;
-};
-
 export const EditAmmunition = () => {
   const navigation = useNavigation<EditAmmunitionScreenNavigationProp>();
   const route = useRoute<EditAmmunitionScreenRouteProp>();
-  const [formData, setFormData] = useState<AmmunitionFormData | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFormChange = useFormChangeHandler(formData, setFormData);
+  const saveAmmunition = async (data: AmmunitionInput) => {
+    await storage.saveAmmunition({ ...data, photos });
+    navigation.goBack();
+  };
+
+  const { form, isSaving, onSubmit } = useEntityForm<
+    AmmunitionInput,
+    AmmunitionFormData
+  >(ammunitionInputSchema, saveAmmunition, {
+      defaultValues: {
+        caliber: "",
+        brand: "",
+        grain: "",
+        quantity: null,
+        datePurchased: new Date().toISOString(),
+        amountPaid: null,
+        notes: "",
+      },
+      entityName: "update ammunition",
+    }
+  );
+  const {
+    control,
+    reset,
+    formState: { errors },
+  } = form;
 
   const fetchAmmunition = useCallback(async () => {
     try {
@@ -54,11 +72,17 @@ export const EditAmmunition = () => {
       const ammunitionList = await storage.getAmmunition();
       const ammunition = ammunitionList.find((a) => a.id === route.params!.id);
       if (ammunition) {
-        setFormData({
-          ...ammunition,
+        reset({
+          id: ammunition.id,
+          caliber: ammunition.caliber,
+          brand: ammunition.brand,
+          grain: ammunition.grain,
+          quantity: ammunition.quantity,
+          datePurchased: ammunition.datePurchased,
+          amountPaid: ammunition.amountPaid,
           notes: ammunition.notes || "",
-          photos: ammunition.photos || [],
         });
+        setPhotos(ammunition.photos || []);
       } else {
         setError("Ammunition not found");
       }
@@ -68,7 +92,7 @@ export const EditAmmunition = () => {
     } finally {
       setLoading(false);
     }
-  }, [route.params]);
+  }, [route.params, reset]);
 
   useEffect(() => {
     if (route.params?.id) {
@@ -76,51 +100,14 @@ export const EditAmmunition = () => {
     }
   }, [route.params?.id, fetchAmmunition]);
 
-  const handleSubmit = async () => {
-    if (!formData) return;
-
-    try {
-      setSaving(true);
-
-      const dataToValidate = {
-        ...formData,
-        grain: formData.grain || "",
-        quantity: formData.quantity || 0,
-        amountPaid: formData.amountPaid || 0,
-      };
-
-      // Validate form data using Zod
-      const validationResult = ammunitionInputSchema.safeParse(dataToValidate);
-      if (!validationResult.success) {
-        const errorMessage = validationResult.error.errors[0].message;
-        Alert.alert("Validation error", errorMessage);
-        setSaving(false);
-        return;
-      }
-
-      await storage.saveAmmunition(validationResult.data);
-      navigation.goBack();
-    } catch (error) {
-      handleError(error, "EditAmmunition.handleSubmit", { isUserFacing: true, userMessage: "Failed to update ammunition. Please try again." });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <ActivityIndicator size="large" color="#00ff00" />
-        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
-  if (error || !formData) {
+  if (error) {
     return (
       <ErrorDisplay
-        errorMessage={error || "Ammunition data could not be loaded."}
+        errorMessage={error}
         onRetry={fetchAmmunition}
       />
     );
@@ -134,79 +121,155 @@ export const EditAmmunition = () => {
 
           <View className="mb-4">
             <TerminalText>CALIBER</TerminalText>
-            <TerminalInput
-              value={formData.caliber}
-              onChangeText={(text) => handleFormChange("caliber", text)}
-              placeholder="e.g., 9mm"
+            <Controller
+              control={control}
+              name="caliber"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="e.g., 9mm"
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.caliber && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.caliber.message}
+              </TerminalText>
+            )}
           </View>
 
           <View className="mb-4">
             <TerminalText>BRAND</TerminalText>
-            <TerminalInput
-              value={formData.brand}
-              onChangeText={(text) => handleFormChange("brand", text)}
-              placeholder="e.g., Federal"
+            <Controller
+              control={control}
+              name="brand"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="e.g., Federal"
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.brand && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.brand.message}
+              </TerminalText>
+            )}
           </View>
 
           <View className="mb-4">
             <TerminalText>GRAIN</TerminalText>
-            <TerminalInput
-              value={formData.grain}
-              onChangeText={(text) => handleFormChange("grain", text)}
-              placeholder="e.g., 115"
-              keyboardType="numeric"
+            <Controller
+              control={control}
+              name="grain"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="e.g., 115"
+                  keyboardType="numeric"
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.grain && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.grain.message}
+              </TerminalText>
+            )}
           </View>
 
           <View className="mb-4">
             <TerminalText>QUANTITY</TerminalText>
-            <TerminalInput
-              value={formData.quantity}
-              onChangeText={(text) => {
-                const quantity = parseInt(text);
-                handleFormChange("quantity", isNaN(quantity) ? null : quantity);
-              }}
-              placeholder="e.g., 1000"
-              keyboardType="numeric"
+            <Controller
+              control={control}
+              name="quantity"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={(text) => {
+                    const quantity = parseInt(text);
+                    onChange(isNaN(quantity) ? null : quantity);
+                  }}
+                  placeholder="e.g., 1000"
+                  keyboardType="numeric"
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.quantity && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.quantity.message}
+              </TerminalText>
+            )}
           </View>
 
           <View className="mb-4">
             <TerminalText>AMOUNT PAID</TerminalText>
-            <TerminalInput
-              value={formData.amountPaid}
-              onChangeText={(text) => {
-                const amount = parseFloat(text);
-                handleFormChange("amountPaid", isNaN(amount) ? null : amount);
-              }}
-              placeholder="e.g., 299.99"
-              keyboardType="numeric"
+            <Controller
+              control={control}
+              name="amountPaid"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={(text) => {
+                    const amount = parseFloat(text);
+                    onChange(isNaN(amount) ? null : amount);
+                  }}
+                  placeholder="e.g., 299.99"
+                  keyboardType="numeric"
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.amountPaid && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.amountPaid.message}
+              </TerminalText>
+            )}
           </View>
 
           <View className="mb-4">
-            <TerminalText>DATE PURCHASED</TerminalText>
-            <TerminalDatePicker
-              value={new Date(formData.datePurchased)}
-              onChange={(date) =>
-                handleFormChange("datePurchased", date.toISOString())
-              }
-              label="PURCHASE DATE"
-              maxDate={new Date()}
-              placeholder="Select purchase date"
+            <Controller
+              control={control}
+              name="datePurchased"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalDatePicker
+                  value={new Date(value)}
+                  onChange={(date) => onChange(date.toISOString())}
+                  label="PURCHASE DATE"
+                  maxDate={new Date()}
+                  placeholder="Select purchase date"
+                  error={error?.message}
+                />
+              )}
             />
           </View>
 
           <View className="mb-4">
             <TerminalText>NOTES</TerminalText>
-            <TerminalInput
-              value={formData.notes || ""}
-              onChangeText={(text) => handleFormChange("notes", text)}
-              placeholder="Optional notes"
-              multiline
+            <Controller
+              control={control}
+              name="notes"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value ?? ""}
+                  onChangeText={onChange}
+                  placeholder="Optional notes"
+                  multiline
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.notes && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.notes.message}
+              </TerminalText>
+            )}
           </View>
 
           <View className="flex-1" />
@@ -218,9 +281,9 @@ export const EditAmmunition = () => {
                 onPress: () => navigation.goBack(),
               },
               {
-                caption: saving ? "SAVING..." : "SAVE CHANGES",
-                onPress: handleSubmit,
-                disabled: saving,
+                caption: isSaving ? "SAVING..." : "SAVE CHANGES",
+                onPress: onSubmit,
+                disabled: isSaving,
               },
             ]}
           />

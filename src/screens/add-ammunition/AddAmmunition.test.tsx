@@ -11,6 +11,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { AddAmmunition as AddAmmunitionScreen } from "./AddAmmunition";
 import { storage } from "../../services/storage-new";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { formatDate } from "../../utils";
 
 // Mock the storage module
 jest.mock("../../services/storage-new");
@@ -86,7 +87,7 @@ describe("AddAmmunitionScreen", () => {
     expect(notesInput.props.value).toBe("Test notes");
   });
 
-  it("shows validation error when required fields are missing", async () => {
+  it("shows field errors when required fields are missing", async () => {
     (storage.saveAmmunition as jest.Mock).mockResolvedValue(undefined);
     renderScreen();
 
@@ -94,11 +95,13 @@ describe("AddAmmunitionScreen", () => {
     fireEvent.press(saveButton);
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        "Validation error",
-        expect.any(String)
-      );
+      expect(screen.getByText(/Caliber is required/)).toBeTruthy();
+      expect(screen.getByText(/Brand is required/)).toBeTruthy();
+      expect(screen.getByText(/Grain is required/)).toBeTruthy();
+      expect(screen.getByText(/Quantity must be greater than 0/)).toBeTruthy();
     });
+    expect(storage.saveAmmunition).not.toHaveBeenCalled();
+    expect(Alert.alert).not.toHaveBeenCalled();
   });
 
   it("saves ammunition when form is valid", async () => {
@@ -161,11 +164,7 @@ describe("AddAmmunitionScreen", () => {
   it("handles date picker interaction", async () => {
     renderScreen();
 
-    const formattedDate = new Date().toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    const formattedDate = formatDate(new Date(), "MMM d, yyyy");
     const datePurchasedButton = screen.getByText(formattedDate);
     fireEvent.press(datePurchasedButton);
 

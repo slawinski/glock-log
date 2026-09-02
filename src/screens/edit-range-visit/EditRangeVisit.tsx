@@ -1,30 +1,31 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useFormChangeHandler } from "../../hooks/useFormChangeHandler";
 import {
   View,
-  TouchableOpacity,
   ScrollView,
   Alert,
-  ActivityIndicator,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
+import { Controller, useWatch } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
-import * as ImagePicker from "react-native-image-picker";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
+import { useEntityForm, useImagePicker } from "../../hooks";
 import {
   BottomButtonGroup,
   ErrorDisplay,
   FirearmsUsedInput,
   ImageGallery,
+  LoadingScreen,
+  TerminalButton,
   TerminalDatePicker,
   TerminalInput,
   TerminalText,
 } from "../../components";
 import {
   rangeVisitInputSchema,
+  RangeVisitFormData,
   RangeVisitInput,
 } from "../../validation/inputSchemas";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
@@ -39,26 +40,63 @@ type EditRangeVisitScreenRouteProp = RouteProp<
   "EditRangeVisit"
 >;
 
-type RangeVisitFormData = Omit<RangeVisitInput, "ammunitionUsed"> & {
-  ammunitionUsed: {
-    [firearmId: string]: {
-      ammunitionId: string;
-      rounds: number | null;
-    };
-  };
-};
 export const EditRangeVisit = () => {
   const navigation = useNavigation<EditRangeVisitScreenNavigationProp>();
   const route = useRoute<EditRangeVisitScreenRouteProp>();
-  const [formData, setFormData] = useState<RangeVisitFormData | null>(null);
-  const handleFormChange = useFormChangeHandler(formData, setFormData);
+  const [photos, setPhotos] = useState<string[]>([]);
   const [firearms, setFirearms] = useState<
     { id: string; modelName: string; caliber: string }[]
   >([]);
   const [ammunition, setAmmunition] = useState<AmmunitionStorage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { pickImages, isPicking } = useImagePicker();
+
+  const saveRangeVisit = async (data: RangeVisitInput) => {
+    if (data.ammunitionUsed) {
+      for (const [firearmId, usage] of Object.entries(data.ammunitionUsed)) {
+        if (usage.ammunitionId) {
+          const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
+          if (!ammo) {
+            throw new Error(`Ammunition not found for firearm ${firearmId}`);
+          }
+          if (ammo.quantity < usage.rounds) {
+            throw new Error(
+              `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
+            );
+          }
+        }
+      }
+    }
+
+    await storage.saveRangeVisitWithAmmunition({ ...data, photos });
+    navigation.goBack();
+  };
+
+  const { form, isSaving, onSubmit } = useEntityForm<
+    RangeVisitInput,
+    RangeVisitFormData
+  >(rangeVisitInputSchema, saveRangeVisit, {
+    defaultValues: {
+      date: new Date().toISOString(),
+      location: "",
+      notes: "",
+      firearmsUsed: [],
+      ammunitionUsed: {},
+    },
+    entityName: "update range visit",
+  });
+  const {
+    control,
+    reset,
+    getValues,
+    setValue,
+    formState: { errors },
+  } = form;
+
+  // Keep the FirearmsUsedInput section in sync with the form state reactively.
+  const watchedFirearmsUsed = useWatch({ control, name: "firearmsUsed" });
+  const watchedAmmunitionUsed = useWatch({ control, name: "ammunitionUsed" });
 
   const fetchVisit = useCallback(async () => {
     try {
@@ -66,18 +104,17 @@ export const EditRangeVisit = () => {
       const visits = await storage.getRangeVisits();
       const visit = visits.find((v) => v.id === route.params!.id);
       if (visit) {
-        setFormData({
+        reset({
           id: visit.id,
           date: visit.date,
           location: visit.location,
-          photos: visit.photos ?? [],
-          firearmsUsed: visit.firearmsUsed,
           notes: visit.notes || "",
+          firearmsUsed: visit.firearmsUsed,
           ammunitionUsed: visit.ammunitionUsed || {},
         });
+        setPhotos(visit.photos ?? []);
       } else {
         setError("Range visit not found");
-        setLoading(false);
       }
     } catch (error) {
       handleError(error, "EditRangeVisit.fetchVisit", { isUserFacing: true, userMessage: "Failed to load range visit data." });
@@ -85,7 +122,7 @@ export const EditRangeVisit = () => {
     } finally {
       setLoading(false);
     }
-  }, [route.params]);
+  }, [route.params, reset]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -107,127 +144,47 @@ export const EditRangeVisit = () => {
   }, []);
 
   useEffect(() => {
-    if (route.params?.id && !formData) {
+    if (route.params?.id) {
       fetchVisit();
     }
     fetchData();
-  }, [route.params?.id, fetchVisit, fetchData, formData]);
+  }, [route.params?.id, fetchVisit, fetchData]);
 
-  const handleImagePick = () => {
-    ImagePicker.launchImageLibrary(
-      {
-        mediaType: "photo",
-        quality: 0.8,
-      },
-      (response) => {
-        if (response.assets && response.assets[0].uri) {
-          setFormData((prev) => {
-            if (!prev) return null;
-            return {
-              ...prev,
-              photos: [...(prev.photos || []), response.assets![0].uri!],
-            };
-          });
-        }
-      }
-    );
-  };
-
-  const handleSubmit = async () => {
-    if (!formData) return;
-    try {
-      setSaving(true);
-
-      const dataToValidate = {
-        ...formData,
-        ammunitionUsed: Object.fromEntries(
-          Object.entries(formData.ammunitionUsed).map(([firearmId, usage]) => [
-            firearmId,
-            {
-              ammunitionId: usage.ammunitionId,
-              rounds: usage.rounds || 0,
-            },
-          ])
-        ),
-      };
-
-      const validationResult = rangeVisitInputSchema.safeParse(dataToValidate);
-      if (!validationResult.success) {
-        const errorMessage = validationResult.error.errors[0].message;
-        Alert.alert("Validation error", errorMessage);
-        return;
-      }
-
-      if (dataToValidate.ammunitionUsed) {
-        for (const [firearmId, usage] of Object.entries(
-          dataToValidate.ammunitionUsed
-        )) {
-          if (usage.ammunitionId) {
-            const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
-            if (!ammo) {
-              throw new Error(`Ammunition not found for firearm ${firearmId}`);
-            }
-            if (ammo.quantity < usage.rounds) {
-              throw new Error(
-                `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
-              );
-            }
-          }
-        }
-      }
-
-      await storage.saveRangeVisitWithAmmunition(dataToValidate);
-      navigation.goBack();
-    } catch (error) {
-      handleError(error, "EditRangeVisit.handleSubmit", { isUserFacing: true, userMessage: "Failed to update range visit. Please try again." });
-    } finally {
-      setSaving(false);
+  const handleImagePick = async () => {
+    const assets = await pickImages();
+    if (assets.length > 0 && assets[0].uri) {
+      setPhotos((prev) => [...prev, assets[0].uri!]);
     }
   };
 
-
-
   const toggleFirearmSelection = (firearmId: string) => {
-    setFormData((prev) => {
-      if (!prev) return null;
-      const isSelected = prev.firearmsUsed.includes(firearmId);
-      const newAmmunitionUsed = { ...prev.ammunitionUsed };
+    const currentFirearms = getValues("firearmsUsed") ?? [];
+    const isSelected = currentFirearms.includes(firearmId);
+    const newAmmunitionUsed = { ...(getValues("ammunitionUsed") ?? {}) };
 
-      if (isSelected) {
-        delete newAmmunitionUsed[firearmId];
-      }
+    if (isSelected) {
+      delete newAmmunitionUsed[firearmId];
+    }
 
-      return {
-        ...prev,
-        ammunitionUsed: newAmmunitionUsed,
-        firearmsUsed: isSelected
-          ? prev.firearmsUsed.filter((id) => id !== firearmId)
-          : [...prev.firearmsUsed, firearmId],
-      };
-    });
+    setValue(
+      "firearmsUsed",
+      isSelected
+        ? currentFirearms.filter((id) => id !== firearmId)
+        : [...currentFirearms, firearmId]
+    );
+    setValue("ammunitionUsed", newAmmunitionUsed);
   };
 
   const handleDeletePhoto = (index: number) => {
-    setFormData((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        photos: (prev.photos || []).filter((_, i) => i !== index),
-      };
-    });
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
   if (error) {
     return <ErrorDisplay errorMessage={error} onRetry={fetchVisit} />;
   }
 
-  if (loading || !formData) {
-    return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <ActivityIndicator size="large" color="#00ff00" />
-        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
-      </View>
-    );
+  if (loading) {
+    return <LoadingScreen />;
   }
 
   return (
@@ -236,69 +193,89 @@ export const EditRangeVisit = () => {
         <View className="flex-1">
           <View className="mb-4">
             <TerminalText>LOCATION</TerminalText>
-            <TerminalInput
-              value={formData.location}
-              onChangeText={(text) => handleFormChange("location", text)}
-              placeholder="e.g., Local Range"
+            <Controller
+              control={control}
+              name="location"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="e.g., Local Range"
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.location && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.location.message}
+              </TerminalText>
+            )}
           </View>
 
           <View className="mb-4">
             <TerminalText>DATE</TerminalText>
-            <TerminalDatePicker
-              value={new Date(formData.date)}
-              onChange={(date) => handleFormChange("date", date.toISOString())}
-              label="VISIT DATE"
-              maxDate={new Date()}
-              placeholder="Select visit date"
+            <Controller
+              control={control}
+              name="date"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalDatePicker
+                  value={new Date(value)}
+                  onChange={(date) => onChange(date.toISOString())}
+                  label="VISIT DATE"
+                  maxDate={new Date()}
+                  placeholder="Select visit date"
+                  error={error?.message}
+                />
+              )}
             />
           </View>
 
           <View className="mb-4">
             <TerminalText>NOTES</TerminalText>
-            <TerminalInput
-              value={formData.notes || ""}
-              onChangeText={(text) => handleFormChange("notes", text)}
-              placeholder="Optional notes"
-              multiline
+            <Controller
+              control={control}
+              name="notes"
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value ?? ""}
+                  onChangeText={onChange}
+                  placeholder="Optional notes"
+                  multiline
+                  error={error?.message}
+                />
+              )}
             />
+            {errors.notes && (
+              <TerminalText className="text-terminal-error text-sm mt-1">
+                {errors.notes.message}
+              </TerminalText>
+            )}
           </View>
 
           <FirearmsUsedInput
             firearms={firearms}
             ammunition={ammunition}
-            selectedFirearms={formData.firearmsUsed}
-            ammunitionUsed={formData.ammunitionUsed}
+            selectedFirearms={watchedFirearmsUsed ?? []}
+            ammunitionUsed={watchedAmmunitionUsed ?? {}}
             onToggleFirearm={toggleFirearmSelection}
             onRoundsChange={(firearmId, rounds) => {
-              setFormData((prev) => {
-                if (!prev) return null;
-                const currentAmmo = prev.ammunitionUsed?.[firearmId];
-                return {
-                  ...prev,
-                  ammunitionUsed: {
-                    ...(prev.ammunitionUsed || {}),
-                    [firearmId]: {
-                      ammunitionId: currentAmmo?.ammunitionId || "",
-                      rounds: rounds,
-                    },
-                  },
-                };
+              const currentAmmo = getValues("ammunitionUsed") ?? {};
+              setValue("ammunitionUsed", {
+                ...currentAmmo,
+                [firearmId]: {
+                  ammunitionId: currentAmmo[firearmId]?.ammunitionId || "",
+                  rounds: rounds,
+                },
               });
             }}
             onAmmunitionSelect={(firearmId, ammunitionId) => {
-              setFormData((prev) => {
-                if (!prev) return null;
-                return {
-                  ...prev,
-                  ammunitionUsed: {
-                    ...(prev.ammunitionUsed || {}),
-                    [firearmId]: {
-                      ammunitionId: ammunitionId,
-                      rounds: prev.ammunitionUsed?.[firearmId]?.rounds || null,
-                    },
-                  },
-                };
+              const currentAmmo = getValues("ammunitionUsed") ?? {};
+              setValue("ammunitionUsed", {
+                ...currentAmmo,
+                [firearmId]: {
+                  ammunitionId: ammunitionId,
+                  rounds: currentAmmo[firearmId]?.rounds ?? null,
+                },
               });
             }}
             onAddBorrowedAmmunition={() => {
@@ -310,41 +287,33 @@ export const EditRangeVisit = () => {
               );
             }}
             onRemoveBorrowedAmmunition={(key) => {
-              setFormData((prev) => {
-                if (!prev) return null;
-                const newAmmo = { ...prev.ammunitionUsed };
-                delete newAmmo[key];
-                return {
-                  ...prev,
-                  ammunitionUsed: newAmmo,
-                };
-              });
+              const newAmmo = { ...(getValues("ammunitionUsed") ?? {}) };
+              delete newAmmo[key];
+              setValue("ammunitionUsed", newAmmo);
             }}
             onBorrowedAmmunitionRoundsChange={(key, rounds) => {
-              setFormData((prev) => {
-                if (!prev) return null;
-                return {
-                  ...prev,
-                  ammunitionUsed: {
-                    ...prev.ammunitionUsed,
-                    [key]: { ...prev.ammunitionUsed[key], rounds: rounds },
-                  },
-                };
+              const currentAmmo = getValues("ammunitionUsed") ?? {};
+              setValue("ammunitionUsed", {
+                ...currentAmmo,
+                [key]: {
+                  ...(currentAmmo[key] ?? { ammunitionId: "", rounds: null }),
+                  rounds: rounds,
+                },
               });
             }}
           />
 
           <View className="mb-4">
             <TerminalText>PHOTOS:</TerminalText>
-            <TouchableOpacity
+            <TerminalButton
               onPress={handleImagePick}
-              className="border border-terminal-border p-3 mb-2"
-            >
-              <TerminalText>ADD PHOTO</TerminalText>
-            </TouchableOpacity>
-            {formData.photos && formData.photos.length > 0 && (
+              className="mb-2"
+              caption="ADD PHOTO"
+              disabled={isPicking}
+            />
+            {photos.length > 0 && (
               <ImageGallery
-                images={formData.photos}
+                images={photos}
                 onDeleteImage={handleDeletePhoto}
                 size="medium"
                 showDeleteButton={true}
@@ -361,9 +330,9 @@ export const EditRangeVisit = () => {
                 onPress: () => navigation.goBack(),
               },
               {
-                caption: saving ? "SAVING..." : "SAVE",
-                onPress: handleSubmit,
-                disabled: saving,
+                caption: isSaving ? "SAVING..." : "SAVE",
+                onPress: onSubmit,
+                disabled: isSaving,
               },
             ]}
           />

@@ -1,16 +1,20 @@
-import React from "react";
-import { View, ScrollView, Dimensions } from "react-native";
+import React, { useMemo } from "react";
+import { View, ScrollView, useWindowDimensions } from "react-native";
 import { BarChart } from "react-native-chart-kit";
 import { TerminalText } from "../../components";
 import { AmmunitionStorage, RangeVisitStorage } from "../../validation/storageSchemas";
+import { formatCurrency } from "../../utils/currency";
 
 type Props = {
   ammunition: AmmunitionStorage[];
   rangeVisits: RangeVisitStorage[];
+  currency?: string;
 };
 
-export const AmmunitionTab = ({ ammunition, rangeVisits }: Props) => {
-  const calculateAmmunitionStats = () => {
+export const AmmunitionTab = ({ ammunition, rangeVisits, currency = "USD" }: Props) => {
+  const { width } = useWindowDimensions();
+
+  const ammoStats = useMemo(() => {
     const totalRounds = ammunition.reduce(
       (sum, ammo) => sum + ammo.quantity,
       0
@@ -34,9 +38,9 @@ export const AmmunitionTab = ({ ammunition, rangeVisits }: Props) => {
       costPerRound,
       mostStockedCaliber,
     };
-  };
+  }, [ammunition]);
 
-  const calculateAmmunitionUsageOverTime = () => {
+  const usageData = useMemo(() => {
     // Group visits by month
     const usageByMonth = rangeVisits.reduce((acc, visit) => {
       const date = new Date(visit.date);
@@ -68,10 +72,7 @@ export const AmmunitionTab = ({ ammunition, rangeVisits }: Props) => {
       labels: recentEntries.map(([month]) => month),
       data: recentEntries.map(([, rounds]) => rounds),
     };
-  };
-
-  const ammoStats = calculateAmmunitionStats();
-  const usageData = calculateAmmunitionUsageOverTime();
+  }, [rangeVisits]);
 
   if (ammunition.length === 0) {
     return (
@@ -97,7 +98,7 @@ export const AmmunitionTab = ({ ammunition, rangeVisits }: Props) => {
                 },
               ],
             }}
-            width={Dimensions.get("window").width - 32}
+            width={width - 32}
             height={220}
             yAxisLabel=""
             yAxisSuffix=" rds"
@@ -136,12 +137,12 @@ export const AmmunitionTab = ({ ammunition, rangeVisits }: Props) => {
 
       <View className="mb-4 flex-row">
         <TerminalText className="text-lg">TOTAL SPENT: </TerminalText>
-        <TerminalText>${ammoStats.totalSpent.toFixed(2)}</TerminalText>
+        <TerminalText>{formatCurrency(ammoStats.totalSpent, currency)}</TerminalText>
       </View>
 
       <View className="mb-4 flex-row">
         <TerminalText className="text-lg">COST PER ROUND: </TerminalText>
-        <TerminalText>${ammoStats.costPerRound.toFixed(2)}</TerminalText>
+        <TerminalText>{formatCurrency(ammoStats.costPerRound, currency)}</TerminalText>
       </View>
 
       <View className="mb-4 flex-row">

@@ -4,7 +4,7 @@ import React, {
   useLayoutEffect,
   useEffect,
 } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../app/App";
@@ -15,7 +15,7 @@ import {
 } from "../../validation/storageSchemas";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
-import { ErrorDisplay, HeaderButton, TerminalTabs, TerminalText } from "../../components";
+import { ErrorDisplay, HeaderButton, LoadingScreen, TerminalTabs } from "../../components";
 import { BottomButtonGroup } from "../../components/bottom-button-group/BottomButtonGroup";
 import { FirearmsTab } from "./FirearmsTab";
 import { VisitsTab } from "./VisitsTab";
@@ -43,6 +43,7 @@ export const Home = () => {
   const [error, setError] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("firearms");
+  const [currency, setCurrency] = useState("USD");
 
   const fetchData = useCallback(async (isRefresh = false) => {
     try {
@@ -51,15 +52,18 @@ export const Home = () => {
       }
       setError(null);
 
-      const [firearmsData, visitsData, ammunitionData] = await Promise.all([
-        storage.getFirearms(),
-        storage.getRangeVisits(),
-        storage.getAmmunition(),
-      ]);
+      const [firearmsData, visitsData, ammunitionData, currencyData] =
+        await Promise.all([
+          storage.getFirearms(),
+          storage.getRangeVisits(),
+          storage.getAmmunition(),
+          storage.getCurrency(),
+        ]);
 
       setFirearms(firearmsData);
       setRangeVisits(visitsData);
       setAmmunition(ammunitionData);
+      setCurrency(currencyData);
       if (isInitialLoad) {
         setIsInitialLoad(false);
       }
@@ -130,12 +134,7 @@ export const Home = () => {
 
   const renderContent = () => {
     if (loading) {
-      return (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#00ff00" />
-          <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
-        </View>
-      );
+      return <LoadingScreen />;
     }
 
     if (error) {
@@ -165,6 +164,7 @@ export const Home = () => {
             ammunition={ammunition}
             onRefresh={onRefresh}
             refreshing={false}
+            currency={currency}
           />
         );
     }

@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { View, TouchableOpacity } from "react-native";
+import { View, Pressable } from "react-native";
 import { TerminalText } from "../terminal-text/TerminalText";
 
 export type DirectoryItem = {
@@ -24,16 +24,19 @@ export const TerminalDirectory: FC<Props> = ({ title, items, className }) => {
         const prefix = isLast ? "└──" : "├──";
 
         return (
-          <TouchableOpacity
+          <Pressable
             key={index}
             className="px-2 py-2"
             onPress={item.onPress}
             disabled={item.disabled}
+            accessibilityRole="button"
+            accessibilityLabel={item.label}
+            accessibilityState={{ disabled: !!item.disabled }}
           >
             <TerminalText className={item.disabled ? "opacity-50" : ""}>
               {prefix} {item.label}
             </TerminalText>
-          </TouchableOpacity>
+          </Pressable>
         );
       })}
     </View>

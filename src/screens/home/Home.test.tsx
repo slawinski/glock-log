@@ -11,6 +11,7 @@ jest.mock("../../services/storage-new", () => ({
     getFirearms: jest.fn(),
     getRangeVisits: jest.fn(),
     getAmmunition: jest.fn(),
+    getCurrency: jest.fn(),
   },
 }));
 
@@ -21,29 +22,29 @@ jest.mock("../../components", () => ({
     return <Text {...props}>{children}</Text>;
   },
   HeaderButton: ({ onPress, caption, ...props }: any) => {
-    const { TouchableOpacity, Text } = require("react-native");
+    const { Pressable, Text } = require("react-native");
     return (
-      <TouchableOpacity
+      <Pressable
         onPress={onPress}
         testID={`header-button-${caption}`}
         {...props}
       >
         <Text>{caption}</Text>
-      </TouchableOpacity>
+      </Pressable>
     );
   },
   TerminalTabs: ({ tabs, onTabPress }: any) => {
-    const { View, TouchableOpacity, Text } = require("react-native");
+    const { View, Pressable, Text } = require("react-native");
     return (
       <View testID="terminal-tabs">
         {tabs.map((tab: any) => (
-          <TouchableOpacity
+          <Pressable
             key={tab.id}
             onPress={() => onTabPress(tab.id)}
             testID={`tab-${tab.id}`}
           >
             <Text>{tab.title}</Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </View>
     );
@@ -57,15 +58,19 @@ jest.mock("../../components", () => ({
     );
   },
   ErrorDisplay: ({ errorMessage, onRetry }: any) => {
-    const { View, Text, TouchableOpacity } = require("react-native");
+    const { View, Text, Pressable } = require("react-native");
     return (
       <View>
         <Text>{errorMessage}</Text>
-        <TouchableOpacity onPress={onRetry}>
+        <Pressable onPress={onRetry}>
           <Text>Retry</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     );
+  },
+  LoadingScreen: () => {
+    const { Text } = require("react-native");
+    return <Text>LOADING DATABASE...</Text>;
   },
 }));
 
@@ -140,6 +145,7 @@ describe("Home", () => {
     mockStorageApi.getFirearms.mockResolvedValue([mockFirearm]);
     mockStorageApi.getRangeVisits.mockResolvedValue([mockRangeVisit]);
     mockStorageApi.getAmmunition.mockResolvedValue([mockAmmunition]);
+    mockStorageApi.getCurrency.mockResolvedValue("USD");
   });
 
   it("renders correctly with loading state", async () => {
@@ -158,6 +164,7 @@ describe("Home", () => {
       expect(mockStorageApi.getFirearms).toHaveBeenCalled();
       expect(mockStorageApi.getRangeVisits).toHaveBeenCalled();
       expect(mockStorageApi.getAmmunition).toHaveBeenCalled();
+      expect(mockStorageApi.getCurrency).toHaveBeenCalled();
     });
   });
 

@@ -1,21 +1,30 @@
-import React from "react";
-import { View, TouchableOpacity, FlatList } from "react-native";
+import React, { useCallback } from "react";
+import { View, FlatList, ListRenderItemInfo } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../app/App";
 import { FirearmStorage } from "../../validation/storageSchemas";
-import { TerminalText, FirearmImage } from "../../components";
-
-type HomeScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Home"
->;
+import { TerminalText } from "../../components";
+import { FirearmListItem } from "./FirearmListItem";
+import { HomeScreenNavigationProp } from "../../types/navigation";
 
 type Props = {
   firearms: FirearmStorage[];
   onRefresh: () => void;
   refreshing: boolean;
 };
+
+// Item layout: border-2 (2px top + bottom) + p-4 (16px top + bottom)
+// + content 60px (FirearmImage container, taller than the two 20px text lines
+// + 4px mt-1) = 96px, plus mb-4 (16px) spacing = 112px stride between items.
+const FIREARM_ITEM_HEIGHT = 112;
+
+const getFirearmItemLayout = (
+  _data: ArrayLike<FirearmStorage> | null | undefined,
+  index: number
+) => ({
+  length: FIREARM_ITEM_HEIGHT,
+  offset: FIREARM_ITEM_HEIGHT * index,
+  index,
+});
 
 export const FirearmsTab = ({
   firearms,
@@ -24,33 +33,18 @@ export const FirearmsTab = ({
 }: Props) => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
-  const renderFirearmItem = ({ item }: { item: FirearmStorage }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("FirearmDetails", { id: item.id })}
-      className="bg-terminal-bg border-2 border-terminal-border p-4 mb-4"
-    >
-      <View className="flex-row items-start">
-        <FirearmImage photoUri={item.photos?.[0]} size={60} className="mr-4" />
-        <View className="flex-1 flex-row flex-wrap">
-          <View className="w-1/2 pr-2">
-            <TerminalText className="text-lg" numberOfLines={1}>
-              {item.modelName} ({item.caliber})
-            </TerminalText>
-          </View>
-          <View className="w-1/2 items-end">
-            <TerminalText>{item.roundsFired} rounds</TerminalText>
-          </View>
-          <View className="w-1/2 pr-2 mt-1">
-            <TerminalText>
-              Added: {new Date(item.createdAt).toLocaleDateString()}
-            </TerminalText>
-          </View>
-          <View className="w-1/2 items-end justify-end">
-            <TerminalText className="text-lg">{">"}</TerminalText>
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
+  const handleFirearmPress = useCallback(
+    (firearmId: string) => {
+      navigation.navigate("FirearmDetails", { id: firearmId });
+    },
+    [navigation]
+  );
+
+  const renderFirearmItem = useCallback(
+    ({ item }: ListRenderItemInfo<FirearmStorage>) => (
+      <FirearmListItem firearm={item} onPress={handleFirearmPress} />
+    ),
+    [handleFirearmPress]
   );
 
   return (
@@ -60,6 +54,7 @@ export const FirearmsTab = ({
       keyExtractor={(item) => item.id}
       onRefresh={onRefresh}
       refreshing={refreshing}
+      getItemLayout={getFirearmItemLayout}
       ListEmptyComponent={
         <View className="flex-1 justify-center items-center mt-8">
           <TerminalText>NO FIREARMS FOUND</TerminalText>

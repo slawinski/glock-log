@@ -365,4 +365,69 @@ describe("error-handler", () => {
       expect(Alert.alert).toHaveBeenCalledWith("Custom Error Title", userMessage);
     });
   });
+
+  describe("handleError production logging (sanitized)", () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+
+    beforeEach(() => {
+      process.env.NODE_ENV = "production";
+    });
+
+    afterEach(() => {
+      process.env.NODE_ENV = originalNodeEnv;
+    });
+
+    it("logs only error name, message, and context - never the raw error object", () => {
+      const error = new Error("Failed to decrypt payload");
+      // Simulate a sensitive payload attached to the error (e.g., firearms data)
+      const errorWithPayload = Object.assign(error, {
+        payload: { serialNumber: "ABC123", caliber: "9mm" },
+      });
+
+      handleError(errorWithPayload, "DataTransfer.import", { userMessage: "Import failed" });
+
+      expect(mockConsoleError).toHaveBeenCalledTimes(1);
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        "[DataTransfer.import] Error: Failed to decrypt payload"
+      );
+      // The raw object must never be passed to console.error in production
+      expect(mockConsoleError.mock.calls[0]).toHaveLength(1);
+    });
+
+    it("logs only the stringified message for non-Error values in production", () => {
+      handleError("Plain string failure", "SyncService.sync", { userMessage: "Sync failed" });
+
+      expect(mockConsoleError).toHaveBeenCalledTimes(1);
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        "[SyncService.sync] Plain string failure"
+      );
+      expect(mockConsoleError.mock.calls[0]).toHaveLength(1);
+    });
+
+    it("logs sanitized details for non-Error objects without leaking their contents", () => {
+      const sensitiveObject = { serialNumber: "XYZ789", notes: "secret notes" };
+
+      handleError(sensitiveObject, "ExportService.export", { userMessage: "Export failed" });
+
+      expect(mockConsoleError).toHaveBeenCalledTimes(1);
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        "[ExportService.export] [object Object]"
+      );
+      expect(mockConsoleError.mock.calls[0]).toHaveLength(1);
+    });
+
+    it("does not log the raw payload attached to custom error properties", () => {
+      const error = new Error("Storage write failed");
+      const errorWithSensitiveProps = Object.assign(error, {
+        inventory: [{ modelName: "Glock 19", serialNumber: "GLK-001" }],
+      });
+
+      handleError(errorWithSensitiveProps, "Storage.save", { userMessage: "Save failed" });
+
+      const loggedArgs = mockConsoleError.mock.calls[0];
+      expect(loggedArgs).toHaveLength(1);
+      expect(JSON.stringify(loggedArgs)).not.toContain("Glock 19");
+      expect(JSON.stringify(loggedArgs)).not.toContain("GLK-001");
+    });
+  });
 });

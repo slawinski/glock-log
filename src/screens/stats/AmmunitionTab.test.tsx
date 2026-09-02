@@ -71,4 +71,20 @@ describe('AmmunitionTab', () => {
     render(<AmmunitionTab ammunition={mockAmmunition} rangeVisits={[]} />);
     expect(screen.getByText('TOTAL ROUNDS: ')).toBeTruthy(); // Still shows stats based on ammunition stock
   });
+
+  it('formats currency amounts using the provided currency code', () => {
+    render(
+      <AmmunitionTab
+        ammunition={mockAmmunition}
+        rangeVisits={mockRangeVisits}
+        currency="EUR"
+      />
+    );
+
+    expect(screen.getByText('TOTAL SPENT: ')).toBeTruthy();
+    expect(screen.getByText('€550.00')).toBeTruthy(); // 300 + 250
+
+    expect(screen.getByText('COST PER ROUND: ')).toBeTruthy();
+    expect(screen.getByText('€0.37')).toBeTruthy(); // 550 / 1500
+  });
 });

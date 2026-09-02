@@ -40,7 +40,7 @@
     <key>CFBundleVersion</key>
     <string>1</string>
     <key>ITSAppUsesNonExemptEncryption</key>
-    <false/>
+    <true/>
     <key>LSMinimumSystemVersion</key>
     <string>12.0</string>
     <key>LSRequiresIPhoneOS</key>
@@ -52,6 +52,10 @@
       <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
+    <key>NSFaceIDUsageDescription</key>
+    <string>TriggerNote uses Face ID to protect your firearms inventory and range data.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>TriggerNote needs access to your photo library to attach images to firearms, ammunition, and range visit logs.</string>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>
@@ -61,11 +65,10 @@
     <key>UIRequiresFullScreen</key>
     <false/>
     <key>UIStatusBarStyle</key>
-    <string>UIStatusBarStyleDefault</string>
+    <string>UIStatusBarStyleLightContent</string>
     <key>UISupportedInterfaceOrientations</key>
     <array>
       <string>UIInterfaceOrientationPortrait</string>
-      <string>UIInterfaceOrientationPortraitUpsideDown</string>
     </array>
     <key>UISupportedInterfaceOrientations~ipad</key>
     <array>
@@ -75,8 +78,8 @@
       <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
     <key>UIUserInterfaceStyle</key>
-    <string>Light</string>
+    <string>Dark</string>
     <key>UIViewControllerBasedStatusBarAppearance</key>
-    <false/>
+    <true/>
   </dict>
 </plist>

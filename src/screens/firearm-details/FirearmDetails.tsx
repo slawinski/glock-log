@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { View, ScrollView } from "react-native";
 import {
   useNavigation,
   useRoute,
@@ -14,10 +14,12 @@ import {
   BottomButtonGroup,
   ErrorDisplay,
   ImageGallery,
+  LoadingScreen,
   TerminalText,
 } from "../../components";
 import { FirearmStorage } from "../../validation/storageSchemas";
-import { formatCurrency } from "../../utils/currency";
+import { formatCurrency } from "../../utils";
+import { useDeleteEntity } from "../../hooks";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -65,40 +67,21 @@ export const FirearmDetails = () => {
     }, [fetchFirearm])
   );
 
-  const handleDelete = async () => {
-    if (!firearm) return;
-
-    Alert.alert(
-      "Delete Firearm",
-      "Are you sure you want to delete this firearm? This action cannot be undone.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await storage.deleteFirearm(firearm.id);
-              navigation.goBack();
-            } catch (error) {
-              handleError(error, "FirearmDetails.handleDelete", { isUserFacing: true, userMessage: "Failed to delete firearm. Please try again." });
-            }
-          },
-        },
-      ]
-    );
-  };
+  const { confirmDelete } = useDeleteEntity(
+    async () => {
+      if (!firearm) return;
+      await storage.deleteFirearm(firearm.id);
+    },
+    {
+      label: "Firearm",
+      errorContext: "FirearmDetails.handleDelete",
+      errorUserMessage: "Failed to delete firearm. Please try again.",
+    },
+    () => navigation.goBack()
+  );
 
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-terminal-bg">
-        <ActivityIndicator size="large" color="#00ff00" />
-        <TerminalText className="mt-4">LOADING DATABASE...</TerminalText>
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (error || !firearm) {
@@ -178,7 +161,7 @@ export const FirearmDetails = () => {
               },
               {
                 caption: "DELETE",
-                onPress: handleDelete,
+                onPress: confirmDelete,
               },
               {
                 caption: "BACK",
