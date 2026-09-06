@@ -130,7 +130,8 @@ export const ImageGallery = ({
               >
                 <Image
                   source={resolveImageSource(imageIdentifier)}
-                  className={`w-full h-full rounded-lg ${isThumbnail ? "border-4 border-terminal-green" : ""}`}
+                  className={`rounded-lg ${isThumbnail ? "border-4 border-terminal-green" : ""}`}
+                  style={{ width: imageSize, height: imageSize }}
                   contentFit="cover"
                   placeholder="Loading..."
                   placeholderContentFit="cover"

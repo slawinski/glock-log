@@ -28,6 +28,7 @@ export const FirearmListItem = ({ firearm, onPress }: Props) => {
         {photoUri && (
           <FirearmImage
             photoUri={photoUri}
+            size={80}
             fill
             className="mr-3 rounded-lg"
           />

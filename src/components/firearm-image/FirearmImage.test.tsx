@@ -73,15 +73,12 @@ describe("FirearmImage", () => {
       mockResolveImageSource.mockReturnValue({ uri: "placeholder-image" });
 
       const { getByTestId } = render(
-        <FirearmImage fill testID="firearm-image" />
+        <FirearmImage fill size={80} testID="firearm-image" />
       );
       const container = getByTestId("firearm-image");
       const image = getByTestId("firearm-image-image");
 
-      expect(container.props.style).toEqual({
-        alignSelf: "stretch",
-        aspectRatio: 1,
-      });
+      expect(container.props.style).toEqual({ width: 80, height: 80 });
       expect(image.props.style).toEqual({ width: "100%", height: "100%" });
       expect(image.props.contentFit).toBe("cover");
     });

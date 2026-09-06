@@ -14,12 +14,13 @@ import { RootStackParamList } from "../../app/App";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import { useEntityForm, useImagePicker, useUnsavedChanges } from "../../hooks";
-import { normalizeImagePath } from "../../services/image-source-manager";
+import { normalizeImagePath, PlaceholderImageKey } from "../../services/image-source-manager";
 
 import {
   ErrorDisplay,
   ImageGallery,
   LoadingScreen,
+  PlaceholderImagePicker,
   SectionHeading,
   StickyActionBar,
   TerminalButton,
@@ -154,6 +155,10 @@ export const EditFirearm = () => {
     if (assets.length > 0 && assets[0].uri) {
       setPhotos((prev) => [...prev, assets[0].uri!]);
     }
+  };
+
+  const handlePlaceholderSelect = (imageName: PlaceholderImageKey) => {
+    setPhotos((prev) => [...prev, `placeholder:${imageName}`]);
   };
 
   const handleDeletePhoto = (index: number) => {
@@ -312,6 +317,9 @@ export const EditFirearm = () => {
                 allowThumbnailSelection={true}
               />
             )}
+            <View className="mt-4">
+              <PlaceholderImagePicker onSelect={handlePlaceholderSelect} />
+            </View>
           </View>
 
           <SectionHeading title="NOTES" className="mt-7" />

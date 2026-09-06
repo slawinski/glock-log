@@ -27,8 +27,8 @@ export const FirearmImage = ({
       <View
         className={`justify-center items-center overflow-hidden ${className}`}
         style={{
-          alignSelf: "stretch",
-          aspectRatio: 1,
+          width: size,
+          height: size,
         }}
         testID={testID}
       >

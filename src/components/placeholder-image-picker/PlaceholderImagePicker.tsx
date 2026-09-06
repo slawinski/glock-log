@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Pressable, Image, FlatList } from "react-native";
+import { View, Pressable, FlatList } from "react-native";
+import { Image } from "expo-image";
 import { TerminalText } from "../terminal-text/TerminalText";
 import {
   placeholderImages,
@@ -38,8 +39,9 @@ export const PlaceholderImagePicker = ({
             <Image
               testID={`placeholder-image-${item}`}
               source={placeholderImages[item]}
-              className={`w-24 h-24 border-2 ${selectedImageKey === item ? "border-terminal-green" : "border-terminal-border"}`}
-              resizeMode="contain"
+              className={`border-2 ${selectedImageKey === item ? "border-terminal-green" : "border-terminal-border"}`}
+              style={{ width: 96, height: 96 }}
+              contentFit="contain"
             />
           </Pressable>
         )}
