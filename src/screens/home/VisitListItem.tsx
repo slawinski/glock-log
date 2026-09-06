@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Pressable } from "react-native";
 import { RangeVisitStorage } from "../../validation/storageSchemas";
 import { TerminalText } from "../../components";
@@ -10,20 +9,23 @@ type Props = {
   firearmsById?: Record<string, string>;
 };
 
-export const VisitListItem = React.memo(function VisitListItem({
+export const VisitListItem = ({
   rangeVisit,
   onPress,
   firearmsById,
-}: Props) {
+}: Props) => {
+  const location = rangeVisit.location?.trim();
+  const firearmsUsed = rangeVisit.firearmsUsed ?? [];
+
   const totalRounds = Object.values(rangeVisit.ammunitionUsed || {}).reduce(
-    (sum, usage) => sum + usage.rounds,
+    (sum, usage) => sum + (usage.rounds || 0),
     0
   );
 
   const firearmSummary =
-    rangeVisit.firearmsUsed.length === 1
-      ? firearmsById?.[rangeVisit.firearmsUsed[0]] ?? "1 firearm"
-      : `${rangeVisit.firearmsUsed.length} firearms`;
+    firearmsUsed.length === 1
+      ? firearmsById?.[firearmsUsed[0]] ?? "1 firearm"
+      : `${firearmsUsed.length} firearms`;
 
   return (
     <Pressable
@@ -31,12 +33,12 @@ export const VisitListItem = React.memo(function VisitListItem({
       className="bg-terminal-bg border-2 border-terminal-border p-4 mb-2"
       style={({ pressed }) => pressed && { opacity: 0.7 }}
       accessibilityRole="button"
-      accessibilityLabel={rangeVisit.location}
+      accessibilityLabel={location || "Untitled visit"}
       testID={`visit-list-item-${rangeVisit.id}`}
     >
-      <View className="flex-1">
+      <View>
         <TerminalText className="text-lg" numberOfLines={2}>
-          {rangeVisit.location}
+          {location || "Untitled visit"}
         </TerminalText>
         <TerminalText>{formatDate(rangeVisit.date)}</TerminalText>
         <TerminalText>
@@ -45,4 +47,4 @@ export const VisitListItem = React.memo(function VisitListItem({
       </View>
     </Pressable>
   );
-});
+};

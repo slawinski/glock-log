@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Pressable } from "react-native";
 import { FirearmStorage } from "../../validation/storageSchemas";
 import { TerminalText, FirearmImage } from "../../components";
@@ -9,10 +8,7 @@ type Props = {
   onPress: (firearmId: string) => void;
 };
 
-export const FirearmListItem = React.memo(function FirearmListItem({
-  firearm,
-  onPress,
-}: Props) {
+export const FirearmListItem = ({ firearm, onPress }: Props) => {
   const photoUri = firearm.photos?.[0];
 
   return (
@@ -47,4 +43,4 @@ export const FirearmListItem = React.memo(function FirearmListItem({
       </View>
     </Pressable>
   );
-});
+};

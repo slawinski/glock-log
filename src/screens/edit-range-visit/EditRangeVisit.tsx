@@ -56,6 +56,9 @@ export const EditRangeVisit = () => {
   const scrollRef = useRef<ScrollView>(null);
   const fieldY = useRef<Record<string, number>>({});
   const initialPhotosRef = useRef<string[]>([]);
+  const originalAmmunitionUsedRef = useRef<
+    Record<string, { ammunitionId: string; rounds: number }> | undefined
+  >(undefined);
   const [photos, setPhotos] = useState<string[]>([]);
   const [firearms, setFirearms] = useState<
     { id: string; modelName: string; caliber: string }[]
@@ -67,20 +70,26 @@ export const EditRangeVisit = () => {
 
   const saveRangeVisit = async (data: RangeVisitInput) => {
     if (data.ammunitionUsed) {
-      for (const usage of Object.values(data.ammunitionUsed)) {
-        if (usage.ammunitionId) {
-          const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
-          if (!ammo) {
-            throw new Error(`Ammunition not found for ${usage.ammunitionId}`);
-          }
-          if (ammo.quantity < usage.rounds) {
-            Alert.alert(
-              "Insufficient ammunition",
-              `You only have ${ammo.quantity} rounds of ${ammo.brand} ${ammo.caliber} in inventory (entered: ${usage.rounds}).`,
-              [{ text: "Change ammunition", style: "cancel" }]
-            );
-            return;
-          }
+      for (const [key, usage] of Object.entries(data.ammunitionUsed)) {
+        if (!usage.ammunitionId) {
+          continue; // borrowed (external) ammo — no inventory check
+        }
+        const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
+        if (!ammo) {
+          throw new Error(`Ammunition not found for ${usage.ammunitionId}`);
+        }
+        // Only a NET increase in rounds consumes stock; reducing rounds (e.g.
+        // correcting a previous mistake) returns the difference to inventory.
+        const originalRounds =
+          originalAmmunitionUsedRef.current?.[key]?.rounds ?? 0;
+        const roundsDelta = usage.rounds - originalRounds;
+        if (roundsDelta > 0 && ammo.quantity < roundsDelta) {
+          Alert.alert(
+            "Insufficient ammunition",
+            `You only have ${ammo.quantity} rounds of ${ammo.brand} ${ammo.caliber} in inventory (this change adds ${roundsDelta}).`,
+            [{ text: "Change ammunition", style: "cancel" }]
+          );
+          return;
         }
       }
     }
@@ -166,6 +175,7 @@ export const EditRangeVisit = () => {
         });
         setPhotos(visit.photos ?? []);
         initialPhotosRef.current = visit.photos ?? [];
+        originalAmmunitionUsedRef.current = visit.ammunitionUsed;
       } else {
         setError("Range visit not found");
       }

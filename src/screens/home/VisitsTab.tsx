@@ -29,6 +29,14 @@ export const VisitsTab = ({
     return map;
   }, [firearms]);
 
+  const sortedVisits = useMemo(
+    () =>
+      [...rangeVisits].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      ),
+    [rangeVisits]
+  );
+
   const handleVisitPress = useCallback(
     (rangeVisitId: string) => {
       navigation.navigate("RangeVisitDetails", { id: rangeVisitId });
@@ -49,9 +57,10 @@ export const VisitsTab = ({
 
   return (
     <FlatList
-      data={rangeVisits}
+      data={sortedVisits}
       renderItem={renderVisitItem}
       keyExtractor={(item) => item.id}
+      removeClippedSubviews={false}
       onRefresh={onRefresh}
       refreshing={refreshing}
       ListEmptyComponent={

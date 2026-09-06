@@ -256,6 +256,13 @@ export const importData = async (
         try {
           const validated = validateBeforeSave(visit, rangeVisitStorageSchema);
 
+          // Reject visits with a blank location — a visit without a location is
+          // not meaningful and renders as an empty row on the Home list.
+          if (!validated.location || !validated.location.trim()) {
+            console.warn("Skipping range visit with empty location", validated.id);
+            continue;
+          }
+
           // Only apply usage if this is a NEW visit or if we are in restore mode
           // AND the firearm wasn't already imported with these rounds included.
           // Actually, if we are importing a bundle (firearms + visits), the firearms

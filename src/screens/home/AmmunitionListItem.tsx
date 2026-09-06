@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Pressable } from "react-native";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
 import { TerminalText } from "../../components";
@@ -10,11 +9,11 @@ type Props = {
   currency?: string;
 };
 
-export const AmmunitionListItem = React.memo(function AmmunitionListItem({
+export const AmmunitionListItem = ({
   ammunition,
   onPress,
   currency = "USD",
-}: Props) {
+}: Props) => {
   const isDepleted = ammunition.quantity === 0;
 
   return (
@@ -26,7 +25,7 @@ export const AmmunitionListItem = React.memo(function AmmunitionListItem({
       accessibilityLabel={`${ammunition.brand} ${ammunition.caliber}`}
       testID={`ammunition-list-item-${ammunition.id}`}
     >
-      <View className="flex-1">
+      <View>
         <TerminalText className="text-lg" numberOfLines={2}>
           {ammunition.brand}
         </TerminalText>
@@ -48,4 +47,4 @@ export const AmmunitionListItem = React.memo(function AmmunitionListItem({
       </View>
     </Pressable>
   );
-});
+};

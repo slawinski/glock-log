@@ -297,11 +297,57 @@ describe("EditRangeVisitScreen", () => {
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
         "Insufficient ammunition",
-        "You only have 5 rounds of Federal 9mm in inventory (entered: 50).",
+        "You only have 5 rounds of Federal 9mm in inventory (this change adds 50).",
         expect.any(Array)
       );
       expect(storage.saveRangeVisitWithAmmunition).not.toHaveBeenCalled();
     });
+  });
+
+  it("does not require stock when reducing rounds fired", async () => {
+    (storage.getRangeVisits as GetRangeVisitsMock).mockResolvedValue([
+      {
+        id: "test-id",
+        date: "2024-01-01T00:00:00.000Z",
+        location: "Test Range",
+        notes: "Test notes",
+        photos: [],
+        firearmsUsed: ["firearm-1"],
+        ammunitionUsed: {
+          "firearm-1": { ammunitionId: "ammo-1", rounds: 100 },
+        },
+        createdAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-01T00:00:00.000Z",
+      },
+    ]);
+    (storage.getAmmunition as GetAmmunitionMock).mockResolvedValue([
+      {
+        id: "ammo-1",
+        brand: "Federal",
+        caliber: "9mm",
+        grain: "115",
+        quantity: 0,
+        datePurchased: "2024-01-01T00:00:00.000Z",
+        amountPaid: 10,
+        createdAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-01T00:00:00.000Z",
+      },
+    ]);
+    renderScreen();
+
+    const roundsInput = await screen.findByTestId("rounds-input-firearm-1");
+    fireEvent.changeText(roundsInput, "50");
+
+    fireEvent.press(screen.getByText(/Save changes/));
+
+    await waitFor(() => {
+      expect(storage.saveRangeVisitWithAmmunition).toHaveBeenCalled();
+    });
+    expect(Alert.alert).not.toHaveBeenCalledWith(
+      "Insufficient ammunition",
+      expect.anything(),
+      expect.any(Array)
+    );
   });
 
   it("handles removing a firearm", async () => {

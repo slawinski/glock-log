@@ -114,10 +114,11 @@ export const AmmunitionTab = ({
         testIDPrefix="ammo-filter-"
       />
       <FlatList
-        data={filteredAmmunition}
-        renderItem={renderAmmunitionItem}
-        keyExtractor={(item) => item.id}
-        onRefresh={onRefresh}
+      data={filteredAmmunition}
+      renderItem={renderAmmunitionItem}
+      keyExtractor={(item) => item.id}
+      removeClippedSubviews={false}
+      onRefresh={onRefresh}
         refreshing={refreshing}
         ListEmptyComponent={renderEmptyState()}
       />

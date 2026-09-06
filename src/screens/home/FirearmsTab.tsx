@@ -38,6 +38,7 @@ export const FirearmsTab = ({
       data={firearms}
       renderItem={renderFirearmItem}
       keyExtractor={(item) => item.id}
+      removeClippedSubviews={false}
       onRefresh={onRefresh}
       refreshing={refreshing}
       ListEmptyComponent={
