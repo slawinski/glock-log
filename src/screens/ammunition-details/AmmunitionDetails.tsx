@@ -17,6 +17,7 @@ import {
   DetailRow,
   DetailSection,
   ErrorDisplay,
+  ImageGallery,
   LoadingScreen,
   MetricHero,
   TerminalButton,
@@ -142,6 +143,16 @@ export const AmmunitionDetails = () => {
           <TerminalText className="text-terminal-muted text-lg mb-4">
             {ammunition.caliber} • {ammunition.grain}
           </TerminalText>
+
+          {ammunition.photos && ammunition.photos.length > 0 && (
+            <View className="mb-6">
+              <ImageGallery
+                images={ammunition.photos}
+                size="large"
+                showDeleteButton={false}
+              />
+            </View>
+          )}
 
           <MetricHero
             value={ammunition.quantity.toLocaleString("en-US")}

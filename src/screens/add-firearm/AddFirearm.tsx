@@ -23,7 +23,7 @@ import {
   TerminalText,
   ToggleButton,
 } from "../../components";
-import { PlaceholderImageKey } from "../../services/image-source-manager";
+import { placeholderImages } from "../../services/image-source-manager";
 import { firearmInputSchema, FirearmFormData, FirearmInput } from "../../validation/inputSchemas";
 
 type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
@@ -108,7 +108,7 @@ export const AddFirearm = () => {
     }
   };
 
-  const handlePlaceholderSelect = (imageName: PlaceholderImageKey) => {
+  const handlePlaceholderSelect = (imageName: string) => {
     setPhotos([`placeholder:${imageName}`]);
   };
 
@@ -303,7 +303,10 @@ export const AddFirearm = () => {
 
             {photos.length === 0 && (
               <View className="w-full mb-4">
-                <PlaceholderImagePicker onSelect={handlePlaceholderSelect} />
+                <PlaceholderImagePicker
+                  images={placeholderImages}
+                  onSelect={handlePlaceholderSelect}
+                />
               </View>
             )}
           </View>

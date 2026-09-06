@@ -88,7 +88,7 @@ describe("Ammunition Input Schema", () => {
       caliber: "",
       brand: "",
       grain: "",
-      quantity: "0",
+      quantity: "-1",
       datePurchased: "not-a-date",
       amountPaid: "-1",
     };
@@ -102,7 +102,7 @@ describe("Ammunition Input Schema", () => {
           expect.objectContaining({ message: "Enter a brand." }),
           expect.objectContaining({ message: "Enter a grain." }),
           expect.objectContaining({
-            message: "Quantity must be greater than 0.",
+            message: "Quantity cannot be negative.",
           }),
           expect.objectContaining({ message: "Invalid datetime" }),
           expect.objectContaining({ message: "Enter a valid amount." }),

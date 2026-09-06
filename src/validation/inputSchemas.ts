@@ -62,9 +62,16 @@ export const ammunitionInputSchema = z.object({
     .string()
     .min(1, "Enter a grain.")
     .max(SHORT_FIELD_MAX, shortFieldMaxMessage("Grain")),
-  // Kept as a string while editing; an empty quantity is invalid and reported
-  // with the same message as a non-positive number.
-  quantity: numericString(1, "Quantity must be greater than 0."),
+  // Kept as a string while editing. Quantity is required but may be 0 — a
+  // depleted ammunition record is a valid inventory state.
+  quantity: z
+    .string()
+    .refine((raw) => raw.trim() !== "", "Enter a quantity.")
+    .transform((raw) => {
+      const parsed = Number(raw.trim());
+      return Number.isFinite(parsed) ? parsed : -1;
+    })
+    .pipe(z.number().min(0, "Quantity cannot be negative.")),
   datePurchased: z.string().datetime(),
   // Kept as a string while editing; an empty value is treated as 0 on save.
   amountPaid: numericString(0, "Enter a valid amount."),

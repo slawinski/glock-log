@@ -1,28 +1,40 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react-native';
-import { PlaceholderImagePicker } from './PlaceholderImagePicker';
+import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react-native";
+import { PlaceholderImagePicker } from "./PlaceholderImagePicker";
+import { placeholderImages } from "../../services/image-source-manager";
 
-describe('PlaceholderImagePicker', () => {
-  it('renders all placeholder image options', () => {
-    render(<PlaceholderImagePicker onSelect={() => {}} />);
-    // Assuming there are 5 placeholder images based on assets/images
+describe("PlaceholderImagePicker", () => {
+  it("renders all placeholder image options", () => {
+    render(
+      <PlaceholderImagePicker images={placeholderImages} onSelect={() => {}} />
+    );
+    // There are 5 firearm placeholder images.
     expect(screen.getAllByTestId(/placeholder-image-option-/).length).toBe(5);
   });
 
-  it('calls onSelect with the correct image key when an option is pressed', () => {
+  it("calls onSelect with the correct image key when an option is pressed", () => {
     const mockOnSelect = jest.fn();
-    render(<PlaceholderImagePicker onSelect={mockOnSelect} />);
-    const carbineOption = screen.getByTestId('placeholder-image-carbine-placeholder.png');
+    render(
+      <PlaceholderImagePicker images={placeholderImages} onSelect={mockOnSelect} />
+    );
+    const carbineOption = screen.getByTestId(
+      "placeholder-image-carbine-placeholder.png"
+    );
     fireEvent.press(carbineOption);
-    expect(mockOnSelect).toHaveBeenCalledWith('carbine-placeholder.png');
+    expect(mockOnSelect).toHaveBeenCalledWith("carbine-placeholder.png");
   });
 
-  it('highlights the selected image', () => {
+  it("highlights the selected image", () => {
     render(
-      <PlaceholderImagePicker onSelect={() => {}} selectedImageKey='pistol-placeholder.png' />
+      <PlaceholderImagePicker
+        images={placeholderImages}
+        onSelect={() => {}}
+        selectedImageKey="pistol-placeholder.png"
+      />
     );
-    const pistolOption = screen.getByTestId('placeholder-image-pistol-placeholder.png');
-    // With Tailwind, direct style assertion is complex. We primarily check for existence.
+    const pistolOption = screen.getByTestId(
+      "placeholder-image-pistol-placeholder.png"
+    );
     expect(pistolOption).toBeTruthy();
   });
 });

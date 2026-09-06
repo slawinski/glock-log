@@ -14,7 +14,7 @@ import { RootStackParamList } from "../../app/App";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import { useEntityForm, useImagePicker, useUnsavedChanges } from "../../hooks";
-import { normalizeImagePath, PlaceholderImageKey } from "../../services/image-source-manager";
+import { normalizeImagePath, placeholderImages } from "../../services/image-source-manager";
 
 import {
   ErrorDisplay,
@@ -162,7 +162,7 @@ export const EditFirearm = () => {
     }
   };
 
-  const handlePlaceholderSelect = (imageName: PlaceholderImageKey) => {
+  const handlePlaceholderSelect = (imageName: string) => {
     setPhotos((prev) => [...prev, `placeholder:${imageName}`]);
   };
 
@@ -349,7 +349,10 @@ export const EditFirearm = () => {
               />
             )}
             <View className="mt-4">
-              <PlaceholderImagePicker onSelect={handlePlaceholderSelect} />
+              <PlaceholderImagePicker
+                images={placeholderImages}
+                onSelect={handlePlaceholderSelect}
+              />
             </View>
           </View>
 

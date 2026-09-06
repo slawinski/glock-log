@@ -13,7 +13,9 @@ import { Controller, useWatch } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
 import {
   ErrorDisplay,
+  ImageGallery,
   LoadingScreen,
+  PlaceholderImagePicker,
   SectionHeading,
   StickyActionBar,
   TerminalDatePicker,
@@ -22,6 +24,7 @@ import {
 } from "../../components";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
+import { ammunitionPlaceholderImages } from "../../services/image-source-manager";
 import { useEntityForm, useUnsavedChanges } from "../../hooks";
 import { formatCurrency } from "../../utils";
 import {
@@ -134,6 +137,14 @@ export const EditAmmunition = () => {
 
   const captureY = (name: string) => (event: LayoutChangeEvent) => {
     fieldY.current[name] = event.nativeEvent.layout.y;
+  };
+
+  const handlePlaceholderSelect = (imageName: string) => {
+    setPhotos([`placeholder:${imageName}`]);
+  };
+
+  const handleDeletePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
   const watchedAmountPaid = useWatch({ control, name: "amountPaid" });
@@ -361,6 +372,24 @@ export const EditAmmunition = () => {
                 />
               )}
             />
+          </View>
+
+          <SectionHeading title="PHOTOS" className="mt-7" />
+          <View className="mb-4">
+            {photos.length > 0 && (
+              <ImageGallery
+                images={photos}
+                onDeleteImage={handleDeletePhoto}
+                size="medium"
+                showDeleteButton={true}
+              />
+            )}
+            {photos.length === 0 && (
+              <PlaceholderImagePicker
+                images={ammunitionPlaceholderImages}
+                onSelect={handlePlaceholderSelect}
+              />
+            )}
           </View>
 
           <SectionHeading title="NOTES" className="mt-7" />

@@ -101,7 +101,7 @@ describe("AddAmmunitionScreen", () => {
       expect(screen.getByText(/Enter a caliber./)).toBeTruthy();
       expect(screen.getByText(/Enter a brand./)).toBeTruthy();
       expect(screen.getByText(/Enter a grain./)).toBeTruthy();
-      expect(screen.getByText(/Quantity must be greater than 0./)).toBeTruthy();
+      expect(screen.getByText(/Enter a quantity./)).toBeTruthy();
     });
     expect(storage.saveAmmunition).not.toHaveBeenCalled();
     expect(Alert.alert).not.toHaveBeenCalled();

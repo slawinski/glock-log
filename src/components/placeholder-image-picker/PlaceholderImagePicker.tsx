@@ -2,21 +2,19 @@ import React from "react";
 import { View, Pressable, FlatList } from "react-native";
 import { Image } from "expo-image";
 import { TerminalText } from "../terminal-text/TerminalText";
-import {
-  placeholderImages,
-  PlaceholderImageKey,
-} from "../../services/image-source-manager";
 
 type Props = {
-  onSelect: (key: PlaceholderImageKey) => void;
-  selectedImageKey?: PlaceholderImageKey;
+  images: Record<string, number>;
+  onSelect: (key: string) => void;
+  selectedImageKey?: string;
 };
 
 export const PlaceholderImagePicker = ({
+  images,
   onSelect,
   selectedImageKey,
 }: Props) => {
-  const imageKeys = Object.keys(placeholderImages) as PlaceholderImageKey[];
+  const imageKeys = Object.keys(images);
 
   return (
     <View>
@@ -38,7 +36,7 @@ export const PlaceholderImagePicker = ({
           >
             <Image
               testID={`placeholder-image-${item}`}
-              source={placeholderImages[item]}
+              source={images[item]}
               className={`border-2 ${selectedImageKey === item ? "border-terminal-green" : "border-terminal-border"}`}
               style={{ width: 96, height: 96 }}
               contentFit="contain"

@@ -11,6 +11,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Controller, useWatch } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
 import {
+  ImageGallery,
+  PlaceholderImagePicker,
   SectionHeading,
   StickyActionBar,
   TerminalText,
@@ -18,6 +20,7 @@ import {
   TerminalDatePicker,
 } from "../../components";
 import { storage } from "../../services/storage-new";
+import { ammunitionPlaceholderImages } from "../../services/image-source-manager";
 import { useEntityForm, useUnsavedChanges } from "../../hooks";
 import { formatCurrency } from "../../utils";
 import {
@@ -46,6 +49,7 @@ export const AddAmmunition = () => {
   const scrollRef = useRef<ScrollView>(null);
   const fieldY = useRef<Record<string, number>>({});
   const [currency, setCurrency] = useState("USD");
+  const [photos, setPhotos] = useState<string[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -70,7 +74,7 @@ export const AddAmmunition = () => {
       data.amountPaid && data.quantity
         ? data.amountPaid / data.quantity
         : undefined;
-    await storage.saveAmmunition({ ...data, pricePerRound });
+    await storage.saveAmmunition({ ...data, photos, pricePerRound });
     form.reset(form.getValues());
     dirtyRef.current = false;
     navigation.goBack();
@@ -99,7 +103,7 @@ export const AddAmmunition = () => {
   } = form;
 
   const dirtyRef = useRef(false);
-  dirtyRef.current = isDirty;
+  dirtyRef.current = isDirty || photos.length > 0;
   useUnsavedChanges(dirtyRef);
 
   const firstInvalidField = FIELD_ORDER.find((name) => Boolean(errors[name]));
@@ -115,6 +119,14 @@ export const AddAmmunition = () => {
 
   const captureY = (name: string) => (event: LayoutChangeEvent) => {
     fieldY.current[name] = event.nativeEvent.layout.y;
+  };
+
+  const handlePlaceholderSelect = (imageName: string) => {
+    setPhotos([`placeholder:${imageName}`]);
+  };
+
+  const handleDeletePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
   const watchedAmountPaid = useWatch({ control, name: "amountPaid" });
@@ -300,6 +312,24 @@ export const AddAmmunition = () => {
                 />
               )}
             />
+          </View>
+
+          <SectionHeading title="PHOTOS" className="mt-7" />
+          <View className="mb-4">
+            {photos.length > 0 && (
+              <ImageGallery
+                images={photos}
+                onDeleteImage={handleDeletePhoto}
+                size="medium"
+                showDeleteButton={true}
+              />
+            )}
+            {photos.length === 0 && (
+              <PlaceholderImagePicker
+                images={ammunitionPlaceholderImages}
+                onSelect={handlePlaceholderSelect}
+              />
+            )}
           </View>
 
           <SectionHeading title="NOTES" className="mt-7" />

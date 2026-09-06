@@ -1,6 +1,6 @@
 import { View, Pressable } from "react-native";
 import { AmmunitionStorage } from "../../validation/storageSchemas";
-import { TerminalText } from "../../components";
+import { TerminalText, FirearmImage } from "../../components";
 import { formatCurrency } from "../../utils/currency";
 
 type Props = {
@@ -15,6 +15,7 @@ export const AmmunitionListItem = ({
   currency = "USD",
 }: Props) => {
   const isDepleted = ammunition.quantity === 0;
+  const photoUri = ammunition.photos?.[0];
 
   return (
     <Pressable
@@ -25,25 +26,35 @@ export const AmmunitionListItem = ({
       accessibilityLabel={`${ammunition.brand} ${ammunition.caliber}`}
       testID={`ammunition-list-item-${ammunition.id}`}
     >
-      <View>
-        <TerminalText className="text-lg" numberOfLines={2}>
-          {ammunition.brand}
-        </TerminalText>
-        <TerminalText>
-          {ammunition.caliber} • {ammunition.grain}
-        </TerminalText>
-        {isDepleted ? (
-          <TerminalText>0 rounds • Depleted</TerminalText>
-        ) : (
-          <View className="flex-row flex-wrap">
-            <TerminalText>{ammunition.quantity} rounds remaining</TerminalText>
-            {ammunition.pricePerRound ? (
-              <TerminalText>
-                {` • ${formatCurrency(ammunition.pricePerRound, currency)} / round`}
-              </TerminalText>
-            ) : null}
-          </View>
+      <View className="flex-row items-center">
+        {photoUri && (
+          <FirearmImage
+            photoUri={photoUri}
+            size={64}
+            fill
+            className="mr-3 rounded-lg"
+          />
         )}
+        <View className="flex-1">
+          <TerminalText className="text-lg" numberOfLines={2}>
+            {ammunition.brand}
+          </TerminalText>
+          <TerminalText>
+            {ammunition.caliber} • {ammunition.grain}
+          </TerminalText>
+          {isDepleted ? (
+            <TerminalText>0 rounds • Depleted</TerminalText>
+          ) : (
+            <View className="flex-row flex-wrap">
+              <TerminalText>{ammunition.quantity} rounds remaining</TerminalText>
+              {ammunition.pricePerRound ? (
+                <TerminalText>
+                  {` • ${formatCurrency(ammunition.pricePerRound, currency)} / round`}
+                </TerminalText>
+              ) : null}
+            </View>
+          )}
+        </View>
       </View>
     </Pressable>
   );
