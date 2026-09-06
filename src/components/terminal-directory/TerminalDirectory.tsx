@@ -26,7 +26,7 @@ export const TerminalDirectory: FC<Props> = ({ title, items, className }) => {
         return (
           <Pressable
             key={index}
-            className="px-2 py-2"
+            className="px-2 py-3"
             onPress={item.onPress}
             disabled={item.disabled}
             accessibilityRole="button"

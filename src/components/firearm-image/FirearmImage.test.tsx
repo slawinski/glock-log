@@ -69,6 +69,23 @@ describe("FirearmImage", () => {
       expect(image.props.style).toHaveProperty("height", size * 0.9);
     });
 
+    it("renders a square fill image when fill is set", () => {
+      mockResolveImageSource.mockReturnValue({ uri: "placeholder-image" });
+
+      const { getByTestId } = render(
+        <FirearmImage fill testID="firearm-image" />
+      );
+      const container = getByTestId("firearm-image");
+      const image = getByTestId("firearm-image-image");
+
+      expect(container.props.style).toEqual({
+        alignSelf: "stretch",
+        aspectRatio: 1,
+      });
+      expect(image.props.style).toEqual({ width: "100%", height: "100%" });
+      expect(image.props.contentFit).toBe("cover");
+    });
+
     it("applies custom className", () => {
       mockResolveImageSource.mockReturnValue({ uri: "placeholder-image" });
       

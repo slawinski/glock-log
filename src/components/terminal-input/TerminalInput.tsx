@@ -13,8 +13,14 @@ type Props = {
   value: string | number | null | undefined;
   onChangeText: (text: string) => void;
   placeholder?: string;
-  keyboardType?: "default" | "numeric" | "email-address" | "phone-pad";
+  keyboardType?:
+    | "default"
+    | "numeric"
+    | "decimal-pad"
+    | "email-address"
+    | "phone-pad";
   multiline?: boolean;
+  secureTextEntry?: boolean;
   className?: string;
   testID?: string;
   label?: string;
@@ -29,6 +35,7 @@ export const TerminalInput = ({
   placeholder,
   keyboardType = "default",
   multiline = false,
+  secureTextEntry = false,
   className = "",
   testID,
   label,
@@ -38,6 +45,9 @@ export const TerminalInput = ({
 }: Props) => {
   const displayValue =
     value === null || value === undefined ? "" : value.toString();
+  const maskedValue = secureTextEntry
+    ? "•".repeat(displayValue.length)
+    : displayValue;
   const [isFocused, setIsFocused] = useState(false);
   const [showCursor, setShowCursor] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(displayValue.length);
@@ -131,7 +141,7 @@ export const TerminalInput = ({
                 <Text
                   className={`text-terminal-green font-terminal text-[24px] leading-[28px] ${className}`}
                 >
-                  {displayValue.slice(0, cursorPosition)}
+                  {maskedValue.slice(0, cursorPosition)}
                 </Text>
               )}
 
@@ -150,7 +160,7 @@ export const TerminalInput = ({
                         : COLORS.TERMINAL_GREEN,
                   }}
                 >
-                  {displayValue.charAt(cursorPosition)}
+                  {maskedValue.charAt(cursorPosition)}
                 </Text>
               ) : (
                 /* Show cursor at end of text when no character to highlight */
@@ -170,7 +180,7 @@ export const TerminalInput = ({
                 <Text
                   className={`text-terminal-green font-terminal text-[24px] leading-[28px] ${className}`}
                 >
-                  {displayValue.slice(cursorPosition + 1)}
+                  {maskedValue.slice(cursorPosition + 1)}
                 </Text>
               )}
             </View>
@@ -183,6 +193,10 @@ export const TerminalInput = ({
           onChangeText={onChangeText}
           onSelectionChange={handleSelectionChange}
           placeholder=""
+          secureTextEntry={secureTextEntry}
+          autoCapitalize={secureTextEntry ? "none" : "sentences"}
+          autoCorrect={!secureTextEntry}
+          spellCheck={!secureTextEntry}
           keyboardType={keyboardType}
           multiline={multiline}
           editable={!disabled}

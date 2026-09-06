@@ -35,6 +35,8 @@ jest.mock("react-native-safe-area-context", () => ({
 jest.mock("../components", () => ({
   CRTOverlayShader: () => null,
   BiometricLock: ({ children }: { children: React.ReactNode }) => children,
+  CrtSettingsProvider: ({ children }: { children: React.ReactNode }) => children,
+  useCrtSettings: () => ({ crtEnabled: true, setCrtEnabled: jest.fn() }),
 }));
 
 // Mock storage initialization gate

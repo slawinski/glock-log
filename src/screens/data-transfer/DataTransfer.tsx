@@ -8,7 +8,12 @@ import {
   unzipWithPassword,
   isPasswordProtected,
 } from "react-native-zip-archive";
-import { TerminalText, TerminalButton, ErrorDisplay } from "../../components";
+import {
+  TerminalText,
+  TerminalButton,
+  TerminalInput,
+  ErrorDisplay,
+} from "../../components";
 import { storage } from "../../services/storage-new";
 import { setNoBackupFlag } from "../../services/image-storage";
 import { handleError, createAppError } from "../../services/error-handler";
@@ -20,7 +25,6 @@ import {
   isImportData,
   isPathInside,
 } from "../../services/data-transfer-service";
-import { TerminalPasswordInput } from "./TerminalPasswordInput";
 
 type PendingImport = {
   zipUri: string;
@@ -33,13 +37,17 @@ export const DataTransfer = () => {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [exportPassword, setExportPassword] = useState("");
   const [exportPasswordConfirm, setExportPasswordConfirm] = useState("");
-  const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
+  const [pendingImport, setPendingImport] = useState<PendingImport | null>(
+    null,
+  );
   const [importPassword, setImportPassword] = useState("");
 
   const cleanupTempDir = async (dir: string) => {
     try {
       await FileSystem.deleteAsync(dir, { idempotent: true });
-    } catch { /* ignore cleanup errors */ }
+    } catch {
+      /* ignore cleanup errors */
+    }
   };
 
   const handleExport = async () => {
@@ -120,7 +128,7 @@ export const DataTransfer = () => {
       await unzipWithPassword(
         cleanPath(pending.zipUri),
         cleanPath(pending.tempExtractDir),
-        importPassword
+        importPassword,
       );
 
       setPendingImport(null);
@@ -132,7 +140,7 @@ export const DataTransfer = () => {
     } catch (err) {
       const appError = createAppError(
         err,
-        "Failed to unlock archive. Check the passphrase and try again."
+        "Failed to unlock archive. Check the passphrase and try again.",
       );
       setError(appError.userMessage);
       handleError(err, "DataTransfer.handleUnlockArchive");
@@ -175,7 +183,9 @@ export const DataTransfer = () => {
       const passwordProtected = await isPasswordProtected(cleanPath(zipUri));
 
       tempExtractDir = `${FileSystem.cacheDirectory}triggernote_import_${Date.now()}`;
-      await FileSystem.makeDirectoryAsync(tempExtractDir, { intermediates: true });
+      await FileSystem.makeDirectoryAsync(tempExtractDir, {
+        intermediates: true,
+      });
 
       if (passwordProtected) {
         // Hold the archive and ask for the passphrase before extracting.
@@ -262,7 +272,7 @@ export const DataTransfer = () => {
         },
         {
           text: "FULL RESTORE",
-          style: "destructive",
+          style: "default",
           onPress: () => {
             Alert.alert(
               "Confirm Full Restore",
@@ -277,21 +287,22 @@ export const DataTransfer = () => {
                 },
                 {
                   text: "YES, WIPE AND RESTORE",
-                  style: "destructive",
-                  onPress: () => performImport(bundle, "restore", tempExtractDir),
+                  style: "default",
+                  onPress: () =>
+                    performImport(bundle, "restore", tempExtractDir),
                 },
-              ]
+              ],
             );
           },
         },
-      ]
+      ],
     );
   };
 
   const performImport = async (
     data: ImportData,
     strategy: "merge" | "restore",
-    tempDir: string
+    tempDir: string,
   ) => {
     try {
       setLoading(true);
@@ -316,7 +327,9 @@ export const DataTransfer = () => {
         // Ensure dir exists
         const dirInfo = await FileSystem.getInfoAsync(appImagesDir);
         if (!dirInfo.exists) {
-          await FileSystem.makeDirectoryAsync(appImagesDir, { intermediates: true });
+          await FileSystem.makeDirectoryAsync(appImagesDir, {
+            intermediates: true,
+          });
           await setNoBackupFlag(appImagesDir);
         }
 
@@ -326,7 +339,9 @@ export const DataTransfer = () => {
           const to = `${appImagesDir}${file}`;
 
           if (!isPathInside(extractedImagesDir, from)) {
-            console.warn(`Skipping archive entry outside the extraction root: ${file}`);
+            console.warn(
+              `Skipping archive entry outside the extraction root: ${file}`,
+            );
             continue;
           }
           if (!isPathInside(appImagesDir, to)) {
@@ -348,7 +363,7 @@ export const DataTransfer = () => {
         "Import Success",
         strategy === "restore"
           ? "Database and images have been fully restored."
-          : "Database and images have been updated successfully."
+          : "Database and images have been updated successfully.",
       );
     } catch (err) {
       const appError = createAppError(err, "Failed to import data.");
@@ -390,24 +405,26 @@ export const DataTransfer = () => {
         <TerminalText className="text-terminal-highlight mb-2">
           ENCRYPTION PASSPHRASE (MIN 4 CHARACTERS):
         </TerminalText>
-        <TerminalPasswordInput
+        <TerminalInput
           value={exportPassword}
           onChangeText={setExportPassword}
-          placeholder="ENTER PASSPHRASE"
+          placeholder="Enter passphrase"
           label="Export passphrase"
           testID="export-password-input"
+          secureTextEntry
         />
         <TerminalText className="text-terminal-highlight mb-2 mt-4">
           CONFIRM PASSPHRASE:
         </TerminalText>
-        <TerminalPasswordInput
+        <TerminalInput
           value={exportPasswordConfirm}
           onChangeText={setExportPasswordConfirm}
-          placeholder="CONFIRM PASSPHRASE"
+          placeholder="Confirm passphrase"
           label="Confirm export passphrase"
           testID="export-password-confirm-input"
+          secureTextEntry
         />
-        <TerminalText className="text-terminal-warning text-sm mt-2 mb-4">
+        <TerminalText className="text-terminal-green text-sm mt-2 mb-4">
           * The archive is AES-256 encrypted. The passphrase is never stored.
         </TerminalText>
 
@@ -422,19 +439,20 @@ export const DataTransfer = () => {
       <View className="border-t border-terminal-dim my-4" />
 
       {pendingImport && (
-        <View className="mb-8 border-2 border-terminal-warning p-4">
-          <TerminalText className="text-terminal-warning text-xl mb-2">
+        <View className="mb-8 border-2 border-terminal-border p-4">
+          <TerminalText className="text-terminal-green text-xl mb-2">
             ARCHIVE IS PASSWORD PROTECTED
           </TerminalText>
           <TerminalText className="mb-4">
             Enter the passphrase used to encrypt this backup:
           </TerminalText>
-          <TerminalPasswordInput
+          <TerminalInput
             value={importPassword}
             onChangeText={setImportPassword}
             placeholder="ENTER ARCHIVE PASSPHRASE"
             label="Archive passphrase"
             testID="import-password-input"
+            secureTextEntry
           />
           <View className="flex-row mt-4">
             <TerminalButton
@@ -447,7 +465,7 @@ export const DataTransfer = () => {
               caption="CANCEL"
               onPress={handleCancelPendingImport}
               disabled={loading}
-              className="flex-1 ml-2 border-terminal-warning"
+              className="flex-1 ml-2"
             />
           </View>
         </View>
@@ -456,17 +474,18 @@ export const DataTransfer = () => {
       <View className="mb-8">
         <TerminalText className="text-xl mb-4">SECURE DATA IMPORT</TerminalText>
         <TerminalText className="mb-4">
-          Restore or update your database from a previously exported .ZIP archive.
+          Restore or update your database from a previously exported .ZIP
+          archive.
         </TerminalText>
-        <TerminalText className="text-terminal-warning mb-4">
-          CHOOSE STRATEGY: Merge will add new records and images.
-          Full Restore will WIPE your current database and images before replacing them.
+        <TerminalText className="text-terminal-green mb-4">
+          CHOOSE STRATEGY: Merge will add new records and images. Full Restore
+          will WIPE your current database and images before replacing them.
         </TerminalText>
         <TerminalButton
           caption={loading ? "PROCESSING..." : "IMPORT SECURE BACKUP"}
           onPress={handleImport}
           disabled={loading}
-          className="w-full border-terminal-warning"
+          className="w-full"
         />
       </View>
 

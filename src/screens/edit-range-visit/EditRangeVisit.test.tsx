@@ -39,6 +39,8 @@ jest.spyOn(Alert, "alert");
 
 // Mock navigation
 const mockGoBack = jest.fn();
+const mockAddListener = jest.fn(() => jest.fn());
+const mockDispatch = jest.fn();
 const mockRoute = { params: { id: "test-id" } };
 jest.mock("@react-navigation/native", () => {
   const actualNav = jest.requireActual("@react-navigation/native") as Record<
@@ -49,6 +51,8 @@ jest.mock("@react-navigation/native", () => {
     ...actualNav,
     useNavigation: () => ({
       goBack: mockGoBack,
+      addListener: mockAddListener,
+      dispatch: mockDispatch,
     }),
     useRoute: () => mockRoute,
   };
@@ -209,9 +213,9 @@ describe("EditRangeVisitScreen", () => {
     });
 
     fireEvent.changeText(screen.getByDisplayValue("Test Range"), "");
-    fireEvent.press(screen.getByText(/SAVE/));
+    fireEvent.press(screen.getByText(/Save changes/));
 
-    expect(await screen.findByText(/Location is required/)).toBeTruthy();
+    expect(await screen.findByText(/Enter a location./)).toBeTruthy();
     expect(storage.saveRangeVisitWithAmmunition).not.toHaveBeenCalled();
     expect(Alert.alert).not.toHaveBeenCalled();
   });
@@ -230,7 +234,7 @@ describe("EditRangeVisitScreen", () => {
     );
     fireEvent.changeText(roundsInput, "75");
 
-    const saveButton = screen.getByText(/SAVE/);
+    const saveButton = screen.getByText(/Save changes/);
     fireEvent.press(saveButton);
 
     await waitFor(() => {
@@ -254,18 +258,49 @@ describe("EditRangeVisitScreen", () => {
     ).mockRejectedValue(new Error("Save failed"));
     renderScreen();
     await waitFor(() => {
-      const saveButton = screen.getByText(/SAVE/);
+      const saveButton = screen.getByText(/Save changes/);
       fireEvent.press(saveButton);
       expect(Alert.alert).toHaveBeenCalledWith("Error", "Failed to update range visit. Please try again.");
     });
   });
 
-  it("navigates back when cancel button is pressed", async () => {
+  it("shows a specific alert when ammunition stock is insufficient", async () => {
+    (storage.getAmmunition as GetAmmunitionMock).mockResolvedValue([
+      {
+        id: "ammo-1",
+        brand: "Federal",
+        caliber: "9mm",
+        grain: "115",
+        quantity: 5,
+        datePurchased: "2024-01-01T00:00:00.000Z",
+        amountPaid: 10,
+        createdAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-01T00:00:00.000Z",
+      },
+    ]);
     renderScreen();
+
+    const roundsInput = await screen.findByTestId("rounds-input-firearm-1");
+    fireEvent.changeText(roundsInput, "50");
+
+    fireEvent.press(screen.getByText("Select Ammunition"));
+
+    const selectAmmoCall = (Alert.alert as jest.Mock).mock.calls.find(
+      (call: unknown[]) => call[0] === "Select Ammunition"
+    );
+    expect(selectAmmoCall).toBeTruthy();
+    const ammoButtons = selectAmmoCall![2] as Array<{ onPress?: () => void }>;
+    ammoButtons[0].onPress?.();
+
+    fireEvent.press(screen.getByText(/Save changes/));
+
     await waitFor(() => {
-      const cancelButton = screen.getByText(/CANCEL/);
-      fireEvent.press(cancelButton);
-      expect(mockGoBack).toHaveBeenCalled();
+      expect(Alert.alert).toHaveBeenCalledWith(
+        "Insufficient ammunition",
+        "You only have 5 rounds of Federal 9mm in inventory (entered: 50).",
+        expect.any(Array)
+      );
+      expect(storage.saveRangeVisitWithAmmunition).not.toHaveBeenCalled();
     });
   });
 

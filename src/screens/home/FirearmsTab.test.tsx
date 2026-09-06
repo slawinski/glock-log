@@ -18,6 +18,20 @@ jest.mock("../../components", () => ({
       </View>
     );
   },
+  EmptyState: ({ title, message, primaryAction, ...props }: any) => {
+    const { View, Text, Pressable } = require("react-native");
+    return (
+      <View {...props}>
+        <Text>{title}</Text>
+        <Text>{message}</Text>
+        {primaryAction && (
+          <Pressable onPress={primaryAction.onPress}>
+            <Text>{primaryAction.caption}</Text>
+          </Pressable>
+        )}
+      </View>
+    );
+  },
 }));
 
 const Stack = createNativeStackNavigator();
@@ -33,6 +47,7 @@ const renderWithNavigation = (component: React.ReactElement) => {
           {() => <TestComponent component={component} />}
         </Stack.Screen>
         <Stack.Screen name="FirearmDetails">{() => <></>}</Stack.Screen>
+        <Stack.Screen name="AddFirearm">{() => <></>}</Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -79,10 +94,12 @@ describe("FirearmsTab", () => {
       />
     );
 
-    expect(getByText("Glock 19 (9mm)")).toBeTruthy();
-    expect(getByText("500 rounds")).toBeTruthy();
-    expect(getByText("Smith & Wesson M&P (.40 S&W)")).toBeTruthy();
-    expect(getByText("300 rounds")).toBeTruthy();
+    expect(getByText("Glock 19")).toBeTruthy();
+    expect(getByText("9mm")).toBeTruthy();
+    expect(getByText("500 rounds fired")).toBeTruthy();
+    expect(getByText("Smith & Wesson M&P")).toBeTruthy();
+    expect(getByText(".40 S&W")).toBeTruthy();
+    expect(getByText("300 rounds fired")).toBeTruthy();
   });
 
   it("displays empty state when no firearms", () => {
@@ -90,7 +107,7 @@ describe("FirearmsTab", () => {
       <FirearmsTab firearms={[]} onRefresh={mockOnRefresh} refreshing={false} />
     );
 
-    expect(getByText("NO FIREARMS FOUND")).toBeTruthy();
+    expect(getByText("No firearms yet")).toBeTruthy();
   });
 
   it("formats dates correctly", () => {
@@ -102,11 +119,11 @@ describe("FirearmsTab", () => {
       />
     );
 
-    const dateElements = getAllByText(/Added: \d+\/\d+\/\d+/);
+    const dateElements = getAllByText(/Added \d+\/\d+\/\d+/);
     expect(dateElements.length).toBeGreaterThan(0);
   });
 
-  it("displays firearm images", () => {
+  it("displays firearm image only when a photo exists", () => {
     const { getAllByTestId } = renderWithNavigation(
       <FirearmsTab
         firearms={mockFirearms}
@@ -116,11 +133,11 @@ describe("FirearmsTab", () => {
     );
 
     const images = getAllByTestId("firearm-image");
-    expect(images).toHaveLength(2);
+    expect(images).toHaveLength(1);
   });
 
   it("handles firearm item press", () => {
-    const { getByText } = renderWithNavigation(
+    const { getByTestId } = renderWithNavigation(
       <FirearmsTab
         firearms={mockFirearms}
         onRefresh={mockOnRefresh}
@@ -128,13 +145,12 @@ describe("FirearmsTab", () => {
       />
     );
 
-    const firstFirearm = getByText("Glock 19 (9mm)");
-    fireEvent.press(firstFirearm.parent!);
+    fireEvent.press(getByTestId("firearm-list-item-1"));
     // Navigation would be handled by the navigation mock
   });
 
-  it("displays navigation arrow", () => {
-    const { getAllByText } = renderWithNavigation(
+  it("does not render a standalone chevron", () => {
+    const { queryAllByText } = renderWithNavigation(
       <FirearmsTab
         firearms={mockFirearms}
         onRefresh={mockOnRefresh}
@@ -142,8 +158,7 @@ describe("FirearmsTab", () => {
       />
     );
 
-    const arrows = getAllByText(">");
-    expect(arrows).toHaveLength(2);
+    expect(queryAllByText(">")).toHaveLength(0);
   });
 
   it("handles refresh", () => {
@@ -183,7 +198,7 @@ describe("FirearmsTab", () => {
       updatedAt: "2023-03-01T00:00:00.000Z",
     };
 
-    const { getByText, getByTestId } = renderWithNavigation(
+    const { getByText, queryByTestId } = renderWithNavigation(
       <FirearmsTab
         firearms={[firearmWithoutPhotos]}
         onRefresh={mockOnRefresh}
@@ -191,8 +206,8 @@ describe("FirearmsTab", () => {
       />
     );
 
-    expect(getByText("Beretta 92FS (9mm)")).toBeTruthy();
-    expect(getByTestId("firearm-image")).toBeTruthy();
+    expect(getByText("Beretta 92FS")).toBeTruthy();
+    expect(queryByTestId("firearm-image")).toBeNull();
   });
 
   it("truncates long model names", () => {

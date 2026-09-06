@@ -25,12 +25,16 @@ jest.mock("react-native-image-picker", () => ({
 
 // Mock navigation
 const mockGoBack = jest.fn();
+const mockAddListener = jest.fn(() => jest.fn());
+const mockDispatch = jest.fn();
 jest.mock("@react-navigation/native", () => {
   const actualNav = jest.requireActual("@react-navigation/native");
   return {
     ...actualNav,
     useNavigation: () => ({
       goBack: mockGoBack,
+      addListener: mockAddListener,
+      dispatch: mockDispatch,
     }),
   };
 });
@@ -60,8 +64,7 @@ describe("AddFirearmScreen", () => {
     expect(screen.getByText(/AMOUNT PAID/)).toBeTruthy();
     expect(screen.getByText(/PURCHASE DATE/)).toBeTruthy();
     expect(screen.getByText(/ADD PHOTO/)).toBeTruthy();
-    expect(screen.getByText(/CANCEL/)).toBeTruthy();
-    expect(screen.getByText(/SAVE FIREARM/)).toBeTruthy();
+    expect(screen.getByText(/Save firearm/)).toBeTruthy();
   });
 
   it("handles form input changes", () => {
@@ -105,12 +108,12 @@ describe("AddFirearmScreen", () => {
     (storage.saveFirearm as jest.Mock).mockResolvedValue(undefined);
     renderScreen();
 
-    const saveButton = screen.getByText(/SAVE FIREARM/);
+    const saveButton = screen.getByText(/Save firearm/);
     fireEvent.press(saveButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/Model name is required/)).toBeTruthy();
-      expect(screen.getByText(/Caliber is required/)).toBeTruthy();
+      expect(screen.getByText(/Enter a model name./)).toBeTruthy();
+      expect(screen.getByText(/Enter a caliber./)).toBeTruthy();
     });
     expect(storage.saveFirearm).not.toHaveBeenCalled();
     expect(Alert.alert).not.toHaveBeenCalled();
@@ -128,7 +131,7 @@ describe("AddFirearmScreen", () => {
     fireEvent.changeText(caliberInput, "9mm");
     fireEvent.changeText(amountPaidInput, "500");
 
-    const saveButton = screen.getByText(/SAVE FIREARM/);
+    const saveButton = screen.getByText(/Save firearm/);
     fireEvent.press(saveButton);
 
     await waitFor(() => {
@@ -157,7 +160,7 @@ describe("AddFirearmScreen", () => {
     fireEvent.changeText(caliberInput, "9mm");
     fireEvent.changeText(amountPaidInput, "500");
 
-    const saveButton = screen.getByText(/SAVE FIREARM/);
+    const saveButton = screen.getByText(/Save firearm/);
     fireEvent.press(saveButton);
 
     await waitFor(() => {
@@ -166,14 +169,5 @@ describe("AddFirearmScreen", () => {
         "Failed to create firearm. Please try again."
       );
     });
-  });
-
-  it("navigates back when cancel button is pressed", () => {
-    renderScreen();
-
-    const cancelButton = screen.getByText(/CANCEL/);
-    fireEvent.press(cancelButton);
-
-    expect(mockGoBack).toHaveBeenCalled();
   });
 });

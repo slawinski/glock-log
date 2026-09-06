@@ -676,6 +676,7 @@ describe("storage service", () => {
       expect(await storage.getSettings()).toEqual({
         currency: "USD",
         biometricLockEnabled: true,
+        crtEffectEnabled: true,
       });
     });
 
@@ -688,6 +689,20 @@ describe("storage service", () => {
       expect(await storage.getSettings()).toEqual({
         currency: "EUR",
         biometricLockEnabled: true,
+        crtEffectEnabled: true,
+      });
+    });
+
+    it("defaults crtEffectEnabled to true for legacy settings", async () => {
+      memoryStorage.map.set(
+        "@storage:settings",
+        JSON.stringify({ currency: "EUR", biometricLockEnabled: false })
+      );
+
+      expect(await storage.getSettings()).toEqual({
+        currency: "EUR",
+        biometricLockEnabled: false,
+        crtEffectEnabled: true,
       });
     });
 
@@ -700,6 +715,24 @@ describe("storage service", () => {
       expect(await storage.getSettings()).toEqual({
         currency: "EUR",
         biometricLockEnabled: false,
+        crtEffectEnabled: true,
+      });
+    });
+
+    it("reads an explicit crtEffectEnabled of false", async () => {
+      memoryStorage.map.set(
+        "@storage:settings",
+        JSON.stringify({
+          currency: "EUR",
+          biometricLockEnabled: true,
+          crtEffectEnabled: false,
+        })
+      );
+
+      expect(await storage.getSettings()).toEqual({
+        currency: "EUR",
+        biometricLockEnabled: true,
+        crtEffectEnabled: false,
       });
     });
 
@@ -709,6 +742,7 @@ describe("storage service", () => {
       expect(await storage.getSettings()).toEqual({
         currency: "USD",
         biometricLockEnabled: true,
+        crtEffectEnabled: true,
       });
       expect(handleError).toHaveBeenCalledWith(
         expect.any(Error),
@@ -717,24 +751,35 @@ describe("storage service", () => {
       );
     });
 
-    it("setCurrency preserves biometricLockEnabled and vice versa", async () => {
+    it("setCurrency preserves biometricLockEnabled and crtEffectEnabled", async () => {
       await storage.setCurrency("EUR");
       await storage.setBiometricLockEnabled(false);
+      await storage.setCrtEffectEnabled(false);
       expect(await storage.getSettings()).toEqual({
         currency: "EUR",
         biometricLockEnabled: false,
+        crtEffectEnabled: false,
       });
 
       await storage.setCurrency("GBP");
       expect(await storage.getSettings()).toEqual({
         currency: "GBP",
         biometricLockEnabled: false,
+        crtEffectEnabled: false,
       });
 
       await storage.setBiometricLockEnabled(true);
       expect(await storage.getSettings()).toEqual({
         currency: "GBP",
         biometricLockEnabled: true,
+        crtEffectEnabled: false,
+      });
+
+      await storage.setCrtEffectEnabled(true);
+      expect(await storage.getSettings()).toEqual({
+        currency: "GBP",
+        biometricLockEnabled: true,
+        crtEffectEnabled: true,
       });
     });
 
@@ -763,6 +808,7 @@ describe("storage service", () => {
       expect(await storage.getSettings()).toEqual({
         currency: "EUR",
         biometricLockEnabled: false,
+        crtEffectEnabled: true,
       });
       expect(memoryStorage.map.has("image_paths_firearm_abc")).toBe(false);
     });

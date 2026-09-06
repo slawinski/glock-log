@@ -10,7 +10,7 @@ type Firearm = {
 };
 
 type AmmunitionUsed = {
-  [key: string]: { ammunitionId?: string; rounds: number | null };
+  [key: string]: { ammunitionId?: string; rounds: string };
 };
 
 type FirearmsUsedInputProps = {
@@ -19,11 +19,11 @@ type FirearmsUsedInputProps = {
   selectedFirearms: string[];
   ammunitionUsed: AmmunitionUsed;
   onToggleFirearm: (firearmId: string) => void;
-  onRoundsChange: (firearmId: string, rounds: number | null) => void;
+  onRoundsChange: (firearmId: string, rounds: string) => void;
   onAmmunitionSelect: (firearmId: string, ammunitionId: string) => void;
   onAddBorrowedAmmunition: () => void;
   onRemoveBorrowedAmmunition: (key: string) => void;
-  onBorrowedAmmunitionRoundsChange: (key: string, rounds: number | null) => void;
+  onBorrowedAmmunitionRoundsChange: (key: string, rounds: string) => void;
 };
 
 export const FirearmsUsedInput: FC<
@@ -50,7 +50,6 @@ export const FirearmsUsedInput: FC<
   return (
     <View>
       <View className="mb-4">
-        <TerminalText>FIREARMS USED</TerminalText>
         {firearms.map((firearm) => (
           <View key={firearm.id} className="mb-2">
             <Pressable
@@ -61,12 +60,15 @@ export const FirearmsUsedInput: FC<
                   : "border-terminal-border"
               }`}
               accessibilityRole="button"
-              accessibilityLabel={firearm.modelName}
+              accessibilityLabel={`${firearm.modelName} ${firearm.caliber}`}
               accessibilityState={{
                 selected: selectedFirearms.includes(firearm.id),
               }}
             >
               <TerminalText>{firearm.modelName}</TerminalText>
+              <TerminalText className="text-sm text-terminal-muted">
+                {firearm.caliber}
+              </TerminalText>
             </Pressable>
             {selectedFirearms.includes(firearm.id) && (
               <View className="mt-2">
@@ -74,11 +76,8 @@ export const FirearmsUsedInput: FC<
                 <View className="flex-row items-center">
                   <View className="flex-1 mr-2">
                     <TerminalInput
-                      value={ammunitionUsed[firearm.id]?.rounds?.toString() ?? ""}
-                      onChangeText={(text) => {
-                        const num = parseInt(text, 10);
-                        onRoundsChange(firearm.id, isNaN(num) ? null : num);
-                      }}
+                      value={ammunitionUsed[firearm.id]?.rounds ?? ""}
+                      onChangeText={(text) => onRoundsChange(firearm.id, text)}
                       placeholder="Rounds used"
                       keyboardType="numeric"
                       testID={`rounds-input-${firearm.id}`}
@@ -111,6 +110,7 @@ export const FirearmsUsedInput: FC<
                           ]
                         );
                       }}
+                      className="min-h-[44px] justify-center"
                       accessibilityRole="button"
                       accessibilityLabel={getAmmunitionSelectionLabel(firearm.id)}
                       accessibilityHint="Opens a list of compatible ammunition in stock"
@@ -156,6 +156,7 @@ export const FirearmsUsedInput: FC<
                   </TerminalText>
                   <Pressable
                     onPress={() => onRemoveBorrowedAmmunition(key)}
+                    className="min-h-[44px] justify-center px-2"
                     accessibilityRole="button"
                     accessibilityLabel={
                       ammoDetails
@@ -169,11 +170,10 @@ export const FirearmsUsedInput: FC<
                   </Pressable>
                 </View>
                 <TerminalInput
-                  value={usage.rounds?.toString() || ""}
-                  onChangeText={(text) => {
-                    const num = parseInt(text, 10);
-                    onBorrowedAmmunitionRoundsChange(key, isNaN(num) ? null : num);
-                  }}
+                  value={usage.rounds ?? ""}
+                  onChangeText={(text) =>
+                    onBorrowedAmmunitionRoundsChange(key, text)
+                  }
                   placeholder="Rounds used"
                   keyboardType="numeric"
                   testID={`borrowed-rounds-input-${key}`}

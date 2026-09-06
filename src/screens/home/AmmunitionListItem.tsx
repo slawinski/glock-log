@@ -15,29 +15,36 @@ export const AmmunitionListItem = React.memo(function AmmunitionListItem({
   onPress,
   currency = "USD",
 }: Props) {
+  const isDepleted = ammunition.quantity === 0;
+
   return (
     <Pressable
       onPress={() => onPress(ammunition.id)}
       className="bg-terminal-bg border-2 border-terminal-border p-4 mb-2"
+      style={({ pressed }) => pressed && { opacity: 0.7 }}
+      accessibilityRole="button"
+      accessibilityLabel={`${ammunition.brand} ${ammunition.caliber}`}
+      testID={`ammunition-list-item-${ammunition.id}`}
     >
-      <View className="flex-row flex-wrap">
-        <View className="w-1/2 pr-2">
-          <TerminalText className="text-lg" numberOfLines={1}>
-            {ammunition.brand} ({ammunition.caliber})
-          </TerminalText>
-        </View>
-        <View className="w-1/2 items-end">
-          <TerminalText>{ammunition.quantity} rounds</TerminalText>
-        </View>
-        <View className="w-1/2 pr-2 mt-1">
-          <TerminalText>
-            {ammunition.pricePerRound &&
-              `${formatCurrency(ammunition.pricePerRound, currency)}/rd`}
-          </TerminalText>
-        </View>
-        <View className="w-1/2 items-end justify-end">
-          <TerminalText className="text-lg">{">"}</TerminalText>
-        </View>
+      <View className="flex-1">
+        <TerminalText className="text-lg" numberOfLines={2}>
+          {ammunition.brand}
+        </TerminalText>
+        <TerminalText>
+          {ammunition.caliber} • {ammunition.grain}
+        </TerminalText>
+        {isDepleted ? (
+          <TerminalText>0 rounds • Depleted</TerminalText>
+        ) : (
+          <View className="flex-row flex-wrap">
+            <TerminalText>{ammunition.quantity} rounds remaining</TerminalText>
+            {ammunition.pricePerRound ? (
+              <TerminalText>
+                {` • ${formatCurrency(ammunition.pricePerRound, currency)} / round`}
+              </TerminalText>
+            ) : null}
+          </View>
+        )}
       </View>
     </Pressable>
   );

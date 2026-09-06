@@ -11,12 +11,17 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { AmmunitionDetails as AmmunitionDetailsScreen } from "./AmmunitionDetails";
 import { storage } from "../../services/storage-new";
-import { AmmunitionStorage } from "../../validation/storageSchemas";
+import {
+  AmmunitionStorage,
+  RangeVisitStorage,
+} from "../../validation/storageSchemas";
+import { formatDate } from "../../utils";
 
 // Define types for the mock functions
 type GetAmmunitionMock = jest.Mock<() => Promise<AmmunitionStorage[]>>;
 type DeleteAmmunitionMock = jest.Mock<() => Promise<void>>;
 type GetCurrencyMock = jest.Mock<() => Promise<string>>;
+type GetRangeVisitsMock = jest.Mock<() => Promise<RangeVisitStorage[]>>;
 
 // Mock the storage module
 jest.mock("../../services/storage-new");
@@ -31,9 +36,24 @@ const mockAmmunition: AmmunitionStorage = {
   grain: "115",
   quantity: 100,
   amountPaid: 29.99,
-  datePurchased: new Date().toISOString(),
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  datePurchased: "2026-08-12T00:00:00.000Z",
+  createdAt: "2026-08-12T00:00:00.000Z",
+  updatedAt: "2026-08-12T00:00:00.000Z",
+};
+
+const mockVisit: RangeVisitStorage = {
+  id: "visit-1",
+  location: "FSO Shooting Range",
+  date: "2026-08-28T00:00:00.000Z",
+  firearmsUsed: ["firearm-1"],
+  ammunitionUsed: {
+    "firearm-1": {
+      ammunitionId: "test-id",
+      rounds: 80,
+    },
+  },
+  createdAt: "2026-08-28T00:00:00.000Z",
+  updatedAt: "2026-08-28T00:00:00.000Z",
 };
 
 const Stack = createNativeStackNavigator();
@@ -56,6 +76,7 @@ describe("AmmunitionDetailsScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (storage.getCurrency as GetCurrencyMock).mockResolvedValue("USD");
+    (storage.getRangeVisits as GetRangeVisitsMock).mockResolvedValue([]);
   });
 
   it("shows loading state initially", () => {
@@ -75,14 +96,56 @@ describe("AmmunitionDetailsScreen", () => {
     await waitFor(() => {
       expect(screen.getByText(mockAmmunition.brand)).toBeTruthy();
       expect(
-        screen.getByText(
-          `${mockAmmunition.caliber} - ${mockAmmunition.grain}gr`
-        )
+        screen.getByText(`${mockAmmunition.caliber} • ${mockAmmunition.grain}`)
       ).toBeTruthy();
+      expect(screen.getByText("rounds remaining")).toBeTruthy();
+      expect(screen.getByText("INVENTORY")).toBeTruthy();
+      expect(screen.getByText("Initial quantity")).toBeTruthy();
+      expect(screen.getByText("Remaining")).toBeTruthy();
+      expect(screen.getByText("Used")).toBeTruthy();
+      expect(screen.getByText("PURCHASE")).toBeTruthy();
+      expect(screen.getByText("Total paid")).toBeTruthy();
+      expect(screen.getByText("Purchase date")).toBeTruthy();
+      expect(screen.getByText("Edit ammunition")).toBeTruthy();
+      expect(screen.getByText("Delete ammunition")).toBeTruthy();
+    });
+  });
+
+  it("shows derived usage from range visits", async () => {
+    (storage.getAmmunition as GetAmmunitionMock).mockResolvedValue([
+      mockAmmunition,
+    ]);
+    (storage.getRangeVisits as GetRangeVisitsMock).mockResolvedValue([
+      mockVisit,
+    ]);
+    renderScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText("USAGE")).toBeTruthy();
       expect(
-        screen.getByText(`${mockAmmunition.quantity} rounds`)
+        screen.getByText(formatDate(mockVisit.date, "dd MMM yyyy"))
       ).toBeTruthy();
-      expect(screen.getByText(`$${mockAmmunition.amountPaid.toFixed(2)}`)).toBeTruthy();
+      expect(screen.getByText("80 rounds")).toBeTruthy();
+      expect(screen.getByText(mockVisit.location)).toBeTruthy();
+    });
+  });
+
+  it("shows depleted status and keeps history when quantity is zero", async () => {
+    const depletedAmmo: AmmunitionStorage = {
+      ...mockAmmunition,
+      quantity: 0,
+    };
+    (storage.getAmmunition as GetAmmunitionMock).mockResolvedValue([
+      depletedAmmo,
+    ]);
+    renderScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText("rounds remaining")).toBeTruthy();
+      expect(screen.getByText("Status")).toBeTruthy();
+      expect(screen.getByText("Depleted")).toBeTruthy();
+      expect(screen.getByText("INVENTORY")).toBeTruthy();
+      expect(screen.getByText("PURCHASE")).toBeTruthy();
     });
   });
 
@@ -115,7 +178,7 @@ describe("AmmunitionDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      const deleteButton = screen.getByText("DELETE");
+      const deleteButton = screen.getByText("Delete ammunition");
       fireEvent.press(deleteButton);
     });
 
@@ -136,19 +199,18 @@ describe("AmmunitionDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      const deleteButton = screen.getByText("DELETE");
+      const deleteButton = screen.getByText("Delete ammunition");
       fireEvent.press(deleteButton);
     });
 
-    // Simulate pressing the Delete button in the Alert
     const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2] as Array<{
       text: string;
       onPress: () => void;
     }>;
-    const deleteButton = alertButtons.find(
+    const confirmButton = alertButtons.find(
       (button) => button.text === "Delete"
     );
-    deleteButton?.onPress();
+    confirmButton?.onPress();
 
     await waitFor(() => {
       expect(storage.deleteAmmunition).toHaveBeenCalledWith(mockAmmunition.id);
@@ -165,19 +227,18 @@ describe("AmmunitionDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      const deleteButton = screen.getByText("DELETE");
+      const deleteButton = screen.getByText("Delete ammunition");
       fireEvent.press(deleteButton);
     });
 
-    // Simulate pressing the Delete button in the Alert
     const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2] as Array<{
       text: string;
       onPress: () => void;
     }>;
-    const deleteButton = alertButtons.find(
+    const confirmButton = alertButtons.find(
       (button) => button.text === "Delete"
     );
-    deleteButton?.onPress();
+    confirmButton?.onPress();
 
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(

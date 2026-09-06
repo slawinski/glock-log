@@ -1,21 +1,29 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { View, ScrollView } from "react-native";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  LayoutChangeEvent,
+} from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
-import { Controller } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
 import {
-  BottomButtonGroup,
   ErrorDisplay,
   LoadingScreen,
+  SectionHeading,
+  StickyActionBar,
   TerminalDatePicker,
   TerminalInput,
   TerminalText,
 } from "../../components";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
-import { useEntityForm } from "../../hooks";
+import { useEntityForm, useUnsavedChanges } from "../../hooks";
+import { formatCurrency } from "../../utils";
 import {
   ammunitionInputSchema,
   AmmunitionFormData,
@@ -32,15 +40,54 @@ type EditAmmunitionScreenRouteProp = RouteProp<
   "EditAmmunition"
 >;
 
+const FIELD_ORDER = [
+  "brand",
+  "caliber",
+  "grain",
+  "quantity",
+  "amountPaid",
+  "datePurchased",
+  "notes",
+] as const;
+
 export const EditAmmunition = () => {
   const navigation = useNavigation<EditAmmunitionScreenNavigationProp>();
   const route = useRoute<EditAmmunitionScreenRouteProp>();
+  const scrollRef = useRef<ScrollView>(null);
+  const fieldY = useRef<Record<string, number>>({});
+  const initialPhotosRef = useRef<string[]>([]);
   const [photos, setPhotos] = useState<string[]>([]);
+  const [currency, setCurrency] = useState("USD");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    let mounted = true;
+    const loadCurrency = async () => {
+      try {
+        const loaded = await storage.getCurrency();
+        if (mounted) {
+          setCurrency(loaded);
+        }
+      } catch {
+        setCurrency("USD");
+      }
+    };
+    loadCurrency();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const saveAmmunition = async (data: AmmunitionInput) => {
-    await storage.saveAmmunition({ ...data, photos });
+    const pricePerRound =
+      data.amountPaid && data.quantity
+        ? data.amountPaid / data.quantity
+        : undefined;
+    await storage.saveAmmunition({ ...data, photos, pricePerRound });
+    form.reset(form.getValues());
+    dirtyRef.current = false;
+    initialPhotosRef.current = [...photos];
     navigation.goBack();
   };
 
@@ -49,12 +96,12 @@ export const EditAmmunition = () => {
     AmmunitionFormData
   >(ammunitionInputSchema, saveAmmunition, {
       defaultValues: {
-        caliber: "",
         brand: "",
+        caliber: "",
         grain: "",
-        quantity: null,
+        quantity: "",
         datePurchased: new Date().toISOString(),
-        amountPaid: null,
+        amountPaid: "",
         notes: "",
       },
       entityName: "update ammunition",
@@ -63,8 +110,40 @@ export const EditAmmunition = () => {
   const {
     control,
     reset,
-    formState: { errors },
+    setFocus,
+    formState: { errors, isDirty },
   } = form;
+
+  const dirtyRef = useRef(false);
+  const photosChanged =
+    photos.length !== initialPhotosRef.current.length ||
+    photos.some((photo, index) => photo !== initialPhotosRef.current[index]);
+  dirtyRef.current = isDirty || photosChanged;
+  useUnsavedChanges(dirtyRef);
+
+  const firstInvalidField = FIELD_ORDER.find((name) => Boolean(errors[name]));
+  useEffect(() => {
+    if (firstInvalidField) {
+      const y = fieldY.current[firstInvalidField];
+      if (y != null) {
+        scrollRef.current?.scrollTo({ y: Math.max(0, y - 16), animated: true });
+      }
+      setFocus(firstInvalidField);
+    }
+  }, [firstInvalidField, setFocus]);
+
+  const captureY = (name: string) => (event: LayoutChangeEvent) => {
+    fieldY.current[name] = event.nativeEvent.layout.y;
+  };
+
+  const watchedAmountPaid = useWatch({ control, name: "amountPaid" });
+  const watchedQuantity = useWatch({ control, name: "quantity" });
+  const amount = Number(watchedAmountPaid);
+  const quantity = Number(watchedQuantity);
+  const pricePerRound =
+    Number.isFinite(amount) && Number.isFinite(quantity) && quantity > 0
+      ? amount / quantity
+      : null;
 
   const fetchAmmunition = useCallback(async () => {
     try {
@@ -77,12 +156,13 @@ export const EditAmmunition = () => {
           caliber: ammunition.caliber,
           brand: ammunition.brand,
           grain: ammunition.grain,
-          quantity: ammunition.quantity,
+          quantity: String(ammunition.quantity),
           datePurchased: ammunition.datePurchased,
-          amountPaid: ammunition.amountPaid,
+          amountPaid: String(ammunition.amountPaid),
           notes: ammunition.notes || "",
         });
         setPhotos(ammunition.photos || []);
+        initialPhotosRef.current = ammunition.photos || [];
       } else {
         setError("Ammunition not found");
       }
@@ -114,62 +194,78 @@ export const EditAmmunition = () => {
   }
 
   return (
-    <View className="flex-1 bg-terminal-bg">
-      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1">
-          <TerminalText className="text-2xl mb-6">EDIT AMMUNITION</TerminalText>
-
-          <View className="mb-4">
-            <TerminalText>CALIBER</TerminalText>
-            <Controller
-              control={control}
-              name="caliber"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
-                <TerminalInput
-                  value={value}
-                  onChangeText={onChange}
-                  placeholder="e.g., 9mm"
-                  error={error?.message}
-                />
-              )}
-            />
-            {errors.caliber && (
-              <TerminalText className="text-terminal-error text-sm mt-1">
-                {errors.caliber.message}
-              </TerminalText>
-            )}
-          </View>
-
-          <View className="mb-4">
-            <TerminalText>BRAND</TerminalText>
+    <KeyboardAvoidingView
+      className="flex-1 bg-terminal-bg"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        ref={scrollRef}
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="px-4 pb-24">
+          <SectionHeading title="AMMUNITION" />
+          <View onLayout={captureY("brand")} className="mb-4">
+            <TerminalText className="mb-1.5">BRAND *</TerminalText>
             <Controller
               control={control}
               name="brand"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
                 <TerminalInput
                   value={value}
                   onChangeText={onChange}
+                  ref={ref}
                   placeholder="e.g., Federal"
                   error={error?.message}
                 />
               )}
             />
             {errors.brand && (
-              <TerminalText className="text-terminal-error text-sm mt-1">
+              <TerminalText
+                className="text-terminal-error text-sm mt-1"
+                accessibilityLiveRegion="polite"
+              >
                 {errors.brand.message}
               </TerminalText>
             )}
           </View>
 
-          <View className="mb-4">
-            <TerminalText>GRAIN</TerminalText>
+          <View onLayout={captureY("caliber")} className="mb-4">
+            <TerminalText className="mb-1.5">CALIBER *</TerminalText>
             <Controller
               control={control}
-              name="grain"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              name="caliber"
+              render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
                 <TerminalInput
                   value={value}
                   onChangeText={onChange}
+                  ref={ref}
+                  placeholder="e.g., 9mm"
+                  error={error?.message}
+                />
+              )}
+            />
+            {errors.caliber && (
+              <TerminalText
+                className="text-terminal-error text-sm mt-1"
+                accessibilityLiveRegion="polite"
+              >
+                {errors.caliber.message}
+              </TerminalText>
+            )}
+          </View>
+
+          <View onLayout={captureY("grain")} className="mb-4">
+            <TerminalText className="mb-1.5">GRAIN *</TerminalText>
+            <Controller
+              control={control}
+              name="grain"
+              render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value}
+                  onChangeText={onChange}
+                  ref={ref}
                   placeholder="e.g., 115"
                   keyboardType="numeric"
                   error={error?.message}
@@ -177,63 +273,80 @@ export const EditAmmunition = () => {
               )}
             />
             {errors.grain && (
-              <TerminalText className="text-terminal-error text-sm mt-1">
+              <TerminalText
+                className="text-terminal-error text-sm mt-1"
+                accessibilityLiveRegion="polite"
+              >
                 {errors.grain.message}
               </TerminalText>
             )}
           </View>
 
-          <View className="mb-4">
-            <TerminalText>QUANTITY</TerminalText>
-            <Controller
-              control={control}
-              name="quantity"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
-                <TerminalInput
-                  value={value}
-                  onChangeText={(text) => {
-                    const quantity = parseInt(text);
-                    onChange(isNaN(quantity) ? null : quantity);
-                  }}
-                  placeholder="e.g., 1000"
-                  keyboardType="numeric"
-                  error={error?.message}
+          <SectionHeading title="INVENTORY" className="mt-7" />
+          <View onLayout={captureY("quantity")} className="mb-4">
+            <TerminalText className="mb-1.5">QUANTITY *</TerminalText>
+            <View className="flex-row items-center">
+              <View className="flex-1 mr-2">
+                <Controller
+                  control={control}
+                  name="quantity"
+                  render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
+                    <TerminalInput
+                      value={String(value ?? "")}
+                      onChangeText={(text) => onChange(text)}
+                      ref={ref}
+                      placeholder="e.g., 1000"
+                      keyboardType="numeric"
+                      error={error?.message}
+                    />
+                  )}
                 />
-              )}
-            />
+              </View>
+              <TerminalText className="text-terminal-muted">rounds</TerminalText>
+            </View>
             {errors.quantity && (
-              <TerminalText className="text-terminal-error text-sm mt-1">
+              <TerminalText
+                className="text-terminal-error text-sm mt-1"
+                accessibilityLiveRegion="polite"
+              >
                 {errors.quantity.message}
               </TerminalText>
             )}
           </View>
 
-          <View className="mb-4">
-            <TerminalText>AMOUNT PAID</TerminalText>
+          <SectionHeading title="PURCHASE" className="mt-7" />
+          <View onLayout={captureY("amountPaid")} className="mb-4">
+            <TerminalText className="mb-1.5">TOTAL PAID</TerminalText>
             <Controller
               control={control}
               name="amountPaid"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
                 <TerminalInput
-                  value={value}
-                  onChangeText={(text) => {
-                    const amount = parseFloat(text);
-                    onChange(isNaN(amount) ? null : amount);
-                  }}
+                  value={String(value ?? "")}
+                  onChangeText={(text) => onChange(text)}
+                  ref={ref}
                   placeholder="e.g., 299.99"
-                  keyboardType="numeric"
+                  keyboardType="decimal-pad"
                   error={error?.message}
                 />
               )}
             />
             {errors.amountPaid && (
-              <TerminalText className="text-terminal-error text-sm mt-1">
+              <TerminalText
+                className="text-terminal-error text-sm mt-1"
+                accessibilityLiveRegion="polite"
+              >
                 {errors.amountPaid.message}
+              </TerminalText>
+            )}
+            {pricePerRound !== null && (
+              <TerminalText className="text-terminal-muted text-sm mt-1">
+                PRICE PER ROUND: {formatCurrency(pricePerRound, currency)}
               </TerminalText>
             )}
           </View>
 
-          <View className="mb-4">
+          <View onLayout={captureY("datePurchased")}>
             <Controller
               control={control}
               name="datePurchased"
@@ -250,15 +363,16 @@ export const EditAmmunition = () => {
             />
           </View>
 
-          <View className="mb-4">
-            <TerminalText>NOTES</TerminalText>
+          <SectionHeading title="NOTES" className="mt-7" />
+          <View onLayout={captureY("notes")}>
             <Controller
               control={control}
               name="notes"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
                 <TerminalInput
                   value={value ?? ""}
                   onChangeText={onChange}
+                  ref={ref}
                   placeholder="Optional notes"
                   multiline
                   error={error?.message}
@@ -266,29 +380,25 @@ export const EditAmmunition = () => {
               )}
             />
             {errors.notes && (
-              <TerminalText className="text-terminal-error text-sm mt-1">
+              <TerminalText
+                className="text-terminal-error text-sm mt-1"
+                accessibilityLiveRegion="polite"
+              >
                 {errors.notes.message}
               </TerminalText>
             )}
           </View>
-
-          <View className="flex-1" />
-
-          <BottomButtonGroup
-            buttons={[
-              {
-                caption: "CANCEL",
-                onPress: () => navigation.goBack(),
-              },
-              {
-                caption: isSaving ? "SAVING..." : "SAVE CHANGES",
-                onPress: onSubmit,
-                disabled: isSaving,
-              },
-            ]}
-          />
         </View>
       </ScrollView>
-    </View>
+
+      <StickyActionBar
+        primaryAction={{
+          caption: "Save changes",
+          onPress: onSubmit,
+          disabled: isSaving,
+          loading: isSaving,
+        }}
+      />
+    </KeyboardAvoidingView>
   );
 };

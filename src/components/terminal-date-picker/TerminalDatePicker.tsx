@@ -69,7 +69,7 @@ export function TerminalDatePicker({
         accessibilityRole="button"
         accessibilityHint="Opens date picker"
       >
-        <TerminalText className={!value ? "text-terminal-muted" : ""}>
+        <TerminalText className={!value ? "text-terminal-placeholder" : ""}>
           {value ? formatDate(value, "MMM d, yyyy") : placeholder}
         </TerminalText>
         <TerminalText className="text-terminal-muted">▼</TerminalText>

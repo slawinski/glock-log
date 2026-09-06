@@ -96,7 +96,7 @@ export const Stats = () => {
   }
 
   return (
-    <View className="flex-1 bg-terminal-bg">
+    <View className="flex-1 bg-terminal-bg px-4">
       <TerminalTabs
         tabs={TABS}
         activeTab={activeTab}

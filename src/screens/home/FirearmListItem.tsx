@@ -13,34 +13,36 @@ export const FirearmListItem = React.memo(function FirearmListItem({
   firearm,
   onPress,
 }: Props) {
+  const photoUri = firearm.photos?.[0];
+
   return (
     <Pressable
       onPress={() => onPress(firearm.id)}
       className="bg-terminal-bg border-2 border-terminal-border p-4 mb-4"
+      style={({ pressed }) => pressed && { opacity: 0.7 }}
+      accessibilityRole="button"
+      accessibilityLabel={`${firearm.modelName} ${firearm.caliber}`}
+      testID={`firearm-list-item-${firearm.id}`}
     >
-      <View className="flex-row items-start">
-        <FirearmImage
-          photoUri={firearm.photos?.[0]}
-          size={60}
-          className="mr-4"
-        />
-        <View className="flex-1 flex-row flex-wrap">
-          <View className="w-1/2 pr-2">
-            <TerminalText className="text-lg" numberOfLines={1}>
-              {firearm.modelName} ({firearm.caliber})
-            </TerminalText>
-          </View>
-          <View className="w-1/2 items-end">
-            <TerminalText>{firearm.roundsFired} rounds</TerminalText>
-          </View>
-          <View className="w-1/2 pr-2 mt-1">
-            <TerminalText>
-              Added: {formatDate(firearm.createdAt)}
-            </TerminalText>
-          </View>
-          <View className="w-1/2 items-end justify-end">
-            <TerminalText className="text-lg">{">"}</TerminalText>
-          </View>
+      <View
+        className={`flex-row ${
+          photoUri ? "min-h-[80px]" : "min-h-[72px]"
+        }`}
+      >
+        {photoUri && (
+          <FirearmImage
+            photoUri={photoUri}
+            fill
+            className="mr-3 rounded-lg"
+          />
+        )}
+        <View className="flex-1">
+          <TerminalText className="text-lg" numberOfLines={2}>
+            {firearm.modelName}
+          </TerminalText>
+          <TerminalText>{firearm.caliber}</TerminalText>
+          <TerminalText>{firearm.roundsFired} rounds fired</TerminalText>
+          <TerminalText>Added {formatDate(firearm.createdAt)}</TerminalText>
         </View>
       </View>
     </Pressable>

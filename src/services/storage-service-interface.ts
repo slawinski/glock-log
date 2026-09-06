@@ -12,6 +12,7 @@ import {
 export type SettingsData = {
   currency: string;
   biometricLockEnabled: boolean;
+  crtEffectEnabled: boolean;
 };
 
 /**
@@ -51,6 +52,7 @@ export interface StorageService {
   getSettings(): Promise<SettingsData>;
   setCurrency(currency: string): Promise<void>;
   setBiometricLockEnabled(enabled: boolean): Promise<void>;
+  setCrtEffectEnabled(enabled: boolean): Promise<void>;
   getCurrency(): Promise<string>;
   clearAllData(): Promise<void>;
 

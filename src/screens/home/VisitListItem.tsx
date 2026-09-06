@@ -7,38 +7,42 @@ import { formatDate } from "../../utils";
 type Props = {
   rangeVisit: RangeVisitStorage;
   onPress: (rangeVisitId: string) => void;
+  firearmsById?: Record<string, string>;
 };
 
 export const VisitListItem = React.memo(function VisitListItem({
   rangeVisit,
   onPress,
+  firearmsById,
 }: Props) {
   const totalRounds = Object.values(rangeVisit.ammunitionUsed || {}).reduce(
     (sum, usage) => sum + usage.rounds,
     0
   );
 
+  const firearmSummary =
+    rangeVisit.firearmsUsed.length === 1
+      ? firearmsById?.[rangeVisit.firearmsUsed[0]] ?? "1 firearm"
+      : `${rangeVisit.firearmsUsed.length} firearms`;
+
   return (
     <Pressable
       onPress={() => onPress(rangeVisit.id)}
       className="bg-terminal-bg border-2 border-terminal-border p-4 mb-2"
+      style={({ pressed }) => pressed && { opacity: 0.7 }}
+      accessibilityRole="button"
+      accessibilityLabel={rangeVisit.location}
+      testID={`visit-list-item-${rangeVisit.id}`}
     >
-        <View className="flex-row flex-wrap">
-          <View className="w-1/2 pr-2">
-            <TerminalText className="text-lg">
-              {rangeVisit.location}
-            </TerminalText>
-          </View>
-          <View className="w-1/2 items-end">
-            <TerminalText>{totalRounds} rounds</TerminalText>
-          </View>
-          <View className="w-1/2 pr-2 mt-1">
-            <TerminalText>{formatDate(rangeVisit.date)}</TerminalText>
-          </View>
-          <View className="w-1/2 items-end justify-end">
-            <TerminalText className="text-lg">{">"}</TerminalText>
-          </View>
-        </View>
-      </Pressable>
+      <View className="flex-1">
+        <TerminalText className="text-lg" numberOfLines={2}>
+          {rangeVisit.location}
+        </TerminalText>
+        <TerminalText>{formatDate(rangeVisit.date)}</TerminalText>
+        <TerminalText>
+          {totalRounds} rounds • {firearmSummary}
+        </TerminalText>
+      </View>
+    </Pressable>
   );
 });

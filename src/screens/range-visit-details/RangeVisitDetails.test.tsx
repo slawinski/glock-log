@@ -15,6 +15,7 @@ import {
   RangeVisitStorage,
   AmmunitionStorage,
 } from "../../validation/storageSchemas";
+import { formatDate } from "../../utils";
 import { describe, it, expect, beforeEach } from "@jest/globals";
 
 // Mock navigation
@@ -39,11 +40,11 @@ const mockFirearm: FirearmStorage = {
   id: "firearm-1",
   modelName: "Test Firearm",
   caliber: "9mm",
-  datePurchased: new Date().toISOString(),
+  datePurchased: "2025-03-04T00:00:00.000Z",
   amountPaid: 500,
   roundsFired: 0,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: "2025-03-04T00:00:00.000Z",
+  updatedAt: "2025-03-04T00:00:00.000Z",
   notes: "Test notes",
 };
 
@@ -53,17 +54,17 @@ const mockAmmunition: AmmunitionStorage = {
   brand: "Test Brand",
   grain: "115",
   quantity: 1000,
-  datePurchased: new Date().toISOString(),
+  datePurchased: "2025-03-04T00:00:00.000Z",
   amountPaid: 300,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: "2025-03-04T00:00:00.000Z",
+  updatedAt: "2025-03-04T00:00:00.000Z",
   notes: "Test ammo notes",
 };
 
 const mockVisit: RangeVisitStorage = {
   id: "visit-1",
   location: "Test Range",
-  date: new Date().toISOString(),
+  date: "2026-08-28T00:00:00.000Z",
   firearmsUsed: ["firearm-1"],
   ammunitionUsed: {
     "firearm-1": {
@@ -72,8 +73,8 @@ const mockVisit: RangeVisitStorage = {
     },
   },
   notes: "Test visit notes",
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: "2026-08-28T00:00:00.000Z",
+  updatedAt: "2026-08-28T00:00:00.000Z",
 };
 
 const Stack = createNativeStackNavigator();
@@ -112,27 +113,20 @@ describe("RangeVisitDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      expect(screen.getByText(/Test Range/)).toBeTruthy();
+      expect(screen.getByText(mockVisit.location)).toBeTruthy();
       expect(
-        screen.getByText(new Date(mockVisit.date).toLocaleDateString())
+        screen.getByText(formatDate(mockVisit.date, "dd MMM yyyy"))
       ).toBeTruthy();
-      expect(
-        screen.getByText(`${mockFirearm.modelName} (${mockFirearm.caliber})`)
-      ).toBeTruthy();
-      expect(
-        screen.getByText(
-          `${mockVisit.ammunitionUsed?.[mockFirearm.id]?.rounds} rounds of ${
-            mockAmmunition.brand
-          } ${mockAmmunition.caliber} ${mockAmmunition.grain}gr`
-        )
-      ).toBeTruthy();
+      expect(screen.getByText("rounds fired")).toBeTruthy();
+      expect(screen.getByText("FIREARMS")).toBeTruthy();
+      expect(screen.getByText(mockFirearm.modelName)).toBeTruthy();
+      expect(screen.getByText("100 rounds")).toBeTruthy();
       expect(
         screen.getByText(
-          `TOTAL ROUNDS FIRED: ${Object.values(
-            mockVisit.ammunitionUsed || {}
-          ).reduce((a, b) => a + b.rounds, 0)}`
+          `${mockAmmunition.brand} ${mockAmmunition.caliber} ${mockAmmunition.grain}`
         )
       ).toBeTruthy();
+      expect(screen.getByText("100 rounds consumed")).toBeTruthy();
       expect(screen.getByText(/Test visit notes/)).toBeTruthy();
     });
   });
@@ -164,7 +158,7 @@ describe("RangeVisitDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      const deleteButton = screen.getByText(/DELETE/);
+      const deleteButton = screen.getByText("Delete visit");
       fireEvent.press(deleteButton);
     });
 
@@ -183,19 +177,18 @@ describe("RangeVisitDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      const deleteButton = screen.getByText(/DELETE/);
+      const deleteButton = screen.getByText("Delete visit");
       fireEvent.press(deleteButton);
     });
 
-    // Simulate pressing the Delete button in the Alert
     const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2] as Array<{
       text: string;
       onPress: () => void;
     }>;
-    const deleteButton = alertButtons.find(
+    const confirmButton = alertButtons.find(
       (button) => button.text === "Delete"
     );
-    deleteButton?.onPress();
+    confirmButton?.onPress();
 
     await waitFor(() => {
       expect(storage.deleteRangeVisit).toHaveBeenCalledWith(mockVisit.id);
@@ -213,19 +206,18 @@ describe("RangeVisitDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      const deleteButton = screen.getByText(/DELETE/);
+      const deleteButton = screen.getByText("Delete visit");
       fireEvent.press(deleteButton);
     });
 
-    // Simulate pressing the Delete button in the Alert
     const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2] as Array<{
       text: string;
       onPress: () => void;
     }>;
-    const deleteButton = alertButtons.find(
+    const confirmButton = alertButtons.find(
       (button) => button.text === "Delete"
     );
-    deleteButton?.onPress();
+    confirmButton?.onPress();
 
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenLastCalledWith(
@@ -242,7 +234,7 @@ describe("RangeVisitDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      const editButton = screen.getByText(/EDIT/);
+      const editButton = screen.getByText("Edit visit");
       fireEvent.press(editButton);
     });
 

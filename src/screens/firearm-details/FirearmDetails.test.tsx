@@ -10,7 +10,11 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { FirearmDetails as FirearmDetailsScreen } from "./FirearmDetails";
 import { storage } from "../../services/storage-new";
-import { FirearmStorage } from "../../validation/storageSchemas";
+import {
+  FirearmStorage,
+  RangeVisitStorage,
+} from "../../validation/storageSchemas";
+import { formatDate } from "../../utils";
 
 // Mock the storage module
 jest.mock("../../services/storage-new");
@@ -36,12 +40,27 @@ const mockFirearm: FirearmStorage = {
   id: "firearm-1",
   modelName: "Test Firearm",
   caliber: "9mm",
-  datePurchased: new Date().toISOString(),
+  datePurchased: "2025-03-04T00:00:00.000Z",
   amountPaid: 500,
   roundsFired: 1000,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: "2025-03-04T00:00:00.000Z",
+  updatedAt: "2025-03-04T00:00:00.000Z",
   notes: "Test notes",
+};
+
+const mockVisit: RangeVisitStorage = {
+  id: "visit-1",
+  location: "Test Range",
+  date: "2026-08-28T00:00:00.000Z",
+  firearmsUsed: ["firearm-1"],
+  ammunitionUsed: {
+    "firearm-1": {
+      ammunitionId: "ammo-1",
+      rounds: 150,
+    },
+  },
+  createdAt: "2026-08-28T00:00:00.000Z",
+  updatedAt: "2026-08-28T00:00:00.000Z",
 };
 
 const Stack = createNativeStackNavigator();
@@ -63,6 +82,8 @@ const renderScreen = (initialParams = { id: "firearm-1" }) => {
 describe("FirearmDetailsScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (storage.getCurrency as jest.Mock).mockResolvedValue("USD");
+    (storage.getRangeVisits as jest.Mock).mockResolvedValue([]);
   });
 
   it("shows loading state initially", () => {
@@ -80,16 +101,26 @@ describe("FirearmDetailsScreen", () => {
     await waitFor(() => {
       expect(screen.getByText(mockFirearm.modelName)).toBeTruthy();
       expect(screen.getByText(mockFirearm.caliber)).toBeTruthy();
-      expect(screen.getByText(/ROUNDS FIRED/)).toBeTruthy();
+      expect(screen.getByText("rounds fired")).toBeTruthy();
+      expect(screen.getByText("OVERVIEW")).toBeTruthy();
+      expect(screen.getByText("Purchased")).toBeTruthy();
+      expect(screen.getByText("Amount paid")).toBeTruthy();
+      expect(screen.getByText("Edit firearm")).toBeTruthy();
+      expect(screen.getByText("Delete firearm")).toBeTruthy();
+    });
+  });
+
+  it("shows derived recent activity from range visits", async () => {
+    (storage.getFirearms as jest.Mock).mockResolvedValue([mockFirearm]);
+    (storage.getRangeVisits as jest.Mock).mockResolvedValue([mockVisit]);
+    renderScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText("RECENT ACTIVITY")).toBeTruthy();
       expect(
-        screen.getByText(`${mockFirearm.roundsFired} rounds`)
+        screen.getByText(formatDate(mockVisit.date, "dd MMM yyyy"))
       ).toBeTruthy();
-      expect(screen.getByText(/DATE PURCHASED/)).toBeTruthy();
-      expect(
-        screen.getByText(
-          new Date(mockFirearm.datePurchased).toLocaleDateString()
-        )
-      ).toBeTruthy();
+      expect(screen.getByText("150 rounds")).toBeTruthy();
     });
   });
 
@@ -118,7 +149,7 @@ describe("FirearmDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      const deleteButton = screen.getByText(/DELETE/);
+      const deleteButton = screen.getByText("Delete firearm");
       fireEvent.press(deleteButton);
     });
 
@@ -135,16 +166,15 @@ describe("FirearmDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      const deleteButton = screen.getByText(/DELETE/);
+      const deleteButton = screen.getByText("Delete firearm");
       fireEvent.press(deleteButton);
     });
 
-    // Simulate pressing the Delete button in the Alert
     const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2];
-    const deleteButton = alertButtons.find(
-      (button: any) => button.text === "Delete"
+    const confirmButton = alertButtons.find(
+      (button: { text: string }) => button.text === "Delete"
     );
-    deleteButton.onPress();
+    confirmButton.onPress();
 
     await waitFor(() => {
       expect(storage.deleteFirearm).toHaveBeenCalledWith(mockFirearm.id);
@@ -160,16 +190,15 @@ describe("FirearmDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      const deleteButton = screen.getByText(/DELETE/);
+      const deleteButton = screen.getByText("Delete firearm");
       fireEvent.press(deleteButton);
     });
 
-    // Simulate pressing the Delete button in the Alert
     const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2];
-    const deleteButton = alertButtons.find(
-      (button: any) => button.text === "Delete"
+    const confirmButton = alertButtons.find(
+      (button: { text: string }) => button.text === "Delete"
     );
-    deleteButton.onPress();
+    confirmButton.onPress();
 
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
@@ -184,24 +213,12 @@ describe("FirearmDetailsScreen", () => {
     renderScreen();
 
     await waitFor(() => {
-      const editButton = screen.getByText(/EDIT/);
+      const editButton = screen.getByText("Edit firearm");
       fireEvent.press(editButton);
     });
 
     expect(mockNavigate).toHaveBeenCalledWith("EditFirearm", {
       id: mockFirearm.id,
     });
-  });
-
-  it("navigates back when back button is pressed", async () => {
-    (storage.getFirearms as jest.Mock).mockResolvedValue([mockFirearm]);
-    renderScreen();
-
-    await waitFor(() => {
-      const backButton = screen.getByText(/BACK/);
-      fireEvent.press(backButton);
-    });
-
-    expect(mockGoBack).toHaveBeenCalled();
   });
 });

@@ -5,6 +5,7 @@ import { resolveImageSource } from "../../services/image-source-manager";
 
 interface FirearmImageProps {
   size?: number;
+  fill?: boolean;
   className?: string;
   photoUri?: string;
   testID?: string;
@@ -12,6 +13,7 @@ interface FirearmImageProps {
 
 export const FirearmImage = ({
   size = 120,
+  fill = false,
   className = "",
   photoUri,
   testID,
@@ -19,6 +21,30 @@ export const FirearmImage = ({
   const imageSource = photoUri
     ? resolveImageSource(photoUri)
     : resolveImageSource("placeholder:pistol-placeholder.png");
+
+  if (fill) {
+    return (
+      <View
+        className={`justify-center items-center overflow-hidden ${className}`}
+        style={{
+          alignSelf: "stretch",
+          aspectRatio: 1,
+        }}
+        testID={testID}
+      >
+        <Image
+          source={imageSource}
+          contentFit="cover"
+          cachePolicy="disk"
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+          testID={`${testID}-image`}
+        />
+      </View>
+    );
+  }
 
   return (
     <View

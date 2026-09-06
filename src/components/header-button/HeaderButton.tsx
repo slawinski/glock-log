@@ -15,7 +15,7 @@ export const HeaderButton = ({
 }: Props) => {
   return (
     <Pressable
-      className="border-2 border-terminal-border px-3 py-1"
+      className="border-2 border-terminal-border px-3 py-1 min-h-[44px] min-w-[44px] justify-center items-center"
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? caption}
       style={({ pressed }) => [

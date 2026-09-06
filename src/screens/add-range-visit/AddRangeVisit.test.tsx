@@ -38,6 +38,9 @@ beforeAll(() => {
     } else if (title === "Error") {
       // For error alerts, just log them
       console.error("Error creating range visit:", message);
+    } else if (title === "Insufficient ammunition") {
+      // For insufficient-stock alerts, just log them (no native alert in tests)
+      console.error("Insufficient ammunition:", message);
     } else {
       // For other alerts, call the original
       return originalAlert(title, message, buttons);
@@ -56,12 +59,16 @@ jest.mock("react-native-image-picker", () => ({
 
 // Mock navigation
 const mockGoBack = jest.fn();
+const mockAddListener = jest.fn(() => jest.fn());
+const mockDispatch = jest.fn();
 jest.mock("@react-navigation/native", () => {
   const actualNav = jest.requireActual("@react-navigation/native");
   return {
     ...actualNav,
     useNavigation: () => ({
       goBack: mockGoBack,
+      addListener: mockAddListener,
+      dispatch: mockDispatch,
     }),
   };
 });
@@ -147,10 +154,9 @@ describe("AddRangeVisitScreen", () => {
 
     expect(screen.getByText(/LOCATION/)).toBeTruthy();
     expect(screen.getByText(/VISIT DATE/)).toBeTruthy();
-    expect(screen.getByText(/FIREARMS USED/)).toBeTruthy();
+    expect(screen.getByText(/FIREARMS & ROUNDS/)).toBeTruthy();
     expect(screen.getByText(/ADD PHOTOS/)).toBeTruthy();
-    expect(screen.getByText(/CANCEL/)).toBeTruthy();
-    expect(screen.getByText(/SAVE/)).toBeTruthy();
+    expect(screen.getByText(/Save range visit/)).toBeTruthy();
   });
 
   it("loads and displays firearms", async () => {
@@ -192,7 +198,7 @@ describe("AddRangeVisitScreen", () => {
     });
 
     // Save the form
-    const saveButton = screen.getByText(/SAVE/);
+    const saveButton = screen.getByText(/Save range visit/);
     fireEvent.press(saveButton);
 
     // Verify save was called with correct data
@@ -238,10 +244,10 @@ describe("AddRangeVisitScreen", () => {
   it("shows field error when required fields are missing", async () => {
     await renderScreen();
 
-    const saveButton = screen.getByText(/SAVE/);
+    const saveButton = screen.getByText(/Save range visit/);
     fireEvent.press(saveButton);
 
-    expect(await screen.findByText(/Location is required/)).toBeTruthy();
+    expect(await screen.findByText(/Enter a location./)).toBeTruthy();
     expect(storage.saveRangeVisitWithAmmunition).not.toHaveBeenCalled();
   });
 
@@ -269,7 +275,7 @@ describe("AddRangeVisitScreen", () => {
     });
 
     // Save the form
-    const saveButton = screen.getByText(/SAVE/);
+    const saveButton = screen.getByText(/Save range visit/);
     fireEvent.press(saveButton);
 
     // Verify save was called with correct data
@@ -314,7 +320,7 @@ describe("AddRangeVisitScreen", () => {
       expect(screen.getByText("Federal")).toBeTruthy(); // Check if the selected ammo brand is displayed
     });
 
-    const saveButton = screen.getByText(/SAVE/);
+    const saveButton = screen.getByText(/Save range visit/);
     fireEvent.press(saveButton);
 
     await waitFor(() => {
@@ -325,13 +331,35 @@ describe("AddRangeVisitScreen", () => {
     });
   });
 
-  it("navigates back when cancel button is pressed", async () => {
+  it("shows a specific alert when ammunition stock is insufficient", async () => {
     await renderScreen();
 
-    const cancelButton = screen.getByText(/CANCEL/);
-    fireEvent.press(cancelButton);
+    const locationInput = screen.getByTestId("location-input");
+    fireEvent.changeText(locationInput, "Test Range");
 
-    expect(mockGoBack).toHaveBeenCalled();
+    fireEvent.press(screen.getByText("Glock 19"));
+
+    const roundsInput = screen.getByTestId(
+      `rounds-input-${mockFirearms[0].id}`
+    );
+    fireEvent.changeText(roundsInput, "2000");
+
+    fireEvent.press(screen.getByText("Select Ammunition"));
+    await waitFor(() => {
+      expect(screen.getByText("Federal")).toBeTruthy();
+    });
+
+    const saveButton = screen.getByText(/Save range visit/);
+    fireEvent.press(saveButton);
+
+    await waitFor(() => {
+      expect(Alert.alert).toHaveBeenCalledWith(
+        "Insufficient ammunition",
+        "You only have 1000 rounds of Federal 9mm in inventory (entered: 2000).",
+        expect.any(Array)
+      );
+      expect(storage.saveRangeVisitWithAmmunition).not.toHaveBeenCalled();
+    });
   });
 
   it("handles date picker interaction", async () => {
@@ -380,7 +408,7 @@ describe("AddRangeVisitScreen", () => {
     const borrowedRoundsInput = borrowedRoundsInputs[0];
     fireEvent.changeText(borrowedRoundsInput, "50");
 
-    const saveButton = screen.getByText(/SAVE/);
+    const saveButton = screen.getByText(/Save range visit/);
     fireEvent.press(saveButton);
 
     await waitFor(() => {

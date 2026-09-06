@@ -17,6 +17,7 @@ export default [
         ...globals.es2021,
         ...globals.jest,
         ...globals.node,
+        __DEV__: "readonly",
       },
       parser: tsParser,
       parserOptions: {

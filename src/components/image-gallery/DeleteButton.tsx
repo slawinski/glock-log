@@ -12,7 +12,7 @@ export const DeleteButton = ({ onDelete }: Props) => {
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
-        style: "destructive",
+        style: "default",
         onPress: onDelete,
       },
     ]);
@@ -22,6 +22,7 @@ export const DeleteButton = ({ onDelete }: Props) => {
     <Pressable
       testID="delete-icon"
       onPress={handleDelete}
+      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       className="absolute -top-1 -right-1 bg-terminal-green border border-terminal-green w-5 h-5 items-center justify-center"
       accessibilityRole="button"
       accessibilityLabel="Delete image"

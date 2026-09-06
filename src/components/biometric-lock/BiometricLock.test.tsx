@@ -43,6 +43,7 @@ describe("BiometricLock", () => {
     mockStorage.getSettings.mockResolvedValue({
       currency: "USD",
       biometricLockEnabled: true,
+      crtEffectEnabled: true,
     });
   });
 
@@ -98,6 +99,7 @@ describe("BiometricLock", () => {
     mockStorage.getSettings.mockResolvedValue({
       currency: "USD",
       biometricLockEnabled: false,
+      crtEffectEnabled: true,
     });
 
     const { getByTestId } = renderLock();
@@ -176,6 +178,7 @@ describe("BiometricLock", () => {
     mockStorage.getSettings.mockResolvedValue({
       currency: "USD",
       biometricLockEnabled: false,
+      crtEffectEnabled: true,
     });
 
     const { getByTestId, queryByTestId } = renderLock();

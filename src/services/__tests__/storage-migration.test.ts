@@ -350,6 +350,7 @@ describe("storage per-entity layout migration", () => {
     expect(await storage.getSettings()).toEqual({
       currency: "EUR",
       biometricLockEnabled: true,
+      crtEffectEnabled: true,
     });
   });
 });

@@ -52,7 +52,7 @@ export const useDeleteEntity = (
         },
         {
           text: "Delete",
-          style: "destructive",
+          style: "default",
           onPress: async () => {
             try {
               await deleteFn();

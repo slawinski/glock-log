@@ -10,6 +10,53 @@ jest.mock("../../components", () => ({
     const { Text } = require("react-native");
     return <Text {...props}>{children}</Text>;
   },
+  ToggleButton: ({ title, active, onPress, ...props }: any) => {
+    const { Pressable, Text } = require("react-native");
+    return (
+      <Pressable
+        onPress={onPress}
+        accessibilityState={{ selected: active }}
+        {...props}
+      >
+        <Text>{title}</Text>
+      </Pressable>
+    );
+  },
+  TerminalTabs: ({ tabs, activeTab, onTabPress, ...props }: any) => {
+    const { View, Pressable, Text } = require("react-native");
+    return (
+      <View {...props}>
+        {tabs.map((tab: any) => (
+          <Pressable
+            key={tab.id}
+            onPress={() => onTabPress(tab.id)}
+            accessibilityState={{ selected: activeTab === tab.id }}
+          >
+            <Text>{tab.title}</Text>
+          </Pressable>
+        ))}
+      </View>
+    );
+  },
+  EmptyState: ({ title, message, primaryAction, secondaryAction, ...props }: any) => {
+    const { View, Text, Pressable } = require("react-native");
+    return (
+      <View {...props}>
+        <Text>{title}</Text>
+        <Text>{message}</Text>
+        {primaryAction && (
+          <Pressable onPress={primaryAction.onPress}>
+            <Text>{primaryAction.caption}</Text>
+          </Pressable>
+        )}
+        {secondaryAction && (
+          <Pressable onPress={secondaryAction.onPress}>
+            <Text>{secondaryAction.caption}</Text>
+          </Pressable>
+        )}
+      </View>
+    );
+  },
 }));
 
 const Stack = createNativeStackNavigator();
@@ -26,48 +73,66 @@ const renderWithNavigation = (component: React.ReactElement) => {
         <Stack.Screen name="AmmunitionDetails">
           {() => <></>}
         </Stack.Screen>
+        <Stack.Screen name="AddAmmunition">
+          {() => <></>}
+        </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
 };
 
-const mockAmmunition = [
-  {
-    id: "1",
-    brand: "Federal",
-    caliber: "9mm",
-    grain: "124",
-    quantity: 500,
-    datePurchased: "2023-01-01T00:00:00.000Z",
-    amountPaid: 175,
-    pricePerRound: 0.35,
-    createdAt: "2023-01-01T00:00:00.000Z",
-    updatedAt: "2023-01-01T00:00:00.000Z",
-  },
-  {
-    id: "2",
-    brand: "Winchester",
-    caliber: ".40 S&W",
-    grain: "180",
-    quantity: 250,
-    datePurchased: "2023-01-02T00:00:00.000Z",
-    amountPaid: 105,
-    pricePerRound: 0.42,
-    createdAt: "2023-01-02T00:00:00.000Z",
-    updatedAt: "2023-01-02T00:00:00.000Z",
-  },
-  {
-    id: "3",
-    brand: "Remington",
-    caliber: ".45 ACP",
-    grain: "230",
-    quantity: 100,
-    datePurchased: "2023-01-03T00:00:00.000Z",
-    amountPaid: 50,
-    createdAt: "2023-01-03T00:00:00.000Z",
-    updatedAt: "2023-01-03T00:00:00.000Z",
-  },
-];
+const federal = {
+  id: "1",
+  brand: "Federal",
+  caliber: "9mm",
+  grain: "124",
+  quantity: 500,
+  datePurchased: "2023-01-01T00:00:00.000Z",
+  amountPaid: 175,
+  pricePerRound: 0.35,
+  createdAt: "2023-01-01T00:00:00.000Z",
+  updatedAt: "2023-01-01T00:00:00.000Z",
+};
+
+const winchester = {
+  id: "2",
+  brand: "Winchester",
+  caliber: ".40 S&W",
+  grain: "180",
+  quantity: 250,
+  datePurchased: "2023-01-02T00:00:00.000Z",
+  amountPaid: 105,
+  pricePerRound: 0.42,
+  createdAt: "2023-01-02T00:00:00.000Z",
+  updatedAt: "2023-01-02T00:00:00.000Z",
+};
+
+const remington = {
+  id: "3",
+  brand: "Remington",
+  caliber: ".45 ACP",
+  grain: "230",
+  quantity: 100,
+  datePurchased: "2023-01-03T00:00:00.000Z",
+  amountPaid: 50,
+  createdAt: "2023-01-03T00:00:00.000Z",
+  updatedAt: "2023-01-03T00:00:00.000Z",
+};
+
+const depleted = {
+  id: "zero",
+  brand: "Empty Brand",
+  caliber: "9mm",
+  grain: "115",
+  quantity: 0,
+  datePurchased: "2023-01-01T00:00:00.000Z",
+  amountPaid: 0,
+  createdAt: "2023-01-01T00:00:00.000Z",
+  updatedAt: "2023-01-01T00:00:00.000Z",
+};
+
+const inStockAmmunition = [federal, winchester, remington];
+const mixedAmmunition = [...inStockAmmunition, depleted];
 
 describe("AmmunitionTab", () => {
   const mockOnRefresh = jest.fn();
@@ -76,21 +141,56 @@ describe("AmmunitionTab", () => {
     jest.clearAllMocks();
   });
 
-  it("renders correctly with ammunition data", () => {
-    const { getByText } = renderWithNavigation(
+  it("renders in-stock ammunition by default", () => {
+    const { getByText, queryByText } = renderWithNavigation(
       <AmmunitionTab
-        ammunition={mockAmmunition}
+        ammunition={mixedAmmunition}
         onRefresh={mockOnRefresh}
         refreshing={false}
       />
     );
 
-    expect(getByText("Federal (9mm)")).toBeTruthy();
-    expect(getByText("500 rounds")).toBeTruthy();
-    expect(getByText("$0.35/rd")).toBeTruthy();
-    expect(getByText("Winchester (.40 S&W)")).toBeTruthy();
-    expect(getByText("250 rounds")).toBeTruthy();
-    expect(getByText("$0.42/rd")).toBeTruthy();
+    expect(getByText("Federal")).toBeTruthy();
+    expect(getByText("9mm • 124")).toBeTruthy();
+    expect(getByText("500 rounds remaining")).toBeTruthy();
+    expect(getByText(/0\.35/)).toBeTruthy();
+    expect(getByText("Winchester")).toBeTruthy();
+    expect(getByText("250 rounds remaining")).toBeTruthy();
+    expect(getByText(/0\.42/)).toBeTruthy();
+    // Depleted item hidden under default "In stock" filter
+    expect(queryByText("Empty Brand")).toBeNull();
+  });
+
+  it("shows depleted ammunition when the Depleted filter is selected", () => {
+    const { getByText, queryByText } = renderWithNavigation(
+      <AmmunitionTab
+        ammunition={mixedAmmunition}
+        onRefresh={mockOnRefresh}
+        refreshing={false}
+      />
+    );
+
+    fireEvent.press(getByText("Depleted"));
+
+    expect(getByText("Empty Brand")).toBeTruthy();
+    expect(getByText("0 rounds • Depleted")).toBeTruthy();
+    expect(queryByText("Federal")).toBeNull();
+  });
+
+  it("shows all ammunition when the All filter is selected", () => {
+    const { getByText } = renderWithNavigation(
+      <AmmunitionTab
+        ammunition={mixedAmmunition}
+        onRefresh={mockOnRefresh}
+        refreshing={false}
+      />
+    );
+
+    fireEvent.press(getByText("All"));
+
+    expect(getByText("Federal")).toBeTruthy();
+    expect(getByText("Empty Brand")).toBeTruthy();
+    expect(getByText("0 rounds • Depleted")).toBeTruthy();
   });
 
   it("displays empty state when no ammunition", () => {
@@ -102,48 +202,84 @@ describe("AmmunitionTab", () => {
       />
     );
 
-    expect(getByText("NO AMMUNITION IN STOCK")).toBeTruthy();
+    expect(getByText("No ammunition in stock")).toBeTruthy();
+    expect(getByText("Add ammunition")).toBeTruthy();
   });
 
-  it("filters out ammunition with zero quantity", () => {
-    const mixedAmmunition = [
-      ...mockAmmunition,
-      {
-        id: "zero",
-        brand: "Empty Brand",
-        caliber: "9mm",
-        grain: "115",
-        quantity: 0,
-        datePurchased: "2023-01-01T00:00:00.000Z",
-        amountPaid: 0,
-        createdAt: "2023-01-01T00:00:00.000Z",
-        updatedAt: "2023-01-01T00:00:00.000Z",
-      }
-    ];
-
-    const { getByText, queryByText } = renderWithNavigation(
+  it("shows View depleted action when only depleted ammunition exists", () => {
+    const { getByText } = renderWithNavigation(
       <AmmunitionTab
-        ammunition={mixedAmmunition}
+        ammunition={[depleted]}
         onRefresh={mockOnRefresh}
         refreshing={false}
       />
     );
 
-    expect(getByText("Federal (9mm)")).toBeTruthy();
-    expect(queryByText("Empty Brand (9mm)")).toBeNull();
+    expect(getByText("No ammunition in stock")).toBeTruthy();
+    expect(getByText("1 ammunition records are depleted.")).toBeTruthy();
+    expect(getByText("Add ammunition")).toBeTruthy();
+    expect(getByText("View depleted")).toBeTruthy();
+  });
+
+  it("switches to the Depleted filter via View depleted", () => {
+    const { getByText } = renderWithNavigation(
+      <AmmunitionTab
+        ammunition={[depleted]}
+        onRefresh={mockOnRefresh}
+        refreshing={false}
+      />
+    );
+
+    fireEvent.press(getByText("View depleted"));
+
+    expect(getByText("Empty Brand")).toBeTruthy();
+    expect(getByText("0 rounds • Depleted")).toBeTruthy();
+  });
+
+  it("displays depleted empty state when no depleted items", () => {
+    const { getByText } = renderWithNavigation(
+      <AmmunitionTab
+        ammunition={inStockAmmunition}
+        onRefresh={mockOnRefresh}
+        refreshing={false}
+      />
+    );
+
+    fireEvent.press(getByText("Depleted"));
+
+    expect(getByText("No depleted ammunition")).toBeTruthy();
+    expect(getByText("Show all ammunition")).toBeTruthy();
+  });
+
+  it("resets filter to All via Show all ammunition", () => {
+    const { getByText } = renderWithNavigation(
+      <AmmunitionTab
+        ammunition={inStockAmmunition}
+        onRefresh={mockOnRefresh}
+        refreshing={false}
+      />
+    );
+
+    fireEvent.press(getByText("Depleted"));
+    expect(getByText("No depleted ammunition")).toBeTruthy();
+
+    fireEvent.press(getByText("Show all ammunition"));
+
+    // Filter is now "All", so in-stock items are visible again
+    expect(getByText("Federal")).toBeTruthy();
   });
 
   it("handles ammunition without price per round", () => {
     const { getByText, queryByText } = renderWithNavigation(
       <AmmunitionTab
-        ammunition={[mockAmmunition[2]]}
+        ammunition={[remington]}
         onRefresh={mockOnRefresh}
         refreshing={false}
       />
     );
 
-    expect(getByText("Remington (.45 ACP)")).toBeTruthy();
-    expect(getByText("100 rounds")).toBeTruthy();
+    expect(getByText("Remington")).toBeTruthy();
+    expect(getByText("100 rounds remaining")).toBeTruthy();
     // Should not display price when pricePerRound is undefined
     expect(queryByText(/\$/)).toBeFalsy();
   });
@@ -170,67 +306,38 @@ describe("AmmunitionTab", () => {
       />
     );
 
-    // Should round to 2 decimal places
-    expect(getByText("$1.23/rd")).toBeTruthy();
+    expect(getByText(/1\.23/)).toBeTruthy();
   });
 
   it("handles ammunition item press", () => {
-    const { getByText } = renderWithNavigation(
+    const { getByTestId } = renderWithNavigation(
       <AmmunitionTab
-        ammunition={mockAmmunition}
+        ammunition={inStockAmmunition}
         onRefresh={mockOnRefresh}
         refreshing={false}
       />
     );
 
-    const firstAmmo = getByText("Federal (9mm)");
-    fireEvent.press(firstAmmo.parent!);
+    fireEvent.press(getByTestId("ammunition-list-item-1"));
     // Navigation would be handled by the navigation mock
   });
 
-  it("displays navigation arrow", () => {
-    const { getAllByText } = renderWithNavigation(
+  it("does not render a standalone chevron", () => {
+    const { queryAllByText } = renderWithNavigation(
       <AmmunitionTab
-        ammunition={mockAmmunition}
+        ammunition={inStockAmmunition}
         onRefresh={mockOnRefresh}
         refreshing={false}
       />
     );
 
-    const arrows = getAllByText(">");
-    expect(arrows).toHaveLength(3);
-  });
-
-  it("truncates long brand names", () => {
-    const longBrandAmmo = {
-      id: "5",
-      brand: "Very Long Ammunition Brand Name That Should Be Truncated",
-      caliber: "9mm",
-      grain: "124",
-      quantity: 50,
-      datePurchased: "2023-01-05T00:00:00.000Z",
-      amountPaid: 15,
-      pricePerRound: 0.30,
-      createdAt: "2023-01-05T00:00:00.000Z",
-      updatedAt: "2023-01-05T00:00:00.000Z",
-    };
-
-    const { getByText } = renderWithNavigation(
-      <AmmunitionTab
-        ammunition={[longBrandAmmo]}
-        onRefresh={mockOnRefresh}
-        refreshing={false}
-      />
-    );
-
-    // The text truncation is handled by numberOfLines prop
-    expect(getByText(/Very Long Ammunition Brand Name/)).toBeTruthy();
+    expect(queryAllByText(">")).toHaveLength(0);
   });
 
   it("handles refresh functionality", () => {
     renderWithNavigation(
       <AmmunitionTab
-        ammunition={mockAmmunition}
+        ammunition={inStockAmmunition}
         onRefresh={mockOnRefresh}
         refreshing={false}
       />
@@ -242,7 +349,7 @@ describe("AmmunitionTab", () => {
   it("shows refreshing state", () => {
     renderWithNavigation(
       <AmmunitionTab
-        ammunition={mockAmmunition}
+        ammunition={inStockAmmunition}
         onRefresh={mockOnRefresh}
         refreshing={true}
       />
@@ -273,14 +380,14 @@ describe("AmmunitionTab", () => {
       />
     );
 
-    expect(getByText("Free Sample (9mm)")).toBeTruthy();
-    expect(getByText("10 rounds")).toBeTruthy();
+    expect(getByText("Free Sample")).toBeTruthy();
+    expect(getByText("10 rounds remaining")).toBeTruthy();
     // Zero price should not display price text (falsy value)
     expect(queryByText(/\$/)).toBeFalsy();
   });
 
-  it("handles null price per round", () => {
-    const nullPriceAmmo = {
+  it("handles undefined price per round", () => {
+    const noPriceAmmo = {
       id: "7",
       brand: "Unknown Price",
       caliber: "9mm",
@@ -294,68 +401,14 @@ describe("AmmunitionTab", () => {
 
     const { getByText, queryByText } = renderWithNavigation(
       <AmmunitionTab
-        ammunition={[nullPriceAmmo]}
+        ammunition={[noPriceAmmo]}
         onRefresh={mockOnRefresh}
         refreshing={false}
       />
     );
 
-    expect(getByText("Unknown Price (9mm)")).toBeTruthy();
-    expect(getByText("25 rounds")).toBeTruthy();
-    // Should not display price when pricePerRound is null
+    expect(getByText("Unknown Price")).toBeTruthy();
+    expect(getByText("25 rounds remaining")).toBeTruthy();
     expect(queryByText(/\$/)).toBeFalsy();
-  });
-
-  it("displays different calibers correctly", () => {
-    const differentCaliberAmmo = [
-      { 
-        id: "8", 
-        brand: "Test", 
-        caliber: "22LR", 
-        grain: "40",
-        quantity: 1000, 
-        datePurchased: "2023-01-08T00:00:00.000Z",
-        amountPaid: 50,
-        pricePerRound: 0.05,
-        createdAt: "2023-01-08T00:00:00.000Z",
-        updatedAt: "2023-01-08T00:00:00.000Z",
-      },
-      { 
-        id: "9", 
-        brand: "Test", 
-        caliber: "308 Win", 
-        grain: "150",
-        quantity: 20, 
-        datePurchased: "2023-01-09T00:00:00.000Z",
-        amountPaid: 50,
-        pricePerRound: 2.50,
-        createdAt: "2023-01-09T00:00:00.000Z",
-        updatedAt: "2023-01-09T00:00:00.000Z",
-      },
-      { 
-        id: "10", 
-        brand: "Test", 
-        caliber: "12 Gauge", 
-        grain: "00",
-        quantity: 25, 
-        datePurchased: "2023-01-10T00:00:00.000Z",
-        amountPaid: 25,
-        pricePerRound: 1.00,
-        createdAt: "2023-01-10T00:00:00.000Z",
-        updatedAt: "2023-01-10T00:00:00.000Z",
-      },
-    ];
-
-    const { getByText } = renderWithNavigation(
-      <AmmunitionTab
-        ammunition={differentCaliberAmmo}
-        onRefresh={mockOnRefresh}
-        refreshing={false}
-      />
-    );
-
-    expect(getByText("Test (22LR)")).toBeTruthy();
-    expect(getByText("Test (308 Win)")).toBeTruthy();
-    expect(getByText("Test (12 Gauge)")).toBeTruthy();
   });
 });

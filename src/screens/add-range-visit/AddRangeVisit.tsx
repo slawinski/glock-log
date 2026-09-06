@@ -1,17 +1,29 @@
-import React, { useState, useEffect } from "react";
-import { View, ScrollView, Alert } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  LayoutChangeEvent,
+  Alert,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Controller } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
-import { useEntityForm, useImagePicker } from "../../hooks";
 import {
-  BottomButtonGroup,
+  useEntityForm,
+  useImagePicker,
+  useUnsavedChanges,
+} from "../../hooks";
+import {
   ErrorDisplay,
   FirearmsUsedInput,
   ImageGallery,
+  SectionHeading,
+  StickyActionBar,
   TerminalButton,
   TerminalDatePicker,
   TerminalInput,
@@ -32,15 +44,19 @@ type AddRangeVisitScreenNavigationProp = NativeStackNavigationProp<
   "AddRangeVisit"
 >;
 
+const FIELD_ORDER = ["location", "date", "notes"] as const;
+
 export const AddRangeVisit = () => {
   const navigation = useNavigation<AddRangeVisitScreenNavigationProp>();
+  const scrollRef = useRef<ScrollView>(null);
+  const fieldY = useRef<Record<string, number>>({});
   const [firearms, setFirearms] = useState<
     { id: string; modelName: string; caliber: string }[]
   >([]);
   const [ammunition, setAmmunition] = useState<AmmunitionStorage[]>([]);
   const [selectedFirearms, setSelectedFirearms] = useState<string[]>([]);
   const [ammunitionUsed, setAmmunitionUsed] = useState<{
-    [key: string]: { ammunitionId?: string; rounds: number | null };
+    [key: string]: { ammunitionId?: string; rounds: string };
   }>({});
   const [photos, setPhotos] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -50,23 +66,27 @@ export const AddRangeVisit = () => {
     const finalAmmunitionUsed: NonNullable<RangeVisitInput["ammunitionUsed"]> =
       {};
     for (const [key, value] of Object.entries(ammunitionUsed)) {
-      if (value.rounds && value.rounds > 0 && value.ammunitionId) {
+      const rounds = Number(value.rounds);
+      if (Number.isFinite(rounds) && rounds > 0 && value.ammunitionId) {
         finalAmmunitionUsed[key] = {
           ammunitionId: value.ammunitionId,
-          rounds: value.rounds,
+          rounds,
         };
       }
     }
 
-    for (const [firearmId, usage] of Object.entries(finalAmmunitionUsed)) {
+    for (const usage of Object.values(finalAmmunitionUsed)) {
       const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
       if (!ammo) {
-        throw new Error(`Ammunition not found for firearm ${firearmId}`);
+        throw new Error(`Ammunition not found for ${usage.ammunitionId}`);
       }
       if (ammo.quantity < usage.rounds) {
-        throw new Error(
-          `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
+        Alert.alert(
+          "Insufficient ammunition",
+          `You only have ${ammo.quantity} rounds of ${ammo.brand} ${ammo.caliber} in inventory (entered: ${usage.rounds}).`,
+          [{ text: "Change ammunition", style: "cancel" }]
         );
+        return;
       }
     }
 
@@ -76,6 +96,8 @@ export const AddRangeVisit = () => {
       ammunitionUsed: finalAmmunitionUsed,
       photos,
     });
+    form.reset(form.getValues());
+    dirtyRef.current = false;
     navigation.goBack();
   };
 
@@ -95,8 +117,32 @@ export const AddRangeVisit = () => {
   );
   const {
     control,
-    formState: { errors },
+    setFocus,
+    formState: { errors, isDirty },
   } = form;
+
+  const dirtyRef = useRef(false);
+  const localDirty =
+    selectedFirearms.length > 0 ||
+    Object.keys(ammunitionUsed).length > 0 ||
+    photos.length > 0;
+  dirtyRef.current = isDirty || localDirty;
+  useUnsavedChanges(dirtyRef);
+
+  const firstInvalidField = FIELD_ORDER.find((name) => Boolean(errors[name]));
+  useEffect(() => {
+    if (firstInvalidField) {
+      const y = fieldY.current[firstInvalidField];
+      if (y != null) {
+        scrollRef.current?.scrollTo({ y: Math.max(0, y - 16), animated: true });
+      }
+      setFocus(firstInvalidField);
+    }
+  }, [firstInvalidField, setFocus]);
+
+  const captureY = (name: string) => (event: LayoutChangeEvent) => {
+    fieldY.current[name] = event.nativeEvent.layout.y;
+  };
 
   const loadData = async () => {
     try {
@@ -149,7 +195,7 @@ export const AddRangeVisit = () => {
               ...prev,
               [borrowedKey]: {
                 ammunitionId: ammo.id,
-                rounds: null,
+                rounds: "",
               },
             }));
           },
@@ -173,23 +219,64 @@ export const AddRangeVisit = () => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const totalRounds = Object.values(ammunitionUsed).reduce((sum, entry) => {
+    const rounds = Number(entry.rounds);
+    return sum + (Number.isFinite(rounds) && rounds > 0 ? rounds : 0);
+  }, 0);
+
+  const borrowedCount = Object.keys(ammunitionUsed).filter((key) =>
+    key.startsWith("borrowed-")
+  ).length;
+  const firearmCount = selectedFirearms.length + borrowedCount;
+
+  const ammoPreview = Object.entries(ammunitionUsed)
+    .filter(
+      ([, entry]) => entry.ammunitionId && Number(entry.rounds) > 0
+    )
+    .map(([key, entry]) => {
+      const ammo = ammunition.find((a) => a.id === entry.ammunitionId);
+      const rounds = Number(entry.rounds);
+      if (!ammo || !Number.isFinite(rounds)) {
+        return null;
+      }
+      return {
+        key,
+        label: `${ammo.brand} ${ammo.caliber}`,
+        before: ammo.quantity,
+        after: ammo.quantity - rounds,
+      };
+    })
+    .filter(
+      (preview): preview is NonNullable<typeof preview> => preview !== null
+    );
+
   if (error) {
     return <ErrorDisplay errorMessage={error} onRetry={loadData} />;
   }
 
   return (
-    <View className="flex-1 bg-terminal-bg">
-      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1">
-          <View className="mb-4 p-4">
-            <TerminalText>LOCATION</TerminalText>
+    <KeyboardAvoidingView
+      className="flex-1 bg-terminal-bg"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        ref={scrollRef}
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="px-4 pb-24">
+          <SectionHeading title="VISIT" />
+          <View onLayout={captureY("location")} className="mb-4">
+            <TerminalText className="mb-1.5">LOCATION *</TerminalText>
             <Controller
               control={control}
               name="location"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
                 <TerminalInput
                   value={value}
                   onChangeText={onChange}
+                  ref={ref}
                   placeholder="Enter range location"
                   testID="location-input"
                   error={error?.message}
@@ -197,13 +284,16 @@ export const AddRangeVisit = () => {
               )}
             />
             {errors.location && (
-              <TerminalText className="text-terminal-error text-sm mt-1">
+              <TerminalText
+                className="text-terminal-error text-sm mt-1"
+                accessibilityLiveRegion="polite"
+              >
                 {errors.location.message}
               </TerminalText>
             )}
           </View>
 
-          <View className="mb-4 p-4">
+          <View onLayout={captureY("date")}>
             <Controller
               control={control}
               name="date"
@@ -220,63 +310,73 @@ export const AddRangeVisit = () => {
             />
           </View>
 
-          <View className="p-4">
-            <FirearmsUsedInput
-              firearms={firearms}
-              ammunition={ammunition}
-              selectedFirearms={selectedFirearms}
-              ammunitionUsed={ammunitionUsed}
-              onToggleFirearm={(firearmId) => {
-                if (selectedFirearms.includes(firearmId)) {
-                  setSelectedFirearms((prev) =>
-                    prev.filter((id) => id !== firearmId)
-                  );
-                  setAmmunitionUsed((prev) => {
-                    const newAmmo = { ...prev };
-                    delete newAmmo[firearmId];
-                    return newAmmo;
-                  });
-                } else {
-                  setSelectedFirearms((prev) => [...prev, firearmId]);
-                }
-              }}
-              onRoundsChange={(firearmId, rounds) => {
-                setAmmunitionUsed((prev) => ({
-                  ...prev,
-                  [firearmId]: {
-                    ...prev[firearmId],
-                    rounds: rounds,
-                  },
-                }));
-              }}
-              onAmmunitionSelect={(firearmId, ammunitionId) => {
-                setAmmunitionUsed((prev) => ({
-                  ...prev,
-                  [firearmId]: {
-                    ...prev[firearmId],
-                    ammunitionId: ammunitionId,
-                  },
-                }));
-              }}
-              onAddBorrowedAmmunition={handleAddBorrowedAmmunition}
-              onRemoveBorrowedAmmunition={(key) => {
+          <SectionHeading title="FIREARMS & ROUNDS" className="mt-7" />
+          <FirearmsUsedInput
+            firearms={firearms}
+            ammunition={ammunition}
+            selectedFirearms={selectedFirearms}
+            ammunitionUsed={ammunitionUsed}
+            onToggleFirearm={(firearmId) => {
+              if (selectedFirearms.includes(firearmId)) {
+                setSelectedFirearms((prev) =>
+                  prev.filter((id) => id !== firearmId)
+                );
                 setAmmunitionUsed((prev) => {
                   const newAmmo = { ...prev };
-                  delete newAmmo[key];
+                  delete newAmmo[firearmId];
                   return newAmmo;
                 });
-              }}
-              onBorrowedAmmunitionRoundsChange={(key, rounds) => {
-                setAmmunitionUsed((prev) => ({
-                  ...prev,
-                  [key]: { ...prev[key], rounds: rounds },
-                }));
-              }}
-            />
+              } else {
+                setSelectedFirearms((prev) => [...prev, firearmId]);
+              }
+            }}
+            onRoundsChange={(firearmId, rounds) => {
+              setAmmunitionUsed((prev) => ({
+                ...prev,
+                [firearmId]: {
+                  ...prev[firearmId],
+                  rounds,
+                },
+              }));
+            }}
+            onAmmunitionSelect={(firearmId, ammunitionId) => {
+              setAmmunitionUsed((prev) => ({
+                ...prev,
+                [firearmId]: {
+                  ...prev[firearmId],
+                  ammunitionId,
+                },
+              }));
+            }}
+            onAddBorrowedAmmunition={handleAddBorrowedAmmunition}
+            onRemoveBorrowedAmmunition={(key) => {
+              setAmmunitionUsed((prev) => {
+                const newAmmo = { ...prev };
+                delete newAmmo[key];
+                return newAmmo;
+              });
+            }}
+            onBorrowedAmmunitionRoundsChange={(key, rounds) => {
+              setAmmunitionUsed((prev) => ({
+                ...prev,
+                [key]: { ...prev[key], rounds },
+              }));
+            }}
+          />
+
+          <SectionHeading title="SUMMARY" className="mt-7" />
+          <View className="mb-4">
+            <TerminalText>TOTAL ROUNDS: {totalRounds}</TerminalText>
+            <TerminalText>FIREARM COUNT: {firearmCount}</TerminalText>
+            {ammoPreview.map((preview) => (
+              <TerminalText key={preview.key} className="text-terminal-muted">
+                {preview.label}: {preview.before} → {preview.after} rounds
+              </TerminalText>
+            ))}
           </View>
 
-          <View className="mb-4 p-4">
-            <TerminalText>PHOTOS</TerminalText>
+          <SectionHeading title="PHOTOS" className="mt-7" />
+          <View className="mb-4">
             <TerminalButton
               onPress={handleImagePick}
               className="mb-2"
@@ -297,15 +397,16 @@ export const AddRangeVisit = () => {
             )}
           </View>
 
-          <View className="mb-4 p-4">
-            <TerminalText>NOTES</TerminalText>
+          <SectionHeading title="NOTES" className="mt-7" />
+          <View onLayout={captureY("notes")}>
             <Controller
               control={control}
               name="notes"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
                 <TerminalInput
                   value={value ?? ""}
                   onChangeText={onChange}
+                  ref={ref}
                   placeholder="Add any notes about this range visit"
                   multiline
                   error={error?.message}
@@ -313,29 +414,25 @@ export const AddRangeVisit = () => {
               )}
             />
             {errors.notes && (
-              <TerminalText className="text-terminal-error text-sm mt-1">
+              <TerminalText
+                className="text-terminal-error text-sm mt-1"
+                accessibilityLiveRegion="polite"
+              >
                 {errors.notes.message}
               </TerminalText>
             )}
           </View>
-
-          <View className="flex-1" />
-
-          <BottomButtonGroup
-            buttons={[
-              {
-                caption: "CANCEL",
-                onPress: () => navigation.goBack(),
-              },
-              {
-                caption: isSaving ? "SAVING..." : "SAVE",
-                onPress: onSubmit,
-                disabled: isSaving,
-              },
-            ]}
-          />
         </View>
       </ScrollView>
-    </View>
+
+      <StickyActionBar
+        primaryAction={{
+          caption: "Save range visit",
+          onPress: onSubmit,
+          disabled: isSaving,
+          loading: isSaving,
+        }}
+      />
+    </KeyboardAvoidingView>
   );
 };

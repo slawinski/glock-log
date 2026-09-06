@@ -28,6 +28,8 @@ jest.spyOn(Alert, "alert");
 
 // Mock navigation
 const mockGoBack = jest.fn();
+const mockAddListener = jest.fn(() => jest.fn());
+const mockDispatch = jest.fn();
 const mockRoute = { params: { id: "firearm-1" } };
 jest.mock("@react-navigation/native", () => {
   const actualNav = jest.requireActual("@react-navigation/native");
@@ -35,6 +37,8 @@ jest.mock("@react-navigation/native", () => {
     ...actualNav,
     useNavigation: () => ({
       goBack: mockGoBack,
+      addListener: mockAddListener,
+      dispatch: mockDispatch,
     }),
     useRoute: () => mockRoute,
   };
@@ -146,9 +150,9 @@ describe("EditFirearmScreen", () => {
     });
 
     fireEvent.changeText(screen.getByDisplayValue("Glock 19"), "");
-    fireEvent.press(screen.getByText(/SAVE CHANGES/));
+    fireEvent.press(screen.getByText(/Save changes/));
 
-    expect(await screen.findByText(/Model name is required/)).toBeTruthy();
+    expect(await screen.findByText(/Enter a model name./)).toBeTruthy();
     expect(storage.saveFirearm).not.toHaveBeenCalled();
     expect(Alert.alert).not.toHaveBeenCalled();
   });
@@ -157,7 +161,7 @@ describe("EditFirearmScreen", () => {
     (storage.saveFirearm as jest.Mock).mockResolvedValue(undefined);
     renderScreen();
     await waitFor(() => {
-      const saveButton = screen.getByText(/SAVE CHANGES/);
+      const saveButton = screen.getByText(/Save changes/);
       fireEvent.press(saveButton);
       expect(storage.saveFirearm).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -176,21 +180,12 @@ describe("EditFirearmScreen", () => {
     );
     renderScreen();
     await waitFor(() => {
-      const saveButton = screen.getByText(/SAVE CHANGES/);
+      const saveButton = screen.getByText(/Save changes/);
       fireEvent.press(saveButton);
       expect(Alert.alert).toHaveBeenCalledWith(
         "Error",
         "Failed to update firearm. Please try again."
       );
-    });
-  });
-
-  it("navigates back when cancel button is pressed", async () => {
-    renderScreen();
-    await waitFor(() => {
-      const cancelButton = screen.getByText(/CANCEL/);
-      fireEvent.press(cancelButton);
-      expect(mockGoBack).toHaveBeenCalled();
     });
   });
 });

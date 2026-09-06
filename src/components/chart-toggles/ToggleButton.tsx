@@ -15,7 +15,7 @@ export const ToggleButton = ({
 }: Props) => (
   <Pressable
     onPress={onPress}
-    className="mr-2 mb-2"
+    className="mr-2 mb-2 px-3 py-2 min-h-[44px] justify-center"
     accessibilityRole="button"
     accessibilityLabel={title}
     accessibilityState={{ selected: active }}

@@ -10,17 +10,19 @@ const getSettings = async (): Promise<SettingsData> => {
     const storage = StorageFactory.getStorage();
     const settingsData = await storage.getItem(STORAGE_KEYS.SETTINGS);
     if (!settingsData) {
-      return { currency: "USD", biometricLockEnabled: true }; // Defaults
+      return { currency: "USD", biometricLockEnabled: true, crtEffectEnabled: true }; // Defaults
     }
     const settings = JSON.parse(settingsData);
     return {
       currency: settings.currency || "USD",
       // Backward compatible default: lock is enabled unless explicitly disabled.
       biometricLockEnabled: settings.biometricLockEnabled !== false,
+      // Backward compatible default: CRT effect is enabled unless explicitly disabled.
+      crtEffectEnabled: settings.crtEffectEnabled !== false,
     };
   } catch (error) {
     handleError(error, "Storage.getSettings", { userMessage: "Failed to get settings." });
-    return { currency: "USD", biometricLockEnabled: true };
+    return { currency: "USD", biometricLockEnabled: true, crtEffectEnabled: true };
   }
 };
 
@@ -44,6 +46,18 @@ const setBiometricLockEnabled = async (enabled: boolean): Promise<void> => {
     await storage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updatedSettings));
   } catch (error) {
     handleError(error, "Storage.setBiometricLockEnabled", { userMessage: "Failed to update biometric lock setting." });
+    throw error;
+  }
+};
+
+const setCrtEffectEnabled = async (enabled: boolean): Promise<void> => {
+  try {
+    const currentSettings = await getSettings();
+    const updatedSettings = { ...currentSettings, crtEffectEnabled: enabled };
+    const storage = StorageFactory.getStorage();
+    await storage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updatedSettings));
+  } catch (error) {
+    handleError(error, "Storage.setCrtEffectEnabled", { userMessage: "Failed to update CRT effect setting." });
     throw error;
   }
 };
@@ -94,6 +108,7 @@ export const settingsService = {
   getSettings,
   setCurrency,
   setBiometricLockEnabled,
+  setCrtEffectEnabled,
   getCurrency,
   clearAllData,
 };

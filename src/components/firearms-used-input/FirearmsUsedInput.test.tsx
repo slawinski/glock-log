@@ -89,7 +89,6 @@ describe("FirearmsUsedInput", () => {
       <FirearmsUsedInput {...defaultProps} />
     );
 
-    expect(getByText("FIREARMS USED")).toBeTruthy();
     expect(getByText("Glock 19")).toBeTruthy();
     expect(getByText("AR-15")).toBeTruthy();
     expect(
@@ -123,7 +122,7 @@ describe("FirearmsUsedInput", () => {
     );
 
     fireEvent.changeText(getByTestId("rounds-input-f1"), "10");
-    expect(defaultProps.onRoundsChange).toHaveBeenCalledWith("f1", 10);
+    expect(defaultProps.onRoundsChange).toHaveBeenCalledWith("f1", "10");
   });
 
   it("calls onAmmunitionSelect when ammunition is chosen", () => {
@@ -159,7 +158,7 @@ describe("FirearmsUsedInput", () => {
       <FirearmsUsedInput
         {...defaultProps}
         ammunitionUsed={{
-          [borrowedAmmoKey]: { ammunitionId: "a1", rounds: 25 },
+          [borrowedAmmoKey]: { ammunitionId: "a1", rounds: "25" },
         }}
       />
     );
@@ -175,7 +174,7 @@ describe("FirearmsUsedInput", () => {
       <FirearmsUsedInput
         {...defaultProps}
         ammunitionUsed={{
-          [borrowedAmmoKey]: { ammunitionId: "a1", rounds: 25 },
+          [borrowedAmmoKey]: { ammunitionId: "a1", rounds: "25" },
         }}
       />
     );
@@ -183,7 +182,7 @@ describe("FirearmsUsedInput", () => {
     fireEvent.changeText(getByDisplayValue("25"), "30");
     expect(defaultProps.onBorrowedAmmunitionRoundsChange).toHaveBeenCalledWith(
       borrowedAmmoKey,
-      30
+      "30"
     );
   });
 
@@ -193,7 +192,7 @@ describe("FirearmsUsedInput", () => {
       <FirearmsUsedInput
         {...defaultProps}
         ammunitionUsed={{
-          [borrowedAmmoKey]: { ammunitionId: "a1", rounds: 25 },
+          [borrowedAmmoKey]: { ammunitionId: "a1", rounds: "25" },
         }}
       />
     );

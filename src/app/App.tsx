@@ -4,7 +4,12 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { View } from "react-native";
 import { useFonts, VT323_400Regular } from "@expo-google-fonts/vt323";
-import { CRTOverlayShader, BiometricLock } from "../components";
+import {
+  CRTOverlayShader,
+  BiometricLock,
+  CrtSettingsProvider,
+  useCrtSettings,
+} from "../components";
 import { StorageInit } from "../services/storage-init";
 
 import {
@@ -56,111 +61,118 @@ export function App() {
 
   return (
     <SafeAreaProvider>
-      <View className="flex-1 bg-terminal-bg">
-        <StorageInit>
-          <BiometricLock>
-            <NavigationContainer>
-              <Stack.Navigator
-                initialRouteName="Home"
-                screenOptions={{
-                  headerStyle: {
-                    backgroundColor: "#0a0a0a",
-                  },
-                  headerTintColor: "#00ff00",
-                  headerTitleStyle: {
-                    fontFamily: "VT323_400Regular",
-                    fontWeight: "bold",
-                    fontSize: 40,
-                  },
-                  contentStyle: {
-                    backgroundColor: "#0a0a0a",
-                    paddingTop: 16,
-                    paddingLeft: 16,
-                    paddingRight: 16,
-                    paddingBottom: 32,
-                  },
-                  headerTitleAlign: "center",
-                  headerBackButtonDisplayMode: "minimal",
-                }}
-              >
-                <Stack.Screen name="Home" component={Home} />
-                <Stack.Screen
-                  name="AddFirearm"
-                  component={AddFirearm}
-                  options={{ title: "NEW FIREARM" }}
-                />
-                <Stack.Screen
-                  name="FirearmDetails"
-                  component={FirearmDetails}
-                  options={{ title: "FIREARM DETAILS" }}
-                />
-                <Stack.Screen
-                  name="EditFirearm"
-                  component={EditFirearm}
-                  options={{ title: "EDIT FIREARM" }}
-                />
-                <Stack.Screen
-                  name="Stats"
-                  component={Stats}
-                  options={{ title: "SYSTEM STATISTICS" }}
-                />
-                <Stack.Screen
-                  name="AddRangeVisit"
-                  component={AddRangeVisit}
-                  options={{ title: "NEW RANGE VISIT" }}
-                />
-                <Stack.Screen
-                  name="RangeVisitDetails"
-                  component={RangeVisitDetails}
-                  options={{ title: "RANGE VISIT DETAILS" }}
-                />
-                <Stack.Screen
-                  name="EditRangeVisit"
-                  component={EditRangeVisit}
-                  options={{ title: "EDIT RANGE VISIT" }}
-                />
-                <Stack.Screen
-                  name="AddAmmunition"
-                  component={AddAmmunition}
-                  options={{ title: "NEW AMMUNITION" }}
-                />
-                <Stack.Screen
-                  name="AmmunitionDetails"
-                  component={AmmunitionDetails}
-                  options={{ title: "AMMUNITION DETAILS" }}
-                />
-                <Stack.Screen
-                  name="EditAmmunition"
-                  component={EditAmmunition}
-                  options={{ title: "EDIT AMMUNITION" }}
-                />
-                <Stack.Screen
-                  name="Menu"
-                  component={Menu}
-                  options={{ title: "SYSTEM MENU" }}
-                />
-                <Stack.Screen
-                  name="Settings"
-                  component={Settings}
-                  options={{ title: "SYSTEM SETTINGS" }}
-                />
-                <Stack.Screen
-                  name="CurrencySelection"
-                  component={CurrencySelection}
-                  options={{ title: "SELECT CURRENCY" }}
-                />
-                <Stack.Screen
-                  name="DataTransfer"
-                  component={DataTransfer}
-                  options={{ title: "DATA TRANSFER" }}
-                />
-              </Stack.Navigator>
-            </NavigationContainer>
-          </BiometricLock>
-        </StorageInit>
-        <StatusBar style="light" />
-        <CRTOverlayShader />
-      </View>
+      <CrtSettingsProvider>
+        <AppContent />
+      </CrtSettingsProvider>
     </SafeAreaProvider>
   );
 }
+
+const AppContent = () => {
+  const { crtEnabled } = useCrtSettings();
+
+  return (
+    <View className="flex-1 bg-terminal-bg">
+      <StorageInit>
+        <BiometricLock>
+          <NavigationContainer>
+            <Stack.Navigator
+              initialRouteName="Home"
+              screenOptions={{
+                headerStyle: {
+                  backgroundColor: "#0a0a0a",
+                },
+                headerTintColor: "#00ff00",
+                headerTitleStyle: {
+                  fontFamily: "VT323_400Regular",
+                  fontWeight: "bold",
+                  fontSize: 40,
+                },
+                contentStyle: {
+                  backgroundColor: "#0a0a0a",
+                  paddingTop: 16,
+                },
+                headerTitleAlign: "center",
+                headerBackButtonDisplayMode: "minimal",
+              }}
+            >
+              <Stack.Screen name="Home" component={Home} />
+              <Stack.Screen
+                name="AddFirearm"
+                component={AddFirearm}
+                options={{ title: "NEW FIREARM" }}
+              />
+              <Stack.Screen
+                name="FirearmDetails"
+                component={FirearmDetails}
+                options={{ title: "FIREARM DETAILS" }}
+              />
+              <Stack.Screen
+                name="EditFirearm"
+                component={EditFirearm}
+                options={{ title: "EDIT FIREARM" }}
+              />
+              <Stack.Screen
+                name="Stats"
+                component={Stats}
+                options={{ title: "SYSTEM STATISTICS" }}
+              />
+              <Stack.Screen
+                name="AddRangeVisit"
+                component={AddRangeVisit}
+                options={{ title: "NEW RANGE VISIT" }}
+              />
+              <Stack.Screen
+                name="RangeVisitDetails"
+                component={RangeVisitDetails}
+                options={{ title: "RANGE VISIT DETAILS" }}
+              />
+              <Stack.Screen
+                name="EditRangeVisit"
+                component={EditRangeVisit}
+                options={{ title: "EDIT RANGE VISIT" }}
+              />
+              <Stack.Screen
+                name="AddAmmunition"
+                component={AddAmmunition}
+                options={{ title: "NEW AMMUNITION" }}
+              />
+              <Stack.Screen
+                name="AmmunitionDetails"
+                component={AmmunitionDetails}
+                options={{ title: "AMMUNITION DETAILS" }}
+              />
+              <Stack.Screen
+                name="EditAmmunition"
+                component={EditAmmunition}
+                options={{ title: "EDIT AMMUNITION" }}
+              />
+              <Stack.Screen
+                name="Menu"
+                component={Menu}
+                options={{ title: "SYSTEM MENU" }}
+              />
+              <Stack.Screen
+                name="Settings"
+                component={Settings}
+                options={{ title: "SYSTEM SETTINGS" }}
+              />
+              <Stack.Screen
+                name="CurrencySelection"
+                component={CurrencySelection}
+                options={{ title: "SELECT CURRENCY" }}
+              />
+              <Stack.Screen
+                name="DataTransfer"
+                component={DataTransfer}
+                options={{ title: "DATA TRANSFER" }}
+              />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </BiometricLock>
+      </StorageInit>
+      <StatusBar style="light" />
+      {crtEnabled === true && <CRTOverlayShader />}
+    </View>
+  );
+};

@@ -21,12 +21,16 @@ jest.spyOn(Alert, "alert");
 
 // Mock navigation
 const mockGoBack = jest.fn();
+const mockAddListener = jest.fn(() => jest.fn());
+const mockDispatch = jest.fn();
 jest.mock("@react-navigation/native", () => {
   const actualNav = jest.requireActual("@react-navigation/native");
   return {
     ...actualNav,
     useNavigation: () => ({
       goBack: mockGoBack,
+      addListener: mockAddListener,
+      dispatch: mockDispatch,
     }),
   };
 });
@@ -55,11 +59,10 @@ describe("AddAmmunitionScreen", () => {
     expect(screen.getByText(/BRAND/)).toBeTruthy();
     expect(screen.getByText(/GRAIN/)).toBeTruthy();
     expect(screen.getByText(/QUANTITY/)).toBeTruthy();
-    expect(screen.getByText(/DATE PURCHASED/)).toBeTruthy();
-    expect(screen.getByText(/AMOUNT PAID/)).toBeTruthy();
+    expect(screen.getByText(/PURCHASE DATE/)).toBeTruthy();
+    expect(screen.getByText(/TOTAL PAID/)).toBeTruthy();
     expect(screen.getByText(/NOTES/)).toBeTruthy();
-    expect(screen.getByText(/CANCEL/)).toBeTruthy();
-    expect(screen.getByText(/SAVE AMMUNITION/)).toBeTruthy();
+    expect(screen.getByText(/Save ammunition/)).toBeTruthy();
   });
 
   it("handles form input changes", () => {
@@ -91,14 +94,14 @@ describe("AddAmmunitionScreen", () => {
     (storage.saveAmmunition as jest.Mock).mockResolvedValue(undefined);
     renderScreen();
 
-    const saveButton = screen.getByText(/SAVE AMMUNITION/);
+    const saveButton = screen.getByText(/Save ammunition/);
     fireEvent.press(saveButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/Caliber is required/)).toBeTruthy();
-      expect(screen.getByText(/Brand is required/)).toBeTruthy();
-      expect(screen.getByText(/Grain is required/)).toBeTruthy();
-      expect(screen.getByText(/Quantity must be greater than 0/)).toBeTruthy();
+      expect(screen.getByText(/Enter a caliber./)).toBeTruthy();
+      expect(screen.getByText(/Enter a brand./)).toBeTruthy();
+      expect(screen.getByText(/Enter a grain./)).toBeTruthy();
+      expect(screen.getByText(/Quantity must be greater than 0./)).toBeTruthy();
     });
     expect(storage.saveAmmunition).not.toHaveBeenCalled();
     expect(Alert.alert).not.toHaveBeenCalled();
@@ -114,7 +117,7 @@ describe("AddAmmunitionScreen", () => {
     fireEvent.changeText(screen.getByTestId("quantity-input"), "1000");
     fireEvent.changeText(screen.getByTestId("amount-paid-input"), "299.99");
 
-    fireEvent.press(screen.getByText(/SAVE AMMUNITION/));
+    fireEvent.press(screen.getByText(/Save ammunition/));
 
     await waitFor(() => {
       expect(storage.saveAmmunition).toHaveBeenCalledWith(
@@ -142,7 +145,7 @@ describe("AddAmmunitionScreen", () => {
     fireEvent.changeText(screen.getByTestId("quantity-input"), "1000");
     fireEvent.changeText(screen.getByTestId("amount-paid-input"), "299.99");
 
-    fireEvent.press(screen.getByText(/SAVE AMMUNITION/));
+    fireEvent.press(screen.getByText(/Save ammunition/));
 
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalledWith(
@@ -150,15 +153,6 @@ describe("AddAmmunitionScreen", () => {
         "Failed to create ammunition. Please try again."
       );
     });
-  });
-
-  it("navigates back when cancel button is pressed", () => {
-    renderScreen();
-
-    const cancelButton = screen.getByText(/CANCEL/);
-    fireEvent.press(cancelButton);
-
-    expect(mockGoBack).toHaveBeenCalled();
   });
 
   it("handles date picker interaction", async () => {

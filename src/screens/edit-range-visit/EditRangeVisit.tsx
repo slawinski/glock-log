@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  LayoutChangeEvent,
   Alert,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -11,13 +14,18 @@ import { Controller, useWatch } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
-import { useEntityForm, useImagePicker } from "../../hooks";
 import {
-  BottomButtonGroup,
+  useEntityForm,
+  useImagePicker,
+  useUnsavedChanges,
+} from "../../hooks";
+import {
   ErrorDisplay,
   FirearmsUsedInput,
   ImageGallery,
   LoadingScreen,
+  SectionHeading,
+  StickyActionBar,
   TerminalButton,
   TerminalDatePicker,
   TerminalInput,
@@ -40,9 +48,14 @@ type EditRangeVisitScreenRouteProp = RouteProp<
   "EditRangeVisit"
 >;
 
+const FIELD_ORDER = ["location", "date", "notes"] as const;
+
 export const EditRangeVisit = () => {
   const navigation = useNavigation<EditRangeVisitScreenNavigationProp>();
   const route = useRoute<EditRangeVisitScreenRouteProp>();
+  const scrollRef = useRef<ScrollView>(null);
+  const fieldY = useRef<Record<string, number>>({});
+  const initialPhotosRef = useRef<string[]>([]);
   const [photos, setPhotos] = useState<string[]>([]);
   const [firearms, setFirearms] = useState<
     { id: string; modelName: string; caliber: string }[]
@@ -54,22 +67,28 @@ export const EditRangeVisit = () => {
 
   const saveRangeVisit = async (data: RangeVisitInput) => {
     if (data.ammunitionUsed) {
-      for (const [firearmId, usage] of Object.entries(data.ammunitionUsed)) {
+      for (const usage of Object.values(data.ammunitionUsed)) {
         if (usage.ammunitionId) {
           const ammo = ammunition.find((a) => a.id === usage.ammunitionId);
           if (!ammo) {
-            throw new Error(`Ammunition not found for firearm ${firearmId}`);
+            throw new Error(`Ammunition not found for ${usage.ammunitionId}`);
           }
           if (ammo.quantity < usage.rounds) {
-            throw new Error(
-              `Insufficient ammunition quantity for ${ammo.brand} ${ammo.caliber}`
+            Alert.alert(
+              "Insufficient ammunition",
+              `You only have ${ammo.quantity} rounds of ${ammo.brand} ${ammo.caliber} in inventory (entered: ${usage.rounds}).`,
+              [{ text: "Change ammunition", style: "cancel" }]
             );
+            return;
           }
         }
       }
     }
 
     await storage.saveRangeVisitWithAmmunition({ ...data, photos });
+    form.reset(form.getValues());
+    dirtyRef.current = false;
+    initialPhotosRef.current = [...photos];
     navigation.goBack();
   };
 
@@ -91,12 +110,35 @@ export const EditRangeVisit = () => {
     reset,
     getValues,
     setValue,
-    formState: { errors },
+    setFocus,
+    formState: { errors, isDirty },
   } = form;
 
-  // Keep the FirearmsUsedInput section in sync with the form state reactively.
+  const dirtyRef = useRef(false);
+  const photosChanged =
+    photos.length !== initialPhotosRef.current.length ||
+    photos.some((photo, index) => photo !== initialPhotosRef.current[index]);
+  dirtyRef.current = isDirty || photosChanged;
+  useUnsavedChanges(dirtyRef);
+
+  const firstInvalidField = FIELD_ORDER.find((name) => Boolean(errors[name]));
+  useEffect(() => {
+    if (firstInvalidField) {
+      const y = fieldY.current[firstInvalidField];
+      if (y != null) {
+        scrollRef.current?.scrollTo({ y: Math.max(0, y - 16), animated: true });
+      }
+      setFocus(firstInvalidField);
+    }
+  }, [firstInvalidField, setFocus]);
+
+  const captureY = (name: string) => (event: LayoutChangeEvent) => {
+    fieldY.current[name] = event.nativeEvent.layout.y;
+  };
+
   const watchedFirearmsUsed = useWatch({ control, name: "firearmsUsed" });
-  const watchedAmmunitionUsed = useWatch({ control, name: "ammunitionUsed" });
+  const watchedAmmunitionUsed =
+    useWatch({ control, name: "ammunitionUsed" }) ?? {};
 
   const fetchVisit = useCallback(async () => {
     try {
@@ -104,15 +146,26 @@ export const EditRangeVisit = () => {
       const visits = await storage.getRangeVisits();
       const visit = visits.find((v) => v.id === route.params!.id);
       if (visit) {
+        const ammunitionUsedForm: Record<
+          string,
+          { ammunitionId: string; rounds: string }
+        > = {};
+        for (const [key, usage] of Object.entries(visit.ammunitionUsed || {})) {
+          ammunitionUsedForm[key] = {
+            ammunitionId: usage.ammunitionId,
+            rounds: String(usage.rounds),
+          };
+        }
         reset({
           id: visit.id,
           date: visit.date,
           location: visit.location,
           notes: visit.notes || "",
           firearmsUsed: visit.firearmsUsed,
-          ammunitionUsed: visit.ammunitionUsed || {},
+          ammunitionUsed: ammunitionUsedForm,
         });
         setPhotos(visit.photos ?? []);
+        initialPhotosRef.current = visit.photos ?? [];
       } else {
         setError("Range visit not found");
       }
@@ -179,6 +232,38 @@ export const EditRangeVisit = () => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const totalRounds = Object.values(watchedAmmunitionUsed).reduce(
+    (sum, entry) => {
+      const rounds = Number(entry.rounds);
+      return sum + (Number.isFinite(rounds) && rounds > 0 ? rounds : 0);
+    },
+    0
+  );
+
+  const borrowedCount = Object.keys(watchedAmmunitionUsed).filter((key) =>
+    key.startsWith("borrowed-")
+  ).length;
+  const firearmCount = (watchedFirearmsUsed ?? []).length + borrowedCount;
+
+  const ammoPreview = Object.entries(watchedAmmunitionUsed)
+    .filter(([, entry]) => entry.ammunitionId && Number(entry.rounds) > 0)
+    .map(([key, entry]) => {
+      const ammo = ammunition.find((a) => a.id === entry.ammunitionId);
+      const rounds = Number(entry.rounds);
+      if (!ammo || !Number.isFinite(rounds)) {
+        return null;
+      }
+      return {
+        key,
+        label: `${ammo.brand} ${ammo.caliber}`,
+        before: ammo.quantity,
+        after: ammo.quantity - rounds,
+      };
+    })
+    .filter(
+      (preview): preview is NonNullable<typeof preview> => preview !== null
+    );
+
   if (error) {
     return <ErrorDisplay errorMessage={error} onRetry={fetchVisit} />;
   }
@@ -188,32 +273,44 @@ export const EditRangeVisit = () => {
   }
 
   return (
-    <View className="flex-1 bg-terminal-bg">
-      <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1">
-          <View className="mb-4">
-            <TerminalText>LOCATION</TerminalText>
+    <KeyboardAvoidingView
+      className="flex-1 bg-terminal-bg"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        ref={scrollRef}
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="px-4 pb-24">
+          <SectionHeading title="VISIT" />
+          <View onLayout={captureY("location")} className="mb-4">
+            <TerminalText className="mb-1.5">LOCATION *</TerminalText>
             <Controller
               control={control}
               name="location"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+              render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
                 <TerminalInput
                   value={value}
                   onChangeText={onChange}
+                  ref={ref}
                   placeholder="e.g., Local Range"
                   error={error?.message}
                 />
               )}
             />
             {errors.location && (
-              <TerminalText className="text-terminal-error text-sm mt-1">
+              <TerminalText
+                className="text-terminal-error text-sm mt-1"
+                accessibilityLiveRegion="polite"
+              >
                 {errors.location.message}
               </TerminalText>
             )}
           </View>
 
-          <View className="mb-4">
-            <TerminalText>DATE</TerminalText>
+          <View onLayout={captureY("date")}>
             <Controller
               control={control}
               name="date"
@@ -230,33 +327,12 @@ export const EditRangeVisit = () => {
             />
           </View>
 
-          <View className="mb-4">
-            <TerminalText>NOTES</TerminalText>
-            <Controller
-              control={control}
-              name="notes"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
-                <TerminalInput
-                  value={value ?? ""}
-                  onChangeText={onChange}
-                  placeholder="Optional notes"
-                  multiline
-                  error={error?.message}
-                />
-              )}
-            />
-            {errors.notes && (
-              <TerminalText className="text-terminal-error text-sm mt-1">
-                {errors.notes.message}
-              </TerminalText>
-            )}
-          </View>
-
+          <SectionHeading title="FIREARMS & ROUNDS" className="mt-7" />
           <FirearmsUsedInput
             firearms={firearms}
             ammunition={ammunition}
             selectedFirearms={watchedFirearmsUsed ?? []}
-            ammunitionUsed={watchedAmmunitionUsed ?? {}}
+            ammunitionUsed={watchedAmmunitionUsed}
             onToggleFirearm={toggleFirearmSelection}
             onRoundsChange={(firearmId, rounds) => {
               const currentAmmo = getValues("ammunitionUsed") ?? {};
@@ -264,7 +340,7 @@ export const EditRangeVisit = () => {
                 ...currentAmmo,
                 [firearmId]: {
                   ammunitionId: currentAmmo[firearmId]?.ammunitionId || "",
-                  rounds: rounds,
+                  rounds,
                 },
               });
             }}
@@ -273,14 +349,12 @@ export const EditRangeVisit = () => {
               setValue("ammunitionUsed", {
                 ...currentAmmo,
                 [firearmId]: {
-                  ammunitionId: ammunitionId,
-                  rounds: currentAmmo[firearmId]?.rounds ?? null,
+                  ammunitionId,
+                  rounds: currentAmmo[firearmId]?.rounds ?? "",
                 },
               });
             }}
             onAddBorrowedAmmunition={() => {
-              // Edit screen does not support adding borrowed ammunition directly
-              // This functionality is primarily for the AddRangeVisit screen
               Alert.alert(
                 "Feature Not Available",
                 "Adding borrowed ammunition is not supported in edit mode."
@@ -296,15 +370,26 @@ export const EditRangeVisit = () => {
               setValue("ammunitionUsed", {
                 ...currentAmmo,
                 [key]: {
-                  ...(currentAmmo[key] ?? { ammunitionId: "", rounds: null }),
-                  rounds: rounds,
+                  ...(currentAmmo[key] ?? { ammunitionId: "", rounds: "" }),
+                  rounds,
                 },
               });
             }}
           />
 
+          <SectionHeading title="SUMMARY" className="mt-7" />
           <View className="mb-4">
-            <TerminalText>PHOTOS:</TerminalText>
+            <TerminalText>TOTAL ROUNDS: {totalRounds}</TerminalText>
+            <TerminalText>FIREARM COUNT: {firearmCount}</TerminalText>
+            {ammoPreview.map((preview) => (
+              <TerminalText key={preview.key} className="text-terminal-muted">
+                {preview.label}: {preview.before} → {preview.after} rounds
+              </TerminalText>
+            ))}
+          </View>
+
+          <SectionHeading title="PHOTOS" className="mt-7" />
+          <View className="mb-4">
             <TerminalButton
               onPress={handleImagePick}
               className="mb-2"
@@ -321,23 +406,42 @@ export const EditRangeVisit = () => {
             )}
           </View>
 
-          <View className="flex-1" />
-
-          <BottomButtonGroup
-            buttons={[
-              {
-                caption: "CANCEL",
-                onPress: () => navigation.goBack(),
-              },
-              {
-                caption: isSaving ? "SAVING..." : "SAVE",
-                onPress: onSubmit,
-                disabled: isSaving,
-              },
-            ]}
-          />
+          <SectionHeading title="NOTES" className="mt-7" />
+          <View onLayout={captureY("notes")}>
+            <Controller
+              control={control}
+              name="notes"
+              render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
+                <TerminalInput
+                  value={value ?? ""}
+                  onChangeText={onChange}
+                  ref={ref}
+                  placeholder="Optional notes"
+                  multiline
+                  error={error?.message}
+                />
+              )}
+            />
+            {errors.notes && (
+              <TerminalText
+                className="text-terminal-error text-sm mt-1"
+                accessibilityLiveRegion="polite"
+              >
+                {errors.notes.message}
+              </TerminalText>
+            )}
+          </View>
         </View>
       </ScrollView>
-    </View>
+
+      <StickyActionBar
+        primaryAction={{
+          caption: "Save changes",
+          onPress: onSubmit,
+          disabled: isSaving,
+          loading: isSaving,
+        }}
+      />
+    </KeyboardAvoidingView>
   );
 };

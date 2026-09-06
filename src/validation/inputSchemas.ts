@@ -8,28 +8,37 @@ const NOTES_MAX = 5000;
 const shortFieldMaxMessage = (field: string): string =>
   `${field} must be at most ${SHORT_FIELD_MAX} characters`;
 
+/**
+ * Coerces a numeric string into a number. Empty strings resolve to `0`, and
+ * non-numeric input resolves to a value below `min` so `.min()` rejects it
+ * with the provided message.
+ */
+const numericString = (min: number, message: string) =>
+  z
+    .string()
+    .transform((raw) => {
+      const trimmed = raw.trim();
+      if (trimmed === "") return 0;
+      const parsed = Number(trimmed);
+      return Number.isFinite(parsed) ? parsed : min - 1;
+    })
+    .pipe(z.number().min(min, message));
+
 export const firearmInputSchema = z.object({
   id: z.string().max(SHORT_FIELD_MAX).optional(),
   modelName: z
     .string()
-    .min(1, "Model name is required")
+    .min(1, "Enter a model name.")
     .max(SHORT_FIELD_MAX, shortFieldMaxMessage("Model name")),
   caliber: z
     .string()
-    .min(1, "Caliber is required")
+    .min(1, "Enter a caliber.")
     .max(SHORT_FIELD_MAX, shortFieldMaxMessage("Caliber")),
   datePurchased: z.string().datetime(),
-  // The form keeps `null` while the field is empty; a missing amount is
-  // treated as 0 when the record is saved.
-  amountPaid: z
-    .number()
-    .min(0, "Amount paid must be greater than or equal to 0")
-    .nullish()
-    .transform((value) => value ?? 0),
-  initialRoundsFired: z
-    .number()
-    .min(0, "Initial rounds fired must be a positive number")
-    .optional(),
+  // Kept as a string while editing; an empty value is treated as 0 on save.
+  amountPaid: numericString(0, "Enter a valid amount."),
+  // Kept as a string while editing; an empty value is treated as 0 on save.
+  initialRoundsFired: numericString(0, "Enter a valid number.").optional(),
   photos: z.array(z.string()).optional(),
   notes: z
     .string()
@@ -41,34 +50,22 @@ export const ammunitionInputSchema = z.object({
   id: z.string().max(SHORT_FIELD_MAX).optional(),
   caliber: z
     .string()
-    .min(1, "Caliber is required")
+    .min(1, "Enter a caliber.")
     .max(SHORT_FIELD_MAX, shortFieldMaxMessage("Caliber")),
   brand: z
     .string()
-    .min(1, "Brand is required")
+    .min(1, "Enter a brand.")
     .max(SHORT_FIELD_MAX, shortFieldMaxMessage("Brand")),
   grain: z
     .string()
-    .min(1, "Grain is required")
+    .min(1, "Enter a grain.")
     .max(SHORT_FIELD_MAX, shortFieldMaxMessage("Grain")),
-  // The form keeps `null` while the field is empty; an empty quantity is
-  // invalid and reported with the same message as a non-positive number.
-  quantity: z
-    .number()
-    .min(1, "Quantity must be greater than 0")
-    .nullable()
-    .refine(
-      (value): value is number => value !== null,
-      "Quantity must be greater than 0"
-    ),
+  // Kept as a string while editing; an empty quantity is invalid and reported
+  // with the same message as a non-positive number.
+  quantity: numericString(1, "Quantity must be greater than 0."),
   datePurchased: z.string().datetime(),
-  // The form keeps `null` while the field is empty; a missing amount is
-  // treated as 0 when the record is saved.
-  amountPaid: z
-    .number()
-    .min(0, "Amount paid must be greater than or equal to 0")
-    .nullish()
-    .transform((value) => value ?? 0),
+  // Kept as a string while editing; an empty value is treated as 0 on save.
+  amountPaid: numericString(0, "Enter a valid amount."),
   pricePerRound: z.number().optional(),
   notes: z
     .string()
@@ -96,7 +93,7 @@ export const rangeVisitInputSchema = z.object({
   date: z.string().datetime(),
   location: z
     .string()
-    .min(1, "Location is required")
+    .min(1, "Enter a location.")
     .max(SHORT_FIELD_MAX, shortFieldMaxMessage("Location")),
   notes: z
     .string()
@@ -108,14 +105,7 @@ export const rangeVisitInputSchema = z.object({
       z.string(),
       z.object({
         ammunitionId: z.string(),
-        rounds: z
-          .number()
-          .min(1, "Rounds used must be greater than 0")
-          .nullable()
-          .refine(
-            (value): value is number => value !== null,
-            "Rounds used must be greater than 0"
-          ),
+        rounds: numericString(1, "Rounds used must be greater than 0."),
       })
     )
     .optional(),
@@ -128,7 +118,7 @@ export type FirearmInput = z.infer<typeof firearmInputSchema>;
 export type AmmunitionInput = z.infer<typeof ammunitionInputSchema>;
 export type RangeVisitInput = z.infer<typeof rangeVisitInputSchema>;
 
-// Form-facing types (schema input): numeric fields may hold `null` while the
+// Form-facing types (schema input): numeric fields hold `string` while the
 // user is editing; they are coerced/validated into the output types above.
 export type FirearmFormData = z.input<typeof firearmInputSchema>;
 export type AmmunitionFormData = z.input<typeof ammunitionFormSchema>;

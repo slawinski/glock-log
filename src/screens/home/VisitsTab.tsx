@@ -1,37 +1,33 @@
-import React, { useCallback } from "react";
-import { View, FlatList, ListRenderItemInfo } from "react-native";
+import React, { useCallback, useMemo } from "react";
+import { FlatList, ListRenderItemInfo } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { RangeVisitStorage } from "../../validation/storageSchemas";
-import { TerminalText } from "../../components";
+import { RangeVisitStorage, FirearmStorage } from "../../validation/storageSchemas";
+import { EmptyState } from "../../components";
 import { VisitListItem } from "./VisitListItem";
 import { HomeScreenNavigationProp } from "../../types/navigation";
 
 type Props = {
   rangeVisits: RangeVisitStorage[];
+  firearms: FirearmStorage[];
   onRefresh: () => void;
   refreshing: boolean;
 };
 
-// Item layout: border-2 (2px top + bottom) + p-4 (16px top + bottom)
-// + content 44px (two 20px text lines + 4px mt-1) = 80px,
-// plus mb-2 (8px) spacing = 88px stride between items.
-const VISIT_ITEM_HEIGHT = 88;
-
-const getVisitItemLayout = (
-  _data: ArrayLike<RangeVisitStorage> | null | undefined,
-  index: number
-) => ({
-  length: VISIT_ITEM_HEIGHT,
-  offset: VISIT_ITEM_HEIGHT * index,
-  index,
-});
-
 export const VisitsTab = ({
   rangeVisits,
+  firearms,
   onRefresh,
   refreshing,
 }: Props) => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+
+  const firearmsById = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const firearm of firearms) {
+      map[firearm.id] = firearm.modelName;
+    }
+    return map;
+  }, [firearms]);
 
   const handleVisitPress = useCallback(
     (rangeVisitId: string) => {
@@ -42,9 +38,13 @@ export const VisitsTab = ({
 
   const renderVisitItem = useCallback(
     ({ item }: ListRenderItemInfo<RangeVisitStorage>) => (
-      <VisitListItem rangeVisit={item} onPress={handleVisitPress} />
+      <VisitListItem
+        rangeVisit={item}
+        onPress={handleVisitPress}
+        firearmsById={firearmsById}
+      />
     ),
-    [handleVisitPress]
+    [handleVisitPress, firearmsById]
   );
 
   return (
@@ -54,11 +54,15 @@ export const VisitsTab = ({
       keyExtractor={(item) => item.id}
       onRefresh={onRefresh}
       refreshing={refreshing}
-      getItemLayout={getVisitItemLayout}
       ListEmptyComponent={
-        <View className="flex-1 justify-center items-center mt-8">
-          <TerminalText>NO RANGE VISITS FOUND</TerminalText>
-        </View>
+        <EmptyState
+          title="No range visits yet"
+          message="Log a visit to track rounds fired and update ammunition inventory."
+          primaryAction={{
+            caption: "Log a visit",
+            onPress: () => navigation.navigate("AddRangeVisit"),
+          }}
+        />
       }
     />
   );

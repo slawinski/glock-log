@@ -1,5 +1,12 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+  within,
+} from '@testing-library/react-native';
 import { Alert, AlertButton } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -16,6 +23,21 @@ jest.mock('../../services/storage-new', () => ({
 
 jest.mock('expo-local-authentication', () => ({
   authenticateAsync: jest.fn(),
+  supportedAuthenticationTypesAsync: jest.fn(),
+  AuthenticationType: {
+    FINGERPRINT: 1,
+    FACIAL_RECOGNITION: 2,
+    IRIS: 3,
+  },
+}));
+
+const mockSetCrtEnabled = jest.fn();
+jest.mock('../../components/crt-settings', () => ({
+  CrtSettingsProvider: ({ children }: { children: React.ReactNode }) => children,
+  useCrtSettings: () => ({
+    crtEnabled: true,
+    setCrtEnabled: mockSetCrtEnabled,
+  }),
 }));
 
 const Stack = createNativeStackNavigator();
@@ -47,6 +69,8 @@ const renderScreen = () => {
 
 const mockStorage = storage as jest.Mocked<typeof storage>;
 const mockAuthenticate = LocalAuthentication.authenticateAsync as jest.Mock;
+const mockSupportedTypes = LocalAuthentication
+  .supportedAuthenticationTypesAsync as jest.Mock;
 
 describe('Settings', () => {
   beforeEach(() => {
@@ -54,20 +78,27 @@ describe('Settings', () => {
     mockStorage.getSettings.mockResolvedValue({
       currency: 'USD',
       biometricLockEnabled: true,
+      crtEffectEnabled: true,
     });
     mockStorage.setBiometricLockEnabled.mockResolvedValue(undefined);
+    mockSupportedTypes.mockResolvedValue([
+      LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION,
+    ]);
   });
 
-  it('renders correctly and displays current currency', async () => {
+  it('renders section headings and displays current currency', async () => {
     renderScreen();
     await waitFor(() => {
-      expect(screen.getByText('└── CURRENCY: [USD]')).toBeTruthy();
+      expect(screen.getByText('SECURITY')).toBeTruthy();
+      expect(screen.getByText('APPEARANCE')).toBeTruthy();
+      expect(screen.getByText('GENERAL')).toBeTruthy();
+      expect(screen.getByText('CURRENCY: [USD]')).toBeTruthy();
     });
   });
 
   it('navigates to CurrencySelection when currency item is pressed', async () => {
     renderScreen();
-    const currencyItem = screen.getByText('└── CURRENCY: [USD]');
+    const currencyItem = screen.getByText('CURRENCY: [USD]');
     fireEvent.press(currencyItem);
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('CurrencySelection');
@@ -76,7 +107,9 @@ describe('Settings', () => {
 
   it('handles error when loading settings', async () => {
     mockStorage.getSettings.mockRejectedValue(new Error('Failed to load'));
-    const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const mockConsoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     renderScreen();
     await waitFor(() => {
@@ -93,7 +126,8 @@ describe('Settings', () => {
     renderScreen();
     await waitFor(() => {
       expect(screen.getByText('BIOMETRIC LOCK')).toBeTruthy();
-      expect(screen.getByText('ON')).toBeTruthy();
+      const biometricRow = screen.getByLabelText('Biometric lock');
+      expect(within(biometricRow).getByText('ON')).toBeTruthy();
     });
   });
 
@@ -101,11 +135,13 @@ describe('Settings', () => {
     mockStorage.getSettings.mockResolvedValue({
       currency: 'USD',
       biometricLockEnabled: false,
+      crtEffectEnabled: true,
     });
 
     renderScreen();
     await waitFor(() => {
-      expect(screen.getByText('OFF')).toBeTruthy();
+      const biometricRow = screen.getByLabelText('Biometric lock');
+      expect(within(biometricRow).getByText('OFF')).toBeTruthy();
     });
   });
 
@@ -114,20 +150,21 @@ describe('Settings', () => {
 
     renderScreen();
     await waitFor(() => {
-      expect(screen.getByText('ON')).toBeTruthy();
+      expect(screen.getByText('BIOMETRIC LOCK')).toBeTruthy();
     });
 
-    fireEvent.press(screen.getByText('ON'));
+    const biometricRow = screen.getByLabelText('Biometric lock');
+    fireEvent.press(within(biometricRow).getByText('ON'));
 
     expect(alertSpy).toHaveBeenCalledWith(
-      'DISABLE BIOMETRIC LOCK',
-      expect.stringContaining('accessible without authentication'),
+      'Turn off biometric lock?',
+      'TriggerNote will open without biometric authentication.',
       expect.any(Array)
     );
 
     // Simulate confirming the disable action
     const buttons = alertSpy.mock.calls[0][2] as AlertButton[];
-    const disableButton = buttons.find((button) => button.text === 'DISABLE');
+    const disableButton = buttons.find((button) => button.text === 'Turn off');
     expect(disableButton).toBeTruthy();
 
     await act(async () => {
@@ -136,7 +173,7 @@ describe('Settings', () => {
 
     expect(mockStorage.setBiometricLockEnabled).toHaveBeenCalledWith(false);
     await waitFor(() => {
-      expect(screen.getByText('OFF')).toBeTruthy();
+      expect(within(biometricRow).getByText('OFF')).toBeTruthy();
     });
 
     alertSpy.mockRestore();
@@ -146,15 +183,17 @@ describe('Settings', () => {
     mockStorage.getSettings.mockResolvedValue({
       currency: 'USD',
       biometricLockEnabled: false,
+      crtEffectEnabled: true,
     });
     mockAuthenticate.mockResolvedValue({ success: true });
 
     renderScreen();
     await waitFor(() => {
-      expect(screen.getByText('OFF')).toBeTruthy();
+      expect(screen.getByText('BIOMETRIC LOCK')).toBeTruthy();
     });
 
-    fireEvent.press(screen.getByText('OFF'));
+    const biometricRow = screen.getByLabelText('Biometric lock');
+    fireEvent.press(within(biometricRow).getByText('OFF'));
 
     await waitFor(() => {
       expect(mockAuthenticate).toHaveBeenCalledWith({
@@ -164,7 +203,7 @@ describe('Settings', () => {
       expect(mockStorage.setBiometricLockEnabled).toHaveBeenCalledWith(true);
     });
     await waitFor(() => {
-      expect(screen.getByText('ON')).toBeTruthy();
+      expect(within(biometricRow).getByText('ON')).toBeTruthy();
     });
   });
 
@@ -172,20 +211,42 @@ describe('Settings', () => {
     mockStorage.getSettings.mockResolvedValue({
       currency: 'USD',
       biometricLockEnabled: false,
+      crtEffectEnabled: true,
     });
     mockAuthenticate.mockResolvedValue({ success: false, error: 'user_cancel' });
 
     renderScreen();
     await waitFor(() => {
-      expect(screen.getByText('OFF')).toBeTruthy();
+      expect(screen.getByText('BIOMETRIC LOCK')).toBeTruthy();
     });
 
-    fireEvent.press(screen.getByText('OFF'));
+    const biometricRow = screen.getByLabelText('Biometric lock');
+    fireEvent.press(within(biometricRow).getByText('OFF'));
 
     await waitFor(() => {
       expect(mockAuthenticate).toHaveBeenCalled();
     });
     expect(mockStorage.setBiometricLockEnabled).not.toHaveBeenCalled();
-    expect(screen.getByText('OFF')).toBeTruthy();
+    expect(within(biometricRow).getByText('OFF')).toBeTruthy();
+  });
+
+  it('shows the detected authentication method label', async () => {
+    renderScreen();
+    await waitFor(() => {
+      expect(screen.getByText('METHOD: Face ID')).toBeTruthy();
+    });
+  });
+
+  it('toggles the CRT effect via setCrtEnabled', async () => {
+    renderScreen();
+    await waitFor(() => {
+      expect(screen.getByText('CRT EFFECT')).toBeTruthy();
+    });
+
+    const crtRow = screen.getByTestId('crt-effect-row');
+    expect(within(crtRow).getByText('ON')).toBeTruthy();
+
+    fireEvent.press(within(crtRow).getByText('ON'));
+    expect(mockSetCrtEnabled).toHaveBeenCalledWith(false);
   });
 });

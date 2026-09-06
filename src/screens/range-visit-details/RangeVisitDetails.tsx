@@ -11,10 +11,13 @@ import { RootStackParamList } from "../../app/App";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import {
-  BottomButtonGroup,
+  DetailRow,
+  DetailSection,
   ErrorDisplay,
   ImageGallery,
   LoadingScreen,
+  MetricHero,
+  TerminalButton,
   TerminalText,
 } from "../../components";
 import {
@@ -22,6 +25,7 @@ import {
   RangeVisitStorage,
   AmmunitionStorage,
 } from "../../validation/storageSchemas";
+import { formatDate } from "../../utils";
 import { useDeleteEntity } from "../../hooks";
 
 type RangeVisitDetailsScreenNavigationProp = NativeStackNavigationProp<
@@ -56,7 +60,6 @@ export const RangeVisitDetails = () => {
       }
       setVisit(foundVisit);
 
-      // Fetch details for each firearm and ammunition used
       const [allFirearms, allAmmunition] = await Promise.all([
         storage.getFirearms(),
         storage.getAmmunition(),
@@ -129,86 +132,97 @@ export const RangeVisitDetails = () => {
     0
   );
 
+  const ammunitionConsumption: Record<string, number> = {};
+  for (const usage of Object.values(visit.ammunitionUsed ?? {})) {
+    ammunitionConsumption[usage.ammunitionId] =
+      (ammunitionConsumption[usage.ammunitionId] ?? 0) + usage.rounds;
+  }
+
   return (
     <View className="flex-1 bg-terminal-bg">
       <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1">
-          <View className="mb-4 flex-row">
-            <TerminalText>LOCATION: </TerminalText>
-            <TerminalText>{visit.location}</TerminalText>
-          </View>
+        <View className="flex-1 px-4 pb-8">
+          <TerminalText className="text-2xl">{visit.location}</TerminalText>
+          <TerminalText className="text-terminal-muted text-lg mb-4">
+            {formatDate(visit.date, "dd MMM yyyy")}
+          </TerminalText>
 
-          <View className="mb-4 flex-row">
-            <TerminalText>DATE: </TerminalText>
-            <TerminalText>
-              {new Date(visit.date).toLocaleDateString()}
-            </TerminalText>
-          </View>
+          <MetricHero
+            value={totalRounds.toLocaleString("en-US")}
+            label="rounds fired"
+            className="mb-6"
+          />
 
-          <View className="mb-4">
-            <TerminalText className="text-lg mb-2">FIREARMS USED:</TerminalText>
+          <DetailSection title="FIREARMS">
             {visit.firearmsUsed.map((firearmId) => {
               const firearm = firearms[firearmId];
-              const usage = visit.ammunitionUsed?.[firearmId];
-              const ammo = usage ? ammunition[usage.ammunitionId] : null;
-
+              const rounds = visit.ammunitionUsed?.[firearmId]?.rounds ?? 0;
               return (
-                <View key={firearmId} className="mb-2 flex-row">
-                  <TerminalText>
-                    {firearm?.modelName} ({firearm?.caliber}){" "}
-                  </TerminalText>
-                  {usage && ammo && (
-                    <TerminalText>
-                      {usage.rounds} rounds of {ammo.brand} {ammo.caliber}{" "}
-                      {ammo.grain}gr
-                    </TerminalText>
-                  )}
-                </View>
+                <DetailRow
+                  key={firearmId}
+                  label={firearm?.modelName ?? firearmId}
+                  value={`${rounds} rounds`}
+                />
               );
             })}
-            <View className="mt-4">
-              <TerminalText>TOTAL ROUNDS FIRED: {totalRounds}</TerminalText>
-            </View>
-          </View>
 
-          {visit.notes && (
-            <View className="mb-4 flex-row">
-              <TerminalText>NOTES: </TerminalText>
-              <TerminalText className="flex-shrink">{visit.notes}</TerminalText>
-            </View>
-          )}
+            {Object.keys(ammunitionConsumption).length > 0 && (
+              <View className="mt-4">
+                <TerminalText className="text-terminal-muted text-sm mb-2">
+                  AMMUNITION
+                </TerminalText>
+                {Object.entries(ammunitionConsumption).map(
+                  ([ammunitionId, rounds]) => {
+                    const ammo = ammunition[ammunitionId];
+                    const label = ammo
+                      ? `${ammo.brand} ${ammo.caliber} ${ammo.grain}`
+                      : ammunitionId;
+                    return (
+                      <DetailRow
+                        key={ammunitionId}
+                        label={label}
+                        value={`${rounds} rounds consumed`}
+                      />
+                    );
+                  }
+                )}
+              </View>
+            )}
+          </DetailSection>
 
           {visit.photos && visit.photos.length > 0 && (
-            <View className="mb-4">
-              <TerminalText className="text-lg mb-2">PHOTOS:</TerminalText>
+            <DetailSection title="PHOTOS">
               <ImageGallery
                 images={visit.photos}
                 size="large"
                 showDeleteButton={false}
               />
-            </View>
+            </DetailSection>
           )}
 
-          <View className="flex-1" />
+          {visit.notes && (
+            <DetailSection title="NOTES">
+              <TerminalText className="flex-shrink">{visit.notes}</TerminalText>
+            </DetailSection>
+          )}
 
-          <BottomButtonGroup
-            className="mb-4"
-            buttons={[
-              {
-                caption: "EDIT",
-                onPress: () =>
-                  navigation.navigate("EditRangeVisit", { id: visit.id }),
-              },
-              {
-                caption: "DELETE",
-                onPress: confirmDelete,
-              },
-              {
-                caption: "BACK",
-                onPress: () => navigation.goBack(),
-              },
-            ]}
-          />
+          <View className="mb-6">
+            <TerminalButton
+              caption="Edit visit"
+              variant="primary"
+              onPress={() =>
+                navigation.navigate("EditRangeVisit", { id: visit.id })
+              }
+            />
+          </View>
+
+          <DetailSection title="DANGER ZONE">
+            <TerminalButton
+              caption="Delete visit"
+              variant="destructive"
+              onPress={confirmDelete}
+            />
+          </DetailSection>
         </View>
       </ScrollView>
     </View>

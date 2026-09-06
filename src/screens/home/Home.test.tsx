@@ -57,6 +57,37 @@ jest.mock("../../components", () => ({
       </View>
     );
   },
+  EmptyState: ({ title, message, primaryAction, secondaryAction, ...props }: any) => {
+    const { View, Text, Pressable } = require("react-native");
+    return (
+      <View {...props}>
+        <Text>{title}</Text>
+        <Text>{message}</Text>
+        {primaryAction && (
+          <Pressable onPress={primaryAction.onPress}>
+            <Text>{primaryAction.caption}</Text>
+          </Pressable>
+        )}
+        {secondaryAction && (
+          <Pressable onPress={secondaryAction.onPress}>
+            <Text>{secondaryAction.caption}</Text>
+          </Pressable>
+        )}
+      </View>
+    );
+  },
+  ToggleButton: ({ title, active, onPress, ...props }: any) => {
+    const { Pressable, Text } = require("react-native");
+    return (
+      <Pressable
+        onPress={onPress}
+        accessibilityState={{ selected: active }}
+        {...props}
+      >
+        <Text>{title}</Text>
+      </Pressable>
+    );
+  },
   ErrorDisplay: ({ errorMessage, onRetry }: any) => {
     const { View, Text, Pressable } = require("react-native");
     return (
@@ -172,8 +203,8 @@ describe("Home", () => {
     const { getByText } = renderWithNavigation(<Home />);
 
     await waitFor(() => {
-      expect(getByText("Glock 19 (9mm)")).toBeTruthy();
-      expect(getByText("500 rounds")).toBeTruthy();
+      expect(getByText("Glock 19")).toBeTruthy();
+      expect(getByText("500 rounds fired")).toBeTruthy();
     });
   });
 
@@ -182,7 +213,7 @@ describe("Home", () => {
 
     // Wait for initial load
     await waitFor(() => {
-      expect(getByText("Glock 19 (9mm)")).toBeTruthy();
+      expect(getByText("Glock 19")).toBeTruthy();
     });
 
     // Verify tabs are present
@@ -194,8 +225,8 @@ describe("Home", () => {
 
     // Wait for initial firearms data to load
     await waitFor(() => {
-      expect(getByText("Glock 19 (9mm)")).toBeTruthy();
-      expect(getByText("500 rounds")).toBeTruthy();
+      expect(getByText("Glock 19")).toBeTruthy();
+      expect(getByText("500 rounds fired")).toBeTruthy();
     });
   });
 
@@ -234,7 +265,7 @@ describe("Home", () => {
     const { getByText } = renderWithNavigation(<Home />);
 
     await waitFor(() => {
-      expect(getByText("NO FIREARMS FOUND")).toBeTruthy();
+      expect(getByText("No firearms yet")).toBeTruthy();
     });
   });
 
@@ -246,7 +277,7 @@ describe("Home", () => {
     fireEvent.press(getByTestId("tab-visits"));
 
     await waitFor(() => {
-      expect(getByText("NO RANGE VISITS FOUND")).toBeTruthy();
+      expect(getByText("No range visits yet")).toBeTruthy();
     });
   });
 
@@ -258,7 +289,7 @@ describe("Home", () => {
     fireEvent.press(getByTestId("tab-ammunition"));
 
     await waitFor(() => {
-      expect(getByText("NO AMMUNITION IN STOCK")).toBeTruthy();
+      expect(getByText("No ammunition in stock")).toBeTruthy();
     });
   });
 
@@ -289,7 +320,7 @@ describe("Home", () => {
     const { getByText } = renderWithNavigation(<Home />);
 
     await waitFor(() => {
-      expect(getByText(/Added: \d+\/\d+\/\d+/)).toBeTruthy();
+      expect(getByText(/Added \d+\/\d+\/\d+/)).toBeTruthy();
     });
   });
 });

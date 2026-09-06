@@ -64,6 +64,24 @@ jest.mock("../../components", () => {
         )}
       </View>
     ),
+    TerminalInput: ({
+      value,
+      onChangeText,
+      placeholder,
+      testID,
+      secureTextEntry,
+    }: any) => {
+      const { TextInput } = require("react-native");
+      return (
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          secureTextEntry={secureTextEntry}
+          testID={testID}
+        />
+      );
+    },
   };
 });
 
@@ -80,10 +98,12 @@ describe("DataTransfer Screen", () => {
       assets: [{ uri: "file:///test/import.zip" }],
     });
 
-    (FileSystem.readAsStringAsync as jest.Mock).mockResolvedValue(JSON.stringify({
-      version: "1.1.0",
-      data: { firearms: [], ammunition: [], rangeVisits: [] },
-    }));
+    (FileSystem.readAsStringAsync as jest.Mock).mockResolvedValue(
+      JSON.stringify({
+        version: "1.1.0",
+        data: { firearms: [], ammunition: [], rangeVisits: [] },
+      }),
+    );
 
     // Unencrypted by default: keeps the legacy import path working.
     (isPasswordProtected as jest.Mock).mockResolvedValue(false);
@@ -110,12 +130,14 @@ describe("DataTransfer Screen", () => {
     it("rejects a passphrase shorter than 4 characters", async () => {
       const { getByPlaceholderText, getByText } = render(<DataTransfer />);
 
-      fireEvent.changeText(getByPlaceholderText("ENTER PASSPHRASE"), "abc");
-      fireEvent.changeText(getByPlaceholderText("CONFIRM PASSPHRASE"), "abc");
+      fireEvent.changeText(getByPlaceholderText("Enter passphrase"), "abc");
+      fireEvent.changeText(getByPlaceholderText("Confirm passphrase"), "abc");
       fireEvent.press(getByText("EXPORT SECURE BACKUP"));
 
       await waitFor(() => {
-        expect(getByText("Passphrase must be at least 4 characters.")).toBeTruthy();
+        expect(
+          getByText("Passphrase must be at least 4 characters."),
+        ).toBeTruthy();
       });
       expect(storage.exportData).not.toHaveBeenCalled();
     });
@@ -123,8 +145,14 @@ describe("DataTransfer Screen", () => {
     it("rejects mismatched passphrases", async () => {
       const { getByPlaceholderText, getByText } = render(<DataTransfer />);
 
-      fireEvent.changeText(getByPlaceholderText("ENTER PASSPHRASE"), "correct-horse");
-      fireEvent.changeText(getByPlaceholderText("CONFIRM PASSPHRASE"), "correct-hors");
+      fireEvent.changeText(
+        getByPlaceholderText("Enter passphrase"),
+        "correct-horse",
+      );
+      fireEvent.changeText(
+        getByPlaceholderText("Confirm passphrase"),
+        "correct-hors",
+      );
       fireEvent.press(getByText("EXPORT SECURE BACKUP"));
 
       await waitFor(() => {
@@ -136,21 +164,27 @@ describe("DataTransfer Screen", () => {
     it("exports an AES-256 encrypted archive and shares it", async () => {
       const { getByPlaceholderText, getByText } = render(<DataTransfer />);
 
-      fireEvent.changeText(getByPlaceholderText("ENTER PASSPHRASE"), "correct-horse");
-      fireEvent.changeText(getByPlaceholderText("CONFIRM PASSPHRASE"), "correct-horse");
+      fireEvent.changeText(
+        getByPlaceholderText("Enter passphrase"),
+        "correct-horse",
+      );
+      fireEvent.changeText(
+        getByPlaceholderText("Confirm passphrase"),
+        "correct-horse",
+      );
       fireEvent.press(getByText("EXPORT SECURE BACKUP"));
 
       await waitFor(() => {
         expect(storage.exportData).toHaveBeenCalledWith("correct-horse");
         expect(Sharing.shareAsync).toHaveBeenCalledWith(
           "file:///test-cache/backup.zip",
-          expect.objectContaining({ mimeType: "application/zip" })
+          expect.objectContaining({ mimeType: "application/zip" }),
         );
       });
 
       // The passphrase is cleared from the inputs and never persisted.
-      expect(getByPlaceholderText("ENTER PASSPHRASE").props.value).toBe("");
-      expect(getByPlaceholderText("CONFIRM PASSPHRASE").props.value).toBe("");
+      expect(getByPlaceholderText("Enter passphrase").props.value).toBe("");
+      expect(getByPlaceholderText("Confirm passphrase").props.value).toBe("");
 
       expect(getByText("EXPORT SECURE BACKUP")).toBeTruthy();
     });
@@ -159,15 +193,21 @@ describe("DataTransfer Screen", () => {
       (Sharing.isAvailableAsync as jest.Mock).mockResolvedValue(false);
       const { getByPlaceholderText, getByText } = render(<DataTransfer />);
 
-      fireEvent.changeText(getByPlaceholderText("ENTER PASSPHRASE"), "correct-horse");
-      fireEvent.changeText(getByPlaceholderText("CONFIRM PASSPHRASE"), "correct-horse");
+      fireEvent.changeText(
+        getByPlaceholderText("Enter passphrase"),
+        "correct-horse",
+      );
+      fireEvent.changeText(
+        getByPlaceholderText("Confirm passphrase"),
+        "correct-horse",
+      );
       fireEvent.press(getByText("EXPORT SECURE BACKUP"));
 
       await waitFor(() => {
         expect(storage.exportData).toHaveBeenCalledWith("correct-horse");
         expect(alertSpy).toHaveBeenCalledWith(
           "Export Success",
-          "Backup archive saved to file:///test-cache/backup.zip"
+          "Backup archive saved to file:///test-cache/backup.zip",
         );
       });
     });
@@ -182,23 +222,30 @@ describe("DataTransfer Screen", () => {
 
       await waitFor(() => {
         expect(DocumentPicker.getDocumentAsync).toHaveBeenCalled();
-        expect(isPasswordProtected).toHaveBeenCalledWith("file:///test/import.zip");
+        expect(isPasswordProtected).toHaveBeenCalledWith(
+          "file:///test/import.zip",
+        );
         expect(unzip).toHaveBeenCalled();
         expect(unzipWithPassword).not.toHaveBeenCalled();
         expect(FileSystem.readAsStringAsync).toHaveBeenCalled();
         expect(alertSpy).toHaveBeenCalledWith(
           "Import Strategy",
           expect.any(String),
-          expect.any(Array)
+          expect.any(Array),
         );
       });
 
       // Manually trigger the MERGE button's onPress
-      const mergeButton = alertSpy.mock.calls[0][2]?.find((b: any) => b.text === "MERGE");
+      const mergeButton = alertSpy.mock.calls[0][2]?.find(
+        (b: any) => b.text === "MERGE",
+      );
       mergeButton?.onPress?.();
 
       await waitFor(() => {
-        expect(storage.importData).toHaveBeenCalledWith(expect.any(Object), "merge");
+        expect(storage.importData).toHaveBeenCalledWith(
+          expect.any(Object),
+          "merge",
+        );
       });
 
       expect(getByText("IMPORT SECURE BACKUP")).toBeTruthy();
@@ -214,12 +261,14 @@ describe("DataTransfer Screen", () => {
         expect(alertSpy).toHaveBeenCalledWith(
           "Import Strategy",
           expect.any(String),
-          expect.any(Array)
+          expect.any(Array),
         );
       });
 
       // Manually trigger the FULL RESTORE button's onPress
-      const fullRestoreButton = alertSpy.mock.calls[0][2]?.find((b: any) => b.text === "FULL RESTORE");
+      const fullRestoreButton = alertSpy.mock.calls[0][2]?.find(
+        (b: any) => b.text === "FULL RESTORE",
+      );
       fullRestoreButton?.onPress?.();
 
       // The second confirmation alert
@@ -227,15 +276,20 @@ describe("DataTransfer Screen", () => {
         expect(alertSpy).toHaveBeenCalledWith(
           "Confirm Full Restore",
           expect.any(String),
-          expect.any(Array)
+          expect.any(Array),
         );
       });
 
-      const confirmButton = alertSpy.mock.calls[1][2]?.find((b: any) => b.text === "YES, WIPE AND RESTORE");
+      const confirmButton = alertSpy.mock.calls[1][2]?.find(
+        (b: any) => b.text === "YES, WIPE AND RESTORE",
+      );
       confirmButton?.onPress?.();
 
       await waitFor(() => {
-        expect(storage.importData).toHaveBeenCalledWith(expect.any(Object), "restore");
+        expect(storage.importData).toHaveBeenCalledWith(
+          expect.any(Object),
+          "restore",
+        );
       });
     });
 
@@ -249,11 +303,13 @@ describe("DataTransfer Screen", () => {
       fireEvent.press(getByText("IMPORT SECURE BACKUP"));
 
       await waitFor(() => {
-        expect(getByText("Import file exceeds the 100 MB size limit.")).toBeTruthy();
+        expect(
+          getByText("Import file exceeds the 100 MB size limit."),
+        ).toBeTruthy();
       });
       expect(FileSystem.getInfoAsync).toHaveBeenCalledWith(
         "file:///test/import.zip",
-        { size: true }
+        { size: true },
       );
       expect(isPasswordProtected).not.toHaveBeenCalled();
       expect(unzip).not.toHaveBeenCalled();
@@ -274,7 +330,7 @@ describe("DataTransfer Screen", () => {
 
       fireEvent.changeText(
         getByPlaceholderText("ENTER ARCHIVE PASSPHRASE"),
-        "correct-horse"
+        "correct-horse",
       );
       fireEvent.press(getByText("UNLOCK ARCHIVE"));
 
@@ -282,27 +338,34 @@ describe("DataTransfer Screen", () => {
         expect(unzipWithPassword).toHaveBeenCalledWith(
           "file:///test/import.zip",
           expect.any(String),
-          "correct-horse"
+          "correct-horse",
         );
         expect(alertSpy).toHaveBeenCalledWith(
           "Import Strategy",
           expect.any(String),
-          expect.any(Array)
+          expect.any(Array),
         );
       });
 
       // Manually trigger the MERGE button's onPress
-      const mergeButton = alertSpy.mock.calls[0][2]?.find((b: any) => b.text === "MERGE");
+      const mergeButton = alertSpy.mock.calls[0][2]?.find(
+        (b: any) => b.text === "MERGE",
+      );
       mergeButton?.onPress?.();
 
       await waitFor(() => {
-        expect(storage.importData).toHaveBeenCalledWith(expect.any(Object), "merge");
+        expect(storage.importData).toHaveBeenCalledWith(
+          expect.any(Object),
+          "merge",
+        );
       });
     });
 
     it("shows an error and keeps the prompt when the passphrase is wrong", async () => {
       (isPasswordProtected as jest.Mock).mockResolvedValue(true);
-      (unzipWithPassword as jest.Mock).mockRejectedValue(new Error("bad password"));
+      (unzipWithPassword as jest.Mock).mockRejectedValue(
+        new Error("bad password"),
+      );
       const { getByText, getByPlaceholderText } = render(<DataTransfer />);
 
       fireEvent.press(getByText("IMPORT SECURE BACKUP"));
@@ -311,12 +374,17 @@ describe("DataTransfer Screen", () => {
         expect(getByText("ARCHIVE IS PASSWORD PROTECTED")).toBeTruthy();
       });
 
-      fireEvent.changeText(getByPlaceholderText("ENTER ARCHIVE PASSPHRASE"), "wrong-pass");
+      fireEvent.changeText(
+        getByPlaceholderText("ENTER ARCHIVE PASSPHRASE"),
+        "wrong-pass",
+      );
       fireEvent.press(getByText("UNLOCK ARCHIVE"));
 
       await waitFor(() => {
         expect(
-          getByText("Failed to unlock archive. Check the passphrase and try again.")
+          getByText(
+            "Failed to unlock archive. Check the passphrase and try again.",
+          ),
         ).toBeTruthy();
       });
       expect(storage.importData).not.toHaveBeenCalled();
@@ -340,7 +408,7 @@ describe("DataTransfer Screen", () => {
       await waitFor(() => {
         expect(FileSystem.deleteAsync).toHaveBeenCalledWith(
           expect.stringContaining("triggernote_import_"),
-          { idempotent: true }
+          { idempotent: true },
         );
       });
       expect(queryByText("ARCHIVE IS PASSWORD PROTECTED")).toBeNull();
@@ -360,11 +428,13 @@ describe("DataTransfer Screen", () => {
         expect(alertSpy).toHaveBeenCalledWith(
           "Import Strategy",
           expect.any(String),
-          expect.any(Array)
+          expect.any(Array),
         );
       });
 
-      const mergeButton = alertSpy.mock.calls[0][2]?.find((b: any) => b.text === "MERGE");
+      const mergeButton = alertSpy.mock.calls[0][2]?.find(
+        (b: any) => b.text === "MERGE",
+      );
       mergeButton?.onPress?.();
 
       await waitFor(() => {
@@ -373,17 +443,22 @@ describe("DataTransfer Screen", () => {
           from: expect.stringContaining("/images/ok.png"),
           to: expect.stringContaining("/images/ok.png"),
         });
-        expect(storage.importData).toHaveBeenCalledWith(expect.any(Object), "merge");
+        expect(storage.importData).toHaveBeenCalledWith(
+          expect.any(Object),
+          "merge",
+        );
       });
 
       expect(warnSpy).toHaveBeenCalledWith(
-        "Skipping archive entry outside the extraction root: ../../evil.png"
+        "Skipping archive entry outside the extraction root: ../../evil.png",
       );
       warnSpy.mockRestore();
     });
 
     it("shows an error when the archive is missing data.json", async () => {
-      (FileSystem.getInfoAsync as jest.Mock).mockResolvedValue({ exists: false });
+      (FileSystem.getInfoAsync as jest.Mock).mockResolvedValue({
+        exists: false,
+      });
       const { getByText } = render(<DataTransfer />);
 
       fireEvent.press(getByText("IMPORT SECURE BACKUP"));

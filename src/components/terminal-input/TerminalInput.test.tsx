@@ -42,6 +42,24 @@ describe("TerminalInput", () => {
       expect(getByText(placeholder, { includeHiddenElements: true })).toBeTruthy();
     });
 
+    it("masks the visible value while keeping the real value when secureTextEntry", () => {
+      const secret = "secret";
+      const { getByTestId, getByText, queryByText } = render(
+        <TerminalInput
+          value={secret}
+          onChangeText={mockOnChangeText}
+          secureTextEntry
+          testID="terminal-input"
+        />
+      );
+
+      expect(getByTestId("terminal-input").props.value).toBe(secret);
+      expect(
+        getByText("•".repeat(secret.length), { includeHiddenElements: true })
+      ).toBeTruthy();
+      expect(queryByText(secret)).toBeNull();
+    });
+
     it("hides placeholder when focused even with no value", () => {
       const placeholder = "Enter text here";
       const { getByTestId, queryByText } = render(

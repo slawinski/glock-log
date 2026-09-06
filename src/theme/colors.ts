@@ -1,5 +1,5 @@
 export const COLORS = {
-  PLACEHOLDER: "#666",
+  PLACEHOLDER: "#666666",
   TRANSPARENT: "transparent",
   TERMINAL_GREEN: "#00ff00",
   TERMINAL_BG: "#0a0a0a",

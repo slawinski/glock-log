@@ -29,9 +29,9 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
 type TabType = "firearms" | "visits" | "ammunition";
 
 const TABS = [
-  { id: "firearms", title: "FIREARMS" },
+  { id: "firearms", title: "GUNS" },
   { id: "visits", title: "VISITS" },
-  { id: "ammunition", title: "AMMUNITION" },
+  { id: "ammunition", title: "AMMO" },
 ];
 
 export const Home = () => {
@@ -154,6 +154,7 @@ export const Home = () => {
         return (
           <VisitsTab
             rangeVisits={rangeVisits}
+            firearms={firearms}
             onRefresh={onRefresh}
             refreshing={false}
           />
@@ -171,7 +172,7 @@ export const Home = () => {
   };
 
   return (
-    <View className="flex-1 bg-terminal-bg">
+    <View className="flex-1 bg-terminal-bg px-4">
       <TerminalTabs
         tabs={TABS}
         activeTab={activeTab}
