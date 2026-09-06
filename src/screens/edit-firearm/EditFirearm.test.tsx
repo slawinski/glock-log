@@ -57,6 +57,11 @@ const mockFirearm: FirearmStorage = {
   updatedAt: "2024-01-01T00:00:00.000Z",
 };
 
+const borrowedFirearm: FirearmStorage = {
+  ...mockFirearm,
+  ownership: "borrowed",
+};
+
 const Stack = createNativeStackNavigator();
 
 const renderScreen = () => {
@@ -97,6 +102,51 @@ describe("EditFirearmScreen", () => {
       expect(screen.getByDisplayValue("Glock 19")).toBeTruthy();
       expect(screen.getByDisplayValue("9mm")).toBeTruthy();
       expect(screen.getByDisplayValue("599.99")).toBeTruthy();
+    });
+  });
+
+  it("hides purchase section when editing a borrowed firearm", async () => {
+    (storage.getFirearms as jest.Mock).mockResolvedValue([borrowedFirearm]);
+    renderScreen();
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Glock 19")).toBeTruthy();
+    });
+
+    expect(screen.queryByText(/AMOUNT PAID/)).toBeNull();
+    expect(screen.queryByText(/PURCHASE DATE/)).toBeNull();
+  });
+
+  it("shows purchase section when switching a borrowed firearm to Mine", async () => {
+    (storage.getFirearms as jest.Mock).mockResolvedValue([borrowedFirearm]);
+    renderScreen();
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Glock 19")).toBeTruthy();
+    });
+
+    expect(screen.queryByText(/AMOUNT PAID/)).toBeNull();
+
+    fireEvent.press(screen.getByText("Mine"));
+
+    expect(screen.getByText(/AMOUNT PAID/)).toBeTruthy();
+    expect(screen.getByText(/PURCHASE DATE/)).toBeTruthy();
+  });
+
+  it("saves ownership as borrowed when editing a borrowed firearm", async () => {
+    (storage.getFirearms as jest.Mock).mockResolvedValue([borrowedFirearm]);
+    (storage.saveFirearm as jest.Mock).mockResolvedValue(undefined);
+    renderScreen();
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Glock 19")).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByText(/Save changes/));
+
+    await waitFor(() => {
+      expect(storage.saveFirearm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ownership: "borrowed",
+        })
+      );
     });
   });
 

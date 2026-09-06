@@ -3,6 +3,7 @@ import { render, fireEvent } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { FirearmsTab } from "./FirearmsTab";
+import { FirearmStorage } from "../../validation/storageSchemas";
 
 // Mock components
 jest.mock("../../components", () => ({
@@ -18,7 +19,23 @@ jest.mock("../../components", () => ({
       </View>
     );
   },
-  EmptyState: ({ title, message, primaryAction, ...props }: any) => {
+  TerminalTabs: ({ tabs, activeTab, onTabPress, ...props }: any) => {
+    const { View, Pressable, Text } = require("react-native");
+    return (
+      <View {...props}>
+        {tabs.map((tab: any) => (
+          <Pressable
+            key={tab.id}
+            onPress={() => onTabPress(tab.id)}
+            accessibilityState={{ selected: activeTab === tab.id }}
+          >
+            <Text>{tab.title}</Text>
+          </Pressable>
+        ))}
+      </View>
+    );
+  },
+  EmptyState: ({ title, message, primaryAction, secondaryAction, ...props }: any) => {
     const { View, Text, Pressable } = require("react-native");
     return (
       <View {...props}>
@@ -27,6 +44,11 @@ jest.mock("../../components", () => ({
         {primaryAction && (
           <Pressable onPress={primaryAction.onPress}>
             <Text>{primaryAction.caption}</Text>
+          </Pressable>
+        )}
+        {secondaryAction && (
+          <Pressable onPress={secondaryAction.onPress}>
+            <Text>{secondaryAction.caption}</Text>
           </Pressable>
         )}
       </View>
@@ -78,6 +100,20 @@ const mockFirearms = [
   },
 ];
 
+const borrowedFirearm: FirearmStorage = {
+  id: "borrowed-1",
+  modelName: "Borrowed AR-15",
+  caliber: "5.56 NATO",
+  datePurchased: "2023-05-01T00:00:00.000Z",
+  amountPaid: 0,
+  roundsFired: 50,
+  createdAt: "2023-05-01T00:00:00.000Z",
+  updatedAt: "2023-05-01T00:00:00.000Z",
+  ownership: "borrowed",
+};
+
+const mixedFirearms = [...mockFirearms, borrowedFirearm];
+
 describe("FirearmsTab", () => {
   const mockOnRefresh = jest.fn();
 
@@ -108,6 +144,102 @@ describe("FirearmsTab", () => {
     );
 
     expect(getByText("No firearms yet")).toBeTruthy();
+  });
+
+  it("hides borrowed firearms under the default Mine filter", () => {
+    const { getByText, queryByText } = renderWithNavigation(
+      <FirearmsTab
+        firearms={mixedFirearms}
+        onRefresh={mockOnRefresh}
+        refreshing={false}
+      />
+    );
+
+    expect(getByText("Glock 19")).toBeTruthy();
+    expect(getByText("Smith & Wesson M&P")).toBeTruthy();
+    expect(queryByText("Borrowed AR-15")).toBeNull();
+  });
+
+  it("shows borrowed firearms when the Borrowed filter is selected", () => {
+    const { getByText, queryByText } = renderWithNavigation(
+      <FirearmsTab
+        firearms={mixedFirearms}
+        onRefresh={mockOnRefresh}
+        refreshing={false}
+      />
+    );
+
+    fireEvent.press(getByText("Borrowed"));
+
+    expect(getByText("Borrowed AR-15")).toBeTruthy();
+    // Badge is hidden outside the "All" filter.
+    expect(queryByText("BORROWED")).toBeNull();
+    expect(queryByText("Glock 19")).toBeNull();
+  });
+
+  it("shows all firearms when the All filter is selected", () => {
+    const { getByText } = renderWithNavigation(
+      <FirearmsTab
+        firearms={mixedFirearms}
+        onRefresh={mockOnRefresh}
+        refreshing={false}
+      />
+    );
+
+    fireEvent.press(getByText("All"));
+
+    expect(getByText("Glock 19")).toBeTruthy();
+    expect(getByText("Smith & Wesson M&P")).toBeTruthy();
+    expect(getByText("Borrowed AR-15")).toBeTruthy();
+    // The badge is only shown in the "All" filter.
+    expect(getByText("BORROWED")).toBeTruthy();
+  });
+
+  it("hides the filter when no firearms are borrowed", () => {
+    const { queryByText, getByText } = renderWithNavigation(
+      <FirearmsTab
+        firearms={mockFirearms}
+        onRefresh={mockOnRefresh}
+        refreshing={false}
+      />
+    );
+
+    // No filter tabs are rendered because every firearm is "mine".
+    expect(queryByText("Mine")).toBeNull();
+    expect(queryByText("Borrowed")).toBeNull();
+    expect(queryByText("All")).toBeNull();
+    // All (mine) firearms are still listed.
+    expect(getByText("Glock 19")).toBeTruthy();
+  });
+
+  it("shows View borrowed action when only borrowed firearms exist", () => {
+    const { getByText } = renderWithNavigation(
+      <FirearmsTab
+        firearms={[borrowedFirearm]}
+        onRefresh={mockOnRefresh}
+        refreshing={false}
+      />
+    );
+
+    expect(getByText("No firearms")).toBeTruthy();
+    expect(getByText("1 firearms are borrowed.")).toBeTruthy();
+    expect(getByText("Add firearm")).toBeTruthy();
+    expect(getByText("View borrowed")).toBeTruthy();
+  });
+
+  it("switches to the Borrowed filter via View borrowed", () => {
+    const { getByText, queryByText } = renderWithNavigation(
+      <FirearmsTab
+        firearms={[borrowedFirearm]}
+        onRefresh={mockOnRefresh}
+        refreshing={false}
+      />
+    );
+
+    fireEvent.press(getByText("View borrowed"));
+
+    expect(getByText("Borrowed AR-15")).toBeTruthy();
+    expect(queryByText("BORROWED")).toBeNull();
   });
 
   it("formats dates correctly", () => {

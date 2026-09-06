@@ -374,39 +374,36 @@ describe("AddRangeVisitScreen", () => {
     expect(datePickerElement).toBeTruthy();
   });
 
-  it("adds a range visit with a borrowed firearm", async () => {
+  it("adds a borrowed firearm and includes it in the saved visit", async () => {
+    (storage.saveFirearm as jest.Mock).mockResolvedValue("borrowed-firearm-1");
     await renderScreen();
 
     const locationInput = screen.getByTestId("location-input");
     fireEvent.changeText(locationInput, "Test Range");
 
-    const addBorrowedButton = screen.getByText(
-      /\+ Log ammunition for a borrowed firearm/
-    );
-    fireEvent.press(addBorrowedButton);
+    fireEvent.press(screen.getByText("+ Add borrowed gun"));
+
+    fireEvent.changeText(screen.getByTestId("borrowed-model-input"), "Rented 1911");
+    fireEvent.changeText(screen.getByTestId("borrowed-caliber-input"), ".45");
+    fireEvent.press(screen.getByTestId("add-borrowed-gun-submit"));
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        "Select Ammunition",
-        expect.any(String),
-        expect.any(Array)
+      expect(storage.saveFirearm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          modelName: "Rented 1911",
+          caliber: ".45",
+          ownership: "borrowed",
+          amountPaid: 0,
+          datePurchased: expect.any(String),
+        })
       );
     });
 
-    // The mock Alert.alert will automatically select the first option
-    // Wait for the borrowed rounds input to appear
-    await waitFor(() =>
-      expect(screen.getAllByTestId(/^borrowed-rounds-input-/).length).toBe(1)
-    );
-
-    // Fill in rounds for borrowed firearm
-    // Find the borrowed rounds input using pattern matching since the key is dynamically generated
-    const borrowedRoundsInputs = screen.getAllByTestId(
-      /^borrowed-rounds-input-borrowed-/
-    );
-    expect(borrowedRoundsInputs.length).toBe(1);
-    const borrowedRoundsInput = borrowedRoundsInputs[0];
-    fireEvent.changeText(borrowedRoundsInput, "50");
+    // The new gun should now be visible and selected in the list.
+    await waitFor(() => {
+      expect(screen.getByText("Rented 1911")).toBeTruthy();
+      expect(screen.getByText("BORROWED")).toBeTruthy();
+    });
 
     const saveButton = screen.getByText(/Save range visit/);
     fireEvent.press(saveButton);
@@ -415,20 +412,9 @@ describe("AddRangeVisitScreen", () => {
       expect(storage.saveRangeVisitWithAmmunition).toHaveBeenCalledWith(
         expect.objectContaining({
           location: "Test Range",
-          firearmsUsed: [],
-          ammunitionUsed: expect.any(Object),
+          firearmsUsed: ["borrowed-firearm-1"],
         })
       );
-
-      const savedData = (storage.saveRangeVisitWithAmmunition as jest.Mock).mock
-        .calls[0][0];
-      const ammoUsedKeys = Object.keys(savedData.ammunitionUsed);
-      expect(ammoUsedKeys.length).toBe(1);
-      expect(ammoUsedKeys[0]).toMatch(/^borrowed-/);
-      expect(savedData.ammunitionUsed[ammoUsedKeys[0]]).toEqual({
-        ammunitionId: mockAmmunition[0].id,
-        rounds: 50,
-      });
     });
   });
 

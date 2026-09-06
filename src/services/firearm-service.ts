@@ -27,7 +27,7 @@ const firearmConfig: CollectionConfig<FirearmStorage> = {
   schema: firearmStorageSchema,
 };
 
-const saveFirearm = async (firearm: FirearmInput): Promise<void> => {
+const saveFirearm = async (firearm: FirearmInput): Promise<string> => {
   try {
     const firearms = await getFirearms();
     const isUpdate = !!firearm.id;
@@ -88,6 +88,8 @@ const saveFirearm = async (firearm: FirearmInput): Promise<void> => {
       isNew,
       firearms.map((f) => f.id)
     );
+
+    return firearmId;
   } catch (error) {
     const appError = handleStorageError(error, "save firearm");
     throw new Error(appError.userMessage);

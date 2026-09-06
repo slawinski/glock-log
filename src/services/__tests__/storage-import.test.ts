@@ -41,6 +41,7 @@ const validFirearmInput = (
   caliber: "9mm",
   datePurchased: now,
   amountPaid: 550,
+  ownership: "mine",
   ...overrides,
 });
 

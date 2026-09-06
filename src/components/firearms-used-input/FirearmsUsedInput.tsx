@@ -1,12 +1,16 @@
-import React, { FC, PropsWithChildren } from "react";
+import React, { FC, PropsWithChildren, useState } from "react";
 import { View, Pressable, Alert } from "react-native";
-import { TerminalText, TerminalInput } from "../";
-import { AmmunitionStorage } from "../../validation/storageSchemas";
+import { TerminalText, TerminalInput, TerminalButton } from "../";
+import {
+  AmmunitionStorage,
+  FirearmOwnership,
+} from "../../validation/storageSchemas";
 
 type Firearm = {
   id: string;
   modelName: string;
   caliber: string;
+  ownership: FirearmOwnership;
 };
 
 type AmmunitionUsed = {
@@ -21,9 +25,10 @@ type FirearmsUsedInputProps = {
   onToggleFirearm: (firearmId: string) => void;
   onRoundsChange: (firearmId: string, rounds: string) => void;
   onAmmunitionSelect: (firearmId: string, ammunitionId: string) => void;
-  onAddBorrowedAmmunition: () => void;
-  onRemoveBorrowedAmmunition: (key: string) => void;
-  onBorrowedAmmunitionRoundsChange: (key: string, rounds: string) => void;
+  onAddBorrowedFirearm: (
+    modelName: string,
+    caliber: string
+  ) => void | Promise<void>;
 };
 
 export const FirearmsUsedInput: FC<
@@ -36,10 +41,33 @@ export const FirearmsUsedInput: FC<
   onToggleFirearm,
   onRoundsChange,
   onAmmunitionSelect,
-  onAddBorrowedAmmunition,
-  onRemoveBorrowedAmmunition,
-  onBorrowedAmmunitionRoundsChange,
+  onAddBorrowedFirearm,
 }) => {
+  const [isAddBorrowedOpen, setIsAddBorrowedOpen] = useState(false);
+  const [borrowedModelName, setBorrowedModelName] = useState("");
+  const [borrowedCaliber, setBorrowedCaliber] = useState("");
+  const [borrowedFormError, setBorrowedFormError] = useState<string | null>(
+    null
+  );
+
+  const resetBorrowedForm = () => {
+    setBorrowedModelName("");
+    setBorrowedCaliber("");
+    setBorrowedFormError(null);
+    setIsAddBorrowedOpen(false);
+  };
+
+  const handleSubmitBorrowed = async () => {
+    const modelName = borrowedModelName.trim();
+    const caliber = borrowedCaliber.trim();
+    if (!modelName || !caliber) {
+      setBorrowedFormError("Enter both a model name and caliber.");
+      return;
+    }
+    await onAddBorrowedFirearm(modelName, caliber);
+    resetBorrowedForm();
+  };
+
   const getAmmunitionSelectionLabel = (firearmId: string) => {
     const ammoId = ammunitionUsed[firearmId]?.ammunitionId;
     return ammoId
@@ -66,9 +94,16 @@ export const FirearmsUsedInput: FC<
               }}
             >
               <TerminalText>{firearm.modelName}</TerminalText>
-              <TerminalText className="text-sm text-terminal-muted">
-                {firearm.caliber}
-              </TerminalText>
+              <View className="flex-row items-center">
+                <TerminalText className="text-sm text-terminal-muted">
+                  {firearm.caliber}
+                </TerminalText>
+                {firearm.ownership === "borrowed" && (
+                  <TerminalText className="text-xs text-terminal-muted ml-2 border border-terminal-dim px-1">
+                    BORROWED
+                  </TerminalText>
+                )}
+              </View>
             </Pressable>
             {selectedFirearms.includes(firearm.id) && (
               <View className="mt-2">
@@ -128,59 +163,63 @@ export const FirearmsUsedInput: FC<
       </View>
 
       <View className="my-4">
-        <Pressable
-          onPress={onAddBorrowedAmmunition}
-          className="border-2 border-terminal-accent p-2"
-          accessibilityRole="button"
-          accessibilityLabel="Log ammunition for a borrowed firearm"
-        >
-          <TerminalText>+ Log ammunition for a borrowed firearm</TerminalText>
-        </Pressable>
+        {!isAddBorrowedOpen ? (
+          <Pressable
+            onPress={() => setIsAddBorrowedOpen(true)}
+            className="border-2 border-terminal-accent p-2"
+            accessibilityRole="button"
+            accessibilityLabel="Add borrowed gun"
+            testID="add-borrowed-gun-button"
+          >
+            <TerminalText>+ Add borrowed gun</TerminalText>
+          </Pressable>
+        ) : (
+          <View className="border-2 border-terminal-border p-2">
+            <TerminalText className="text-terminal-muted">
+              BORROWED FIREARM
+            </TerminalText>
 
-        {Object.entries(ammunitionUsed)
-          .filter(([key]) => key.startsWith("borrowed-"))
-          .map(([key, usage]) => {
-            const ammoDetails = ammunition.find(
-              (a) => a.id === usage.ammunitionId
-            );
-            return (
-              <View
-                key={key}
-                className="mt-2 p-2 border-2 border-terminal-dim rounded"
+            <TerminalText className="mb-1.5 mt-2">MODEL NAME</TerminalText>
+            <TerminalInput
+              value={borrowedModelName}
+              onChangeText={setBorrowedModelName}
+              placeholder="Model name"
+              testID="borrowed-model-input"
+            />
+
+            <TerminalText className="mb-1.5 mt-2">CALIBER</TerminalText>
+            <TerminalInput
+              value={borrowedCaliber}
+              onChangeText={setBorrowedCaliber}
+              placeholder="Caliber"
+              testID="borrowed-caliber-input"
+            />
+
+            {borrowedFormError && (
+              <TerminalText
+                className="text-terminal-error text-sm mt-1"
+                accessibilityLiveRegion="polite"
               >
-                <View className="flex-row justify-between items-center mb-2">
-                  <TerminalText>
-                    {ammoDetails
-                      ? `${ammoDetails.brand} ${ammoDetails.caliber}`
-                      : "Borrowed Firearm"}
-                  </TerminalText>
-                  <Pressable
-                    onPress={() => onRemoveBorrowedAmmunition(key)}
-                    className="min-h-[44px] justify-center px-2"
-                    accessibilityRole="button"
-                    accessibilityLabel={
-                      ammoDetails
-                        ? `Remove ${ammoDetails.brand} ${ammoDetails.caliber}`
-                        : "Remove borrowed firearm"
-                    }
-                  >
-                    <TerminalText className="text-terminal-error">
-                      Remove
-                    </TerminalText>
-                  </Pressable>
-                </View>
-                <TerminalInput
-                  value={usage.rounds ?? ""}
-                  onChangeText={(text) =>
-                    onBorrowedAmmunitionRoundsChange(key, text)
-                  }
-                  placeholder="Rounds used"
-                  keyboardType="numeric"
-                  testID={`borrowed-rounds-input-${key}`}
-                />
-              </View>
-            );
-          })}
+                {borrowedFormError}
+              </TerminalText>
+            )}
+
+            <View className="flex-row mt-2">
+              <TerminalButton
+                caption="Add"
+                className="flex-1 mr-2"
+                onPress={handleSubmitBorrowed}
+                testID="add-borrowed-gun-submit"
+              />
+              <TerminalButton
+                caption="Cancel"
+                className="flex-1"
+                onPress={resetBorrowedForm}
+                testID="add-borrowed-gun-cancel"
+              />
+            </View>
+          </View>
+        )}
       </View>
     </View>
   );

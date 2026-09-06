@@ -18,8 +18,9 @@ jest.mock("react-native-screens", () => ({
 
 describe("FirearmsUsedInput", () => {
   const mockFirearms = [
-    { id: "f1", modelName: "Glock 19", caliber: "9mm" },
-    { id: "f2", modelName: "AR-15", caliber: "5.56" },
+    { id: "f1", modelName: "Glock 19", caliber: "9mm", ownership: "mine" as const },
+    { id: "f2", modelName: "AR-15", caliber: "5.56", ownership: "mine" as const },
+    { id: "f3", modelName: "Rented 1911", caliber: ".45", ownership: "borrowed" as const },
   ];
 
   const mockAmmunition = [
@@ -75,9 +76,7 @@ describe("FirearmsUsedInput", () => {
     onToggleFirearm: jest.fn(),
     onRoundsChange: jest.fn(),
     onAmmunitionSelect: jest.fn(),
-    onAddBorrowedAmmunition: jest.fn(),
-    onRemoveBorrowedAmmunition: jest.fn(),
-    onBorrowedAmmunitionRoundsChange: jest.fn(),
+    onAddBorrowedFirearm: jest.fn(),
   };
 
   beforeEach(() => {
@@ -94,13 +93,19 @@ describe("FirearmsUsedInput", () => {
     expect(
       queryByText("Rounds used", { includeHiddenElements: true })
     ).toBeNull();
-    expect(getByText("+ Log ammunition for a borrowed firearm")).toBeTruthy();
+    expect(getByText("+ Add borrowed gun")).toBeTruthy();
   });
 
   it("calls onToggleFirearm when a firearm is pressed", () => {
     const { getByText } = render(<FirearmsUsedInput {...defaultProps} />);
     fireEvent.press(getByText("Glock 19"));
     expect(defaultProps.onToggleFirearm).toHaveBeenCalledWith("f1");
+  });
+
+  it("shows a BORROWED tag on borrowed firearms", () => {
+    const { getByText } = render(<FirearmsUsedInput {...defaultProps} />);
+    expect(getByText("Rented 1911")).toBeTruthy();
+    expect(getByText("BORROWED")).toBeTruthy();
   });
 
   it("shows ammunition input when a firearm is selected", () => {
@@ -146,113 +151,97 @@ describe("FirearmsUsedInput", () => {
     expect(defaultProps.onAmmunitionSelect).toHaveBeenCalledWith("f1", "a1");
   });
 
-  it("calls onAddBorrowedAmmunition when button is pressed", () => {
-    const { getByText } = render(<FirearmsUsedInput {...defaultProps} />);
-    fireEvent.press(getByText("+ Log ammunition for a borrowed firearm"));
-    expect(defaultProps.onAddBorrowedAmmunition).toHaveBeenCalled();
-  });
-
-  it("renders borrowed ammunition input", () => {
-    const borrowedAmmoKey = "borrowed-123";
-    const { getByText, getByDisplayValue } = render(
-      <FirearmsUsedInput
-        {...defaultProps}
-        ammunitionUsed={{
-          [borrowedAmmoKey]: { ammunitionId: "a1", rounds: "25" },
-        }}
-      />
+  it("opens the add-borrowed-gun form and calls onAddBorrowedFirearm with typed values", async () => {
+    const { getByTestId, getByText } = render(
+      <FirearmsUsedInput {...defaultProps} />
     );
 
-    expect(getByText("Federal 9mm")).toBeTruthy();
-    expect(getByDisplayValue("25")).toBeTruthy();
-    expect(getByText("Remove")).toBeTruthy();
-  });
+    fireEvent.press(getByTestId("add-borrowed-gun-button"));
 
-  it("calls onBorrowedAmmunitionRoundsChange when borrowed rounds input changes", () => {
-    const borrowedAmmoKey = "borrowed-123";
-    const { getByDisplayValue } = render(
-      <FirearmsUsedInput
-        {...defaultProps}
-        ammunitionUsed={{
-          [borrowedAmmoKey]: { ammunitionId: "a1", rounds: "25" },
-        }}
-      />
-    );
+    fireEvent.changeText(getByTestId("borrowed-model-input"), "Glock 17");
+    fireEvent.changeText(getByTestId("borrowed-caliber-input"), "9mm");
+    fireEvent.press(getByTestId("add-borrowed-gun-submit"));
 
-    fireEvent.changeText(getByDisplayValue("25"), "30");
-    expect(defaultProps.onBorrowedAmmunitionRoundsChange).toHaveBeenCalledWith(
-      borrowedAmmoKey,
-      "30"
+    expect(defaultProps.onAddBorrowedFirearm).toHaveBeenCalledWith(
+      "Glock 17",
+      "9mm"
     );
   });
 
-  it("calls onRemoveBorrowedAmmunition when remove button is pressed", () => {
-    const borrowedAmmoKey = "borrowed-123";
-    const { getByText } = render(
-      <FirearmsUsedInput
-        {...defaultProps}
-        ammunitionUsed={{
-          [borrowedAmmoKey]: { ammunitionId: "a1", rounds: "25" },
-        }}
-      />
+  it("shows an error when submitting the borrowed form without a model or caliber", () => {
+    const { getByTestId, getByText } = render(
+      <FirearmsUsedInput {...defaultProps} />
     );
 
-    fireEvent.press(getByText("Remove"));
-    expect(defaultProps.onRemoveBorrowedAmmunition).toHaveBeenCalledWith(
-      borrowedAmmoKey
+    fireEvent.press(getByTestId("add-borrowed-gun-button"));
+    fireEvent.press(getByTestId("add-borrowed-gun-submit"));
+
+    expect(getByText("Enter both a model name and caliber.")).toBeTruthy();
+    expect(defaultProps.onAddBorrowedFirearm).not.toHaveBeenCalled();
+  });
+
+  it("cancels the borrowed form and clears its inputs", () => {
+    const { getByTestId, queryByTestId } = render(
+      <FirearmsUsedInput {...defaultProps} />
     );
+
+    fireEvent.press(getByTestId("add-borrowed-gun-button"));
+    fireEvent.changeText(getByTestId("borrowed-model-input"), "Glock 17");
+    fireEvent.press(getByTestId("add-borrowed-gun-cancel"));
+
+    expect(queryByTestId("borrowed-model-input")).toBeNull();
+    expect(queryByTestId("borrowed-caliber-input")).toBeNull();
   });
 
   it("shows alert if no compatible ammunition found for a firearm", () => {
     const { getByText } = render(
       <FirearmsUsedInput
         {...defaultProps}
-        firearms={[{ id: "f3", modelName: "Shotgun", caliber: "12ga" }]}
+        firearms={[{ id: "f4", modelName: "Shotgun", caliber: "12ga", ownership: "mine" as const }]}
         ammunition={[]}
-        selectedFirearms={["f3"]}
+        selectedFirearms={["f4"]}
       />
     );
 
-            fireEvent.press(getByText("Select Ammunition"));
-            expect(Alert.alert).toHaveBeenCalledWith(
-              "No Stock",
-              "No 12ga ammunition in stock."
-            );
-          });
-        
-          it("filters out zero-quantity ammunition from selection", () => {
-            const ammoWithZero = [
-              ...mockAmmunition,
-              {
-                id: "a4",
-                brand: "Empty Brand",
-                caliber: "9mm",
-                quantity: 0,
-                datePurchased: "2023-01-01",
-                amountPaid: 0,
-                createdAt: "2023-01-01T00:00:00Z",
-                updatedAt: "2023-01-01T00:00:00Z",
-                grain: "115",
-              },
-            ];
-        
-            const { getByText } = render(
-              <FirearmsUsedInput
-                {...defaultProps}
-                ammunition={ammoWithZero}
-                selectedFirearms={["f1"]}
-              />
-            );
-        
-            fireEvent.press(getByText("Select Ammunition"));
-            
-            // Should show Federal and Winchester but NOT Empty Brand
-            const alertCalls = (Alert.alert as jest.Mock).mock.calls;
-            const alertButtons = alertCalls[0][2];
-            
-            expect(alertButtons.find((b: any) => b.text.includes("Federal"))).toBeTruthy();
-            expect(alertButtons.find((b: any) => b.text.includes("Winchester"))).toBeTruthy();
-            expect(alertButtons.find((b: any) => b.text.includes("Empty Brand"))).toBeFalsy();
-          });
-        });
-        
+    fireEvent.press(getByText("Select Ammunition"));
+    expect(Alert.alert).toHaveBeenCalledWith(
+      "No Stock",
+      "No 12ga ammunition in stock."
+    );
+  });
+
+  it("filters out zero-quantity ammunition from selection", () => {
+    const ammoWithZero = [
+      ...mockAmmunition,
+      {
+        id: "a4",
+        brand: "Empty Brand",
+        caliber: "9mm",
+        quantity: 0,
+        datePurchased: "2023-01-01",
+        amountPaid: 0,
+        createdAt: "2023-01-01T00:00:00Z",
+        updatedAt: "2023-01-01T00:00:00Z",
+        grain: "115",
+      },
+    ];
+
+    const { getByText } = render(
+      <FirearmsUsedInput
+        {...defaultProps}
+        ammunition={ammoWithZero}
+        selectedFirearms={["f1"]}
+      />
+    );
+
+    fireEvent.press(getByText("Select Ammunition"));
+
+    // Should show Federal and Winchester but NOT Empty Brand
+    const alertCalls = (Alert.alert as jest.Mock).mock.calls;
+    const alertButtons = alertCalls[0][2];
+
+    expect(alertButtons.find((b: any) => b.text.includes("Federal"))).toBeTruthy();
+    expect(alertButtons.find((b: any) => b.text.includes("Winchester"))).toBeTruthy();
+    expect(alertButtons.find((b: any) => b.text.includes("Empty Brand"))).toBeFalsy();
+  });
+});

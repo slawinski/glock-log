@@ -9,7 +9,7 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
-import { Controller } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
@@ -27,6 +27,7 @@ import {
   TerminalDatePicker,
   TerminalInput,
   TerminalText,
+  ToggleButton,
 } from "../../components";
 import { firearmInputSchema, FirearmFormData, FirearmInput } from "../../validation/inputSchemas";
 
@@ -81,6 +82,7 @@ export const EditFirearm = () => {
         datePurchased: new Date().toISOString(),
         amountPaid: "",
         initialRoundsFired: "",
+        ownership: "mine",
         notes: "",
       },
       entityName: "update firearm",
@@ -92,6 +94,8 @@ export const EditFirearm = () => {
     setFocus,
     formState: { errors, isDirty },
   } = form;
+
+  const ownership = useWatch({ control, name: "ownership" });
 
   const dirtyRef = useRef(false);
   const photosChanged =
@@ -127,6 +131,7 @@ export const EditFirearm = () => {
           caliber: firearm.caliber,
           datePurchased: firearm.datePurchased,
           amountPaid: String(firearm.amountPaid),
+          ownership: firearm.ownership ?? "mine",
           notes: firearm.notes ?? "",
         });
         const loadedPhotos = (firearm.photos || []).map(normalizeImagePath);
@@ -251,49 +256,75 @@ export const EditFirearm = () => {
             )}
           </View>
 
-          <SectionHeading title="PURCHASE" className="mt-7" />
-          <View onLayout={captureY("amountPaid")} className="mb-4">
-            <TerminalText className="mb-1.5">AMOUNT PAID</TerminalText>
+          <SectionHeading title="OWNERSHIP" className="mt-7" />
+          <View className="mb-4">
             <Controller
               control={control}
-              name="amountPaid"
-              render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
-                <TerminalInput
-                  value={String(value ?? "")}
-                  onChangeText={(text) => onChange(text)}
-                  ref={ref}
-                  placeholder="Enter amount paid"
-                  keyboardType="decimal-pad"
-                  error={error?.message}
-                />
+              name="ownership"
+              render={({ field: { onChange, value } }) => (
+                <View className="flex-row flex-wrap">
+                  <ToggleButton
+                    title="Mine"
+                    active={value === "mine"}
+                    onPress={() => onChange("mine")}
+                  />
+                  <ToggleButton
+                    title="Borrowed"
+                    active={value === "borrowed"}
+                    onPress={() => onChange("borrowed")}
+                  />
+                </View>
               )}
             />
-            {errors.amountPaid && (
-              <TerminalText
-                className="text-terminal-error text-sm mt-1"
-                accessibilityLiveRegion="polite"
-              >
-                {errors.amountPaid.message}
-              </TerminalText>
-            )}
           </View>
 
-          <View onLayout={captureY("datePurchased")}>
-            <Controller
-              control={control}
-              name="datePurchased"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
-                <TerminalDatePicker
-                  value={new Date(value)}
-                  onChange={(date) => onChange(date.toISOString())}
-                  label="PURCHASE DATE"
-                  maxDate={new Date()}
-                  placeholder="Select purchase date"
-                  error={error?.message}
+          {ownership !== "borrowed" && (
+            <>
+              <SectionHeading title="PURCHASE" className="mt-7" />
+              <View onLayout={captureY("amountPaid")} className="mb-4">
+                <TerminalText className="mb-1.5">AMOUNT PAID</TerminalText>
+                <Controller
+                  control={control}
+                  name="amountPaid"
+                  render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
+                    <TerminalInput
+                      value={String(value ?? "")}
+                      onChangeText={(text) => onChange(text)}
+                      ref={ref}
+                      placeholder="Enter amount paid"
+                      keyboardType="decimal-pad"
+                      error={error?.message}
+                    />
+                  )}
                 />
-              )}
-            />
-          </View>
+                {errors.amountPaid && (
+                  <TerminalText
+                    className="text-terminal-error text-sm mt-1"
+                    accessibilityLiveRegion="polite"
+                  >
+                    {errors.amountPaid.message}
+                  </TerminalText>
+                )}
+              </View>
+
+              <View onLayout={captureY("datePurchased")}>
+                <Controller
+                  control={control}
+                  name="datePurchased"
+                  render={({ field: { onChange, value }, fieldState: { error } }) => (
+                    <TerminalDatePicker
+                      value={new Date(value)}
+                      onChange={(date) => onChange(date.toISOString())}
+                      label="PURCHASE DATE"
+                      maxDate={new Date()}
+                      placeholder="Select purchase date"
+                      error={error?.message}
+                    />
+                  )}
+                />
+              </View>
+            </>
+          )}
 
           <SectionHeading title="PHOTOS" className="mt-7" />
           <View className="mb-4">

@@ -125,9 +125,16 @@ export const FirearmDetails = () => {
       <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
         <View className="flex-1 px-4 pb-8">
           <TerminalText className="text-2xl">{firearm.modelName}</TerminalText>
-          <TerminalText className="text-terminal-muted text-lg mb-4">
-            {firearm.caliber}
-          </TerminalText>
+          <View className="mb-4">
+            <TerminalText className="text-terminal-muted text-lg">
+              {firearm.caliber}
+            </TerminalText>
+            {firearm.ownership === "borrowed" && (
+              <TerminalText className="text-terminal-muted text-sm">
+                BORROWED
+              </TerminalText>
+            )}
+          </View>
 
           {firearm.photos && firearm.photos.length > 0 && (
             <View className="mb-6">
@@ -146,14 +153,18 @@ export const FirearmDetails = () => {
           />
 
           <DetailSection title="OVERVIEW">
-            <DetailRow
-              label="Purchased"
-              value={formatDate(firearm.datePurchased, "dd MMM yyyy")}
-            />
-            <DetailRow
-              label="Amount paid"
-              value={formatCurrency(firearm.amountPaid, currency)}
-            />
+            {firearm.ownership !== "borrowed" && (
+              <>
+                <DetailRow
+                  label="Purchased"
+                  value={formatDate(firearm.datePurchased, "dd MMM yyyy")}
+                />
+                <DetailRow
+                  label="Amount paid"
+                  value={formatCurrency(firearm.amountPaid, currency)}
+                />
+              </>
+            )}
             <DetailRow
               label="Added"
               value={formatDate(firearm.createdAt, "dd MMM yyyy")}

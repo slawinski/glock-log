@@ -37,6 +37,7 @@ import {
 import {
   AmmunitionStorage,
   FirearmStorage,
+  FirearmOwnership,
 } from "../../validation/storageSchemas";
 
 type AddRangeVisitScreenNavigationProp = NativeStackNavigationProp<
@@ -51,7 +52,7 @@ export const AddRangeVisit = () => {
   const scrollRef = useRef<ScrollView>(null);
   const fieldY = useRef<Record<string, number>>({});
   const [firearms, setFirearms] = useState<
-    { id: string; modelName: string; caliber: string }[]
+    { id: string; modelName: string; caliber: string; ownership: FirearmOwnership }[]
   >([]);
   const [ammunition, setAmmunition] = useState<AmmunitionStorage[]>([]);
   const [selectedFirearms, setSelectedFirearms] = useState<string[]>([]);
@@ -155,6 +156,7 @@ export const AddRangeVisit = () => {
           id: f.id,
           modelName: f.modelName,
           caliber: f.caliber,
+          ownership: f.ownership ?? "mine",
         }))
       );
       setAmmunition(loadedAmmunition);
@@ -168,41 +170,29 @@ export const AddRangeVisit = () => {
     loadData();
   }, []);
 
-  const handleAddBorrowedAmmunition = () => {
-    const availableAmmo = ammunition.filter((ammo) => ammo.quantity > 0);
-
-    if (availableAmmo.length === 0) {
-      Alert.alert("No Ammunition", "You have no ammunition in stock.");
-      return;
+  const handleAddBorrowedFirearm = async (
+    modelName: string,
+    caliber: string
+  ) => {
+    try {
+      const newId = await storage.saveFirearm({
+        modelName,
+        caliber,
+        ownership: "borrowed",
+        datePurchased: new Date().toISOString(),
+        amountPaid: 0,
+      });
+      setFirearms((prev) => [
+        ...prev,
+        { id: newId, modelName, caliber, ownership: "borrowed" },
+      ]);
+      setSelectedFirearms((prev) => [...prev, newId]);
+    } catch (error) {
+      handleError(error, "AddRangeVisit.handleAddBorrowedFirearm", {
+        isUserFacing: true,
+        userMessage: "Failed to add borrowed firearm.",
+      });
     }
-
-    Alert.alert(
-      "Select Ammunition",
-      "Choose ammunition for the borrowed firearm",
-      [
-        ...availableAmmo.map((ammo) => ({
-          text: `${ammo.brand} ${ammo.caliber} (${ammo.quantity} rounds)`,
-          onPress: () => {
-            const timestamp = Date.now();
-            const randomSuffix =
-              typeof crypto !== "undefined" && crypto.getRandomValues
-                ? Array.from(crypto.getRandomValues(new Uint8Array(2)))
-                    .map((b) => b.toString(36))
-                    .join("")
-                : Math.random().toString(36).slice(2, 4);
-            const borrowedKey = `borrowed-${timestamp}-${randomSuffix}`;
-            setAmmunitionUsed((prev) => ({
-              ...prev,
-              [borrowedKey]: {
-                ammunitionId: ammo.id,
-                rounds: "",
-              },
-            }));
-          },
-        })),
-        { text: "Cancel", style: "cancel" },
-      ]
-    );
   };
 
   const handleImagePick = async () => {
@@ -224,10 +214,7 @@ export const AddRangeVisit = () => {
     return sum + (Number.isFinite(rounds) && rounds > 0 ? rounds : 0);
   }, 0);
 
-  const borrowedCount = Object.keys(ammunitionUsed).filter((key) =>
-    key.startsWith("borrowed-")
-  ).length;
-  const firearmCount = selectedFirearms.length + borrowedCount;
+  const firearmCount = selectedFirearms.length;
 
   const ammoPreview = Object.entries(ammunitionUsed)
     .filter(
@@ -348,20 +335,7 @@ export const AddRangeVisit = () => {
                 },
               }));
             }}
-            onAddBorrowedAmmunition={handleAddBorrowedAmmunition}
-            onRemoveBorrowedAmmunition={(key) => {
-              setAmmunitionUsed((prev) => {
-                const newAmmo = { ...prev };
-                delete newAmmo[key];
-                return newAmmo;
-              });
-            }}
-            onBorrowedAmmunitionRoundsChange={(key, rounds) => {
-              setAmmunitionUsed((prev) => ({
-                ...prev,
-                [key]: { ...prev[key], rounds },
-              }));
-            }}
+            onAddBorrowedFirearm={handleAddBorrowedFirearm}
           />
 
           <SectionHeading title="SUMMARY" className="mt-7" />

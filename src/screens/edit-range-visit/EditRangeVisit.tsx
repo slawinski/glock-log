@@ -36,7 +36,10 @@ import {
   RangeVisitFormData,
   RangeVisitInput,
 } from "../../validation/inputSchemas";
-import { AmmunitionStorage } from "../../validation/storageSchemas";
+import {
+  AmmunitionStorage,
+  FirearmOwnership,
+} from "../../validation/storageSchemas";
 
 type EditRangeVisitScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -61,7 +64,7 @@ export const EditRangeVisit = () => {
   >(undefined);
   const [photos, setPhotos] = useState<string[]>([]);
   const [firearms, setFirearms] = useState<
-    { id: string; modelName: string; caliber: string }[]
+    { id: string; modelName: string; caliber: string; ownership: FirearmOwnership }[]
   >([]);
   const [ammunition, setAmmunition] = useState<AmmunitionStorage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -198,6 +201,7 @@ export const EditRangeVisit = () => {
           id: f.id,
           modelName: f.modelName,
           caliber: f.caliber,
+          ownership: f.ownership ?? "mine",
         }))
       );
       setAmmunition(ammunitionData);
@@ -238,6 +242,35 @@ export const EditRangeVisit = () => {
     setValue("ammunitionUsed", newAmmunitionUsed);
   };
 
+  const handleAddBorrowedFirearm = async (
+    modelName: string,
+    caliber: string
+  ) => {
+    try {
+      const newId = await storage.saveFirearm({
+        modelName,
+        caliber,
+        ownership: "borrowed",
+        datePurchased: new Date().toISOString(),
+        amountPaid: 0,
+      });
+      setFirearms((prev) => [
+        ...prev,
+        { id: newId, modelName, caliber, ownership: "borrowed" },
+      ]);
+      setValue("firearmsUsed", [...(getValues("firearmsUsed") ?? []), newId]);
+      setValue("ammunitionUsed", {
+        ...(getValues("ammunitionUsed") ?? {}),
+        [newId]: { ammunitionId: "", rounds: "" },
+      });
+    } catch (error) {
+      handleError(error, "EditRangeVisit.handleAddBorrowedFirearm", {
+        isUserFacing: true,
+        userMessage: "Failed to add borrowed firearm.",
+      });
+    }
+  };
+
   const handleDeletePhoto = (index: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
@@ -250,10 +283,7 @@ export const EditRangeVisit = () => {
     0
   );
 
-  const borrowedCount = Object.keys(watchedAmmunitionUsed).filter((key) =>
-    key.startsWith("borrowed-")
-  ).length;
-  const firearmCount = (watchedFirearmsUsed ?? []).length + borrowedCount;
+  const firearmCount = (watchedFirearmsUsed ?? []).length;
 
   const ammoPreview = Object.entries(watchedAmmunitionUsed)
     .filter(([, entry]) => entry.ammunitionId && Number(entry.rounds) > 0)
@@ -364,27 +394,7 @@ export const EditRangeVisit = () => {
                 },
               });
             }}
-            onAddBorrowedAmmunition={() => {
-              Alert.alert(
-                "Feature Not Available",
-                "Adding borrowed ammunition is not supported in edit mode."
-              );
-            }}
-            onRemoveBorrowedAmmunition={(key) => {
-              const newAmmo = { ...(getValues("ammunitionUsed") ?? {}) };
-              delete newAmmo[key];
-              setValue("ammunitionUsed", newAmmo);
-            }}
-            onBorrowedAmmunitionRoundsChange={(key, rounds) => {
-              const currentAmmo = getValues("ammunitionUsed") ?? {};
-              setValue("ammunitionUsed", {
-                ...currentAmmo,
-                [key]: {
-                  ...(currentAmmo[key] ?? { ammunitionId: "", rounds: "" }),
-                  rounds,
-                },
-              });
-            }}
+            onAddBorrowedFirearm={handleAddBorrowedFirearm}
           />
 
           <SectionHeading title="SUMMARY" className="mt-7" />

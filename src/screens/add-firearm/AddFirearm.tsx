@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Controller } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
 import { storage } from "../../services/storage-new";
 import { useEntityForm, useImagePicker, useUnsavedChanges } from "../../hooks";
@@ -21,6 +21,7 @@ import {
   TerminalDatePicker,
   TerminalInput,
   TerminalText,
+  ToggleButton,
 } from "../../components";
 import { PlaceholderImageKey } from "../../services/image-source-manager";
 import { firearmInputSchema, FirearmFormData, FirearmInput } from "../../validation/inputSchemas";
@@ -63,6 +64,7 @@ export const AddFirearm = () => {
         datePurchased: new Date().toISOString(),
         amountPaid: "",
         initialRoundsFired: "",
+        ownership: "mine",
         notes: "",
       },
       entityName: "create firearm",
@@ -73,6 +75,8 @@ export const AddFirearm = () => {
     setFocus,
     formState: { errors, isDirty },
   } = form;
+
+  const ownership = useWatch({ control, name: "ownership" });
 
   const dirtyRef = useRef(false);
   const localDirty = photos.length > 0;
@@ -177,6 +181,28 @@ export const AddFirearm = () => {
             )}
           </View>
 
+          <SectionHeading title="OWNERSHIP" className="mt-7" />
+          <View className="mb-4">
+            <Controller
+              control={control}
+              name="ownership"
+              render={({ field: { onChange, value } }) => (
+                <View className="flex-row flex-wrap">
+                  <ToggleButton
+                    title="Mine"
+                    active={value === "mine"}
+                    onPress={() => onChange("mine")}
+                  />
+                  <ToggleButton
+                    title="Borrowed"
+                    active={value === "borrowed"}
+                    onPress={() => onChange("borrowed")}
+                  />
+                </View>
+              )}
+            />
+          </View>
+
           <SectionHeading title="SHOOTING" className="mt-7" />
           <View onLayout={captureY("initialRoundsFired")} className="mb-4">
             <TerminalText className="mb-1.5">INITIAL ROUNDS FIRED</TerminalText>
@@ -205,50 +231,54 @@ export const AddFirearm = () => {
             )}
           </View>
 
-          <SectionHeading title="PURCHASE" className="mt-7" />
-          <View onLayout={captureY("amountPaid")} className="mb-4">
-            <TerminalText className="mb-1.5">AMOUNT PAID</TerminalText>
-            <Controller
-              control={control}
-              name="amountPaid"
-              render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
-                <TerminalInput
-                  value={String(value ?? "")}
-                  onChangeText={(text) => onChange(text)}
-                  ref={ref}
-                  placeholder="Enter amount paid"
-                  keyboardType="decimal-pad"
-                  testID="amount-paid-input"
-                  error={error?.message}
+          {ownership !== "borrowed" && (
+            <>
+              <SectionHeading title="PURCHASE" className="mt-7" />
+              <View onLayout={captureY("amountPaid")} className="mb-4">
+                <TerminalText className="mb-1.5">AMOUNT PAID</TerminalText>
+                <Controller
+                  control={control}
+                  name="amountPaid"
+                  render={({ field: { onChange, value, ref }, fieldState: { error } }) => (
+                    <TerminalInput
+                      value={String(value ?? "")}
+                      onChangeText={(text) => onChange(text)}
+                      ref={ref}
+                      placeholder="Enter amount paid"
+                      keyboardType="decimal-pad"
+                      testID="amount-paid-input"
+                      error={error?.message}
+                    />
+                  )}
                 />
-              )}
-            />
-            {errors.amountPaid && (
-              <TerminalText
-                className="text-terminal-error text-sm mt-1"
-                accessibilityLiveRegion="polite"
-              >
-                {errors.amountPaid.message}
-              </TerminalText>
-            )}
-          </View>
+                {errors.amountPaid && (
+                  <TerminalText
+                    className="text-terminal-error text-sm mt-1"
+                    accessibilityLiveRegion="polite"
+                  >
+                    {errors.amountPaid.message}
+                  </TerminalText>
+                )}
+              </View>
 
-          <View onLayout={captureY("datePurchased")}>
-            <Controller
-              control={control}
-              name="datePurchased"
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
-                <TerminalDatePicker
-                  value={new Date(value)}
-                  onChange={(date) => onChange(date.toISOString())}
-                  label="PURCHASE DATE"
-                  maxDate={new Date()}
-                  placeholder="Select purchase date"
-                  error={error?.message}
+              <View onLayout={captureY("datePurchased")}>
+                <Controller
+                  control={control}
+                  name="datePurchased"
+                  render={({ field: { onChange, value }, fieldState: { error } }) => (
+                    <TerminalDatePicker
+                      value={new Date(value)}
+                      onChange={(date) => onChange(date.toISOString())}
+                      label="PURCHASE DATE"
+                      maxDate={new Date()}
+                      placeholder="Select purchase date"
+                      error={error?.message}
+                    />
+                  )}
                 />
-              )}
-            />
-          </View>
+              </View>
+            </>
+          )}
 
           <SectionHeading title="PHOTOS" className="mt-7" />
           <View className="mb-4">

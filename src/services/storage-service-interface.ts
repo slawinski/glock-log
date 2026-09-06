@@ -25,7 +25,7 @@ export type SettingsData = {
  */
 export interface StorageService {
   // Firearms
-  saveFirearm(firearm: FirearmInput): Promise<void>;
+  saveFirearm(firearm: FirearmInput): Promise<string>;
   getFirearms(): Promise<FirearmStorage[]>;
   deleteFirearm(id: string): Promise<void>;
   updateFirearmRoundsFired(firearmId: string, roundsToAdd: number): Promise<void>;

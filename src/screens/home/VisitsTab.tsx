@@ -61,6 +61,7 @@ export const VisitsTab = ({
       renderItem={renderVisitItem}
       keyExtractor={(item) => item.id}
       removeClippedSubviews={false}
+      contentContainerStyle={{ flexGrow: 1 }}
       onRefresh={onRefresh}
       refreshing={refreshing}
       ListEmptyComponent={

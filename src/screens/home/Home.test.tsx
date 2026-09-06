@@ -33,15 +33,15 @@ jest.mock("../../components", () => ({
       </Pressable>
     );
   },
-  TerminalTabs: ({ tabs, onTabPress }: any) => {
+  TerminalTabs: ({ tabs, onTabPress, testIDPrefix = "" }: any) => {
     const { View, Pressable, Text } = require("react-native");
     return (
-      <View testID="terminal-tabs">
+      <View testID={`${testIDPrefix}terminal-tabs`}>
         {tabs.map((tab: any) => (
           <Pressable
             key={tab.id}
             onPress={() => onTabPress(tab.id)}
-            testID={`tab-${tab.id}`}
+            testID={`${testIDPrefix}tab-${tab.id}`}
           >
             <Text>{tab.title}</Text>
           </Pressable>

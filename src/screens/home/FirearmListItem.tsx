@@ -1,4 +1,5 @@
-import { View, Pressable } from "react-native";
+import { useState } from "react";
+import { View, Pressable, LayoutChangeEvent } from "react-native";
 import { FirearmStorage } from "../../validation/storageSchemas";
 import { TerminalText, FirearmImage } from "../../components";
 import { formatDate } from "../../utils";
@@ -6,10 +7,26 @@ import { formatDate } from "../../utils";
 type Props = {
   firearm: FirearmStorage;
   onPress: (firearmId: string) => void;
+  showBorrowedBadge?: boolean;
 };
 
-export const FirearmListItem = ({ firearm, onPress }: Props) => {
+export const FirearmListItem = ({
+  firearm,
+  onPress,
+  showBorrowedBadge = false,
+}: Props) => {
   const photoUri = firearm.photos?.[0];
+  const isBorrowed = firearm.ownership === "borrowed";
+  // The photo fills the card's vertical space, so its square size follows the
+  // text column's rendered height (which grows when the name wraps to 2 lines).
+  const [imageSize, setImageSize] = useState(80);
+
+  const handleTextLayout = (event: LayoutChangeEvent) => {
+    const height = Math.round(event.nativeEvent.layout.height);
+    if (height > 0 && height !== imageSize) {
+      setImageSize(height);
+    }
+  };
 
   return (
     <Pressable
@@ -17,7 +34,9 @@ export const FirearmListItem = ({ firearm, onPress }: Props) => {
       className="bg-terminal-bg border-2 border-terminal-border p-4 mb-4"
       style={({ pressed }) => pressed && { opacity: 0.7 }}
       accessibilityRole="button"
-      accessibilityLabel={`${firearm.modelName} ${firearm.caliber}`}
+      accessibilityLabel={`${firearm.modelName} ${firearm.caliber}${
+        isBorrowed ? " borrowed" : ""
+      }`}
       testID={`firearm-list-item-${firearm.id}`}
     >
       <View
@@ -28,15 +47,24 @@ export const FirearmListItem = ({ firearm, onPress }: Props) => {
         {photoUri && (
           <FirearmImage
             photoUri={photoUri}
-            size={80}
+            size={imageSize}
             fill
             className="mr-3 rounded-lg"
           />
         )}
-        <View className="flex-1">
-          <TerminalText className="text-lg" numberOfLines={2}>
-            {firearm.modelName}
-          </TerminalText>
+        <View className="flex-1" onLayout={handleTextLayout}>
+          <View className="flex-row items-center justify-between">
+            <TerminalText className="text-lg flex-1" numberOfLines={1}>
+              {firearm.modelName}
+            </TerminalText>
+            {isBorrowed && showBorrowedBadge && (
+              <View className="bg-terminal-green px-1.5 py-0.5 ml-2">
+                <TerminalText className="text-sm text-terminal-bg">
+                  BORROWED
+                </TerminalText>
+              </View>
+            )}
+          </View>
           <TerminalText>{firearm.caliber}</TerminalText>
           <TerminalText>{firearm.roundsFired} rounds fired</TerminalText>
           <TerminalText>Added {formatDate(firearm.createdAt)}</TerminalText>

@@ -48,6 +48,11 @@ const mockFirearm: FirearmStorage = {
   notes: "Test notes",
 };
 
+const borrowedFirearm: FirearmStorage = {
+  ...mockFirearm,
+  ownership: "borrowed",
+};
+
 const mockVisit: RangeVisitStorage = {
   id: "visit-1",
   location: "Test Range",
@@ -108,6 +113,20 @@ describe("FirearmDetailsScreen", () => {
       expect(screen.getByText("Edit firearm")).toBeTruthy();
       expect(screen.getByText("Delete firearm")).toBeTruthy();
     });
+  });
+
+  it("shows borrowed label and hides purchase rows for borrowed firearm", async () => {
+    (storage.getFirearms as jest.Mock).mockResolvedValue([borrowedFirearm]);
+    renderScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText(borrowedFirearm.modelName)).toBeTruthy();
+      expect(screen.getByText("BORROWED")).toBeTruthy();
+      expect(screen.getByText("Added")).toBeTruthy();
+    });
+
+    expect(screen.queryByText("Purchased")).toBeNull();
+    expect(screen.queryByText("Amount paid")).toBeNull();
   });
 
   it("shows derived recent activity from range visits", async () => {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { firearmOwnershipSchema } from "./storageSchemas";
 
 // Maximum length for short identifier-like fields (names, brands, locations...)
 const SHORT_FIELD_MAX = 100;
@@ -37,6 +38,7 @@ export const firearmInputSchema = z.object({
   datePurchased: z.string().datetime(),
   // Kept as a string while editing; an empty value is treated as 0 on save.
   amountPaid: numericString(0, "Enter a valid amount."),
+  ownership: firearmOwnershipSchema.default("mine"),
   // Kept as a string while editing; an empty value is treated as 0 on save.
   initialRoundsFired: numericString(0, "Enter a valid number.").optional(),
   photos: z.array(z.string()).optional(),

@@ -19,12 +19,14 @@ import {
   FirearmStorage,
   AmmunitionStorage,
 } from "../../validation/storageSchemas";
+import { FirearmInput } from "../../validation/inputSchemas";
 
 // Define types for the mock functions
 type GetRangeVisitsMock = jest.Mock<() => Promise<RangeVisitStorage[]>>;
 type GetFirearmsMock = jest.Mock<() => Promise<FirearmStorage[]>>;
 type GetAmmunitionMock = jest.Mock<() => Promise<AmmunitionStorage[]>>;
 type SaveRangeVisitWithAmmunitionMock = jest.Mock<() => Promise<void>>;
+type SaveFirearmMock = jest.Mock<(firearm: FirearmInput) => Promise<string>>;
 
 // Mock the storage module
 jest.mock("../../services/storage-new");
@@ -357,6 +359,39 @@ describe("EditRangeVisitScreen", () => {
       const glock19Button = screen.getByText("Glock 19");
       fireEvent.press(glock19Button); // Deselect Glock 19
       expect(screen.queryByText("AMMUNITION USED")).toBeNull(); // Ammunition input should disappear
+    });
+  });
+
+  it("adds a borrowed firearm via quick-add and selects it", async () => {
+    (storage.saveFirearm as SaveFirearmMock).mockResolvedValue(
+      "borrowed-firearm-1"
+    );
+    renderScreen();
+
+    const addBorrowedButton = await screen.findByText("+ Add borrowed gun");
+    fireEvent.press(addBorrowedButton);
+
+    fireEvent.changeText(screen.getByTestId("borrowed-model-input"), "Rented 1911");
+    fireEvent.changeText(screen.getByTestId("borrowed-caliber-input"), ".45");
+    fireEvent.press(screen.getByTestId("add-borrowed-gun-submit"));
+
+    await waitFor(() => {
+      expect(storage.saveFirearm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          modelName: "Rented 1911",
+          caliber: ".45",
+          ownership: "borrowed",
+          amountPaid: 0,
+          datePurchased: expect.any(String),
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Rented 1911")).toBeTruthy();
+      expect(screen.getByText("BORROWED")).toBeTruthy();
+      // The new gun is selected, so its rounds input is visible.
+      expect(screen.getByTestId("rounds-input-borrowed-firearm-1")).toBeTruthy();
     });
   });
 });

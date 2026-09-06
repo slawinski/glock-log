@@ -67,6 +67,53 @@ describe("AddFirearmScreen", () => {
     expect(screen.getByText(/Save firearm/)).toBeTruthy();
   });
 
+  it("shows ownership toggle defaulting to Mine", () => {
+    renderScreen();
+
+    expect(screen.getByText("Mine")).toBeTruthy();
+    expect(screen.getByText("Borrowed")).toBeTruthy();
+    // Purchase fields are visible by default (owned)
+    expect(screen.getByText(/AMOUNT PAID/)).toBeTruthy();
+    expect(screen.getByText(/PURCHASE DATE/)).toBeTruthy();
+  });
+
+  it("hides purchase section when Borrowed is selected", () => {
+    renderScreen();
+
+    fireEvent.press(screen.getByText("Borrowed"));
+
+    expect(screen.queryByText(/AMOUNT PAID/)).toBeNull();
+    expect(screen.queryByText(/PURCHASE DATE/)).toBeNull();
+    // Other fields remain visible
+    expect(screen.getByText(/MODEL NAME/)).toBeTruthy();
+    expect(screen.getByText(/CALIBER/)).toBeTruthy();
+    expect(screen.getByText(/ADD PHOTO/)).toBeTruthy();
+  });
+
+  it("saves ownership as borrowed when Borrowed is selected", async () => {
+    (storage.saveFirearm as jest.Mock).mockResolvedValue(undefined);
+    renderScreen();
+
+    const modelNameInput = screen.getByTestId("model-name-input");
+    const caliberInput = screen.getByTestId("caliber-input");
+
+    fireEvent.changeText(modelNameInput, "Glock 19");
+    fireEvent.changeText(caliberInput, "9mm");
+    fireEvent.press(screen.getByText("Borrowed"));
+
+    const saveButton = screen.getByText(/Save firearm/);
+    fireEvent.press(saveButton);
+
+    await waitFor(() => {
+      expect(storage.saveFirearm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ownership: "borrowed",
+        })
+      );
+      expect(mockGoBack).toHaveBeenCalled();
+    });
+  });
+
   it("handles form input changes", () => {
     renderScreen();
 
