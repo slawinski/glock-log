@@ -60,3 +60,9 @@ export type { AccessoryUsageStats } from "./accessory-service";
 
 export { computeFirearmAttention } from "./maintenance-attention";
 export type { AttentionLevel } from "./maintenance-attention";
+
+export {
+  variantPlaceholderKeyFor,
+  basePlaceholderKeyFor,
+  effectivePlaceholderKey,
+} from "./firearm-placeholder";

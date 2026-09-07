@@ -10,6 +10,13 @@ export const placeholderImages = {
 
 export type PlaceholderImageKey = keyof typeof placeholderImages;
 
+/**
+ * The placeholder a firearm falls back to when it has no explicit photo or
+ * placeholder stored. Kept as a named constant so it can be referenced by both
+ * the render layer (FirearmImage) and placeholder-sync logic.
+ */
+export const DEFAULT_FIREARM_PLACEHOLDER_KEY = "pistol-placeholder.png";
+
 export const ammunitionPlaceholderImages = {
   "22-placeholder.png": require("../../assets/images/22-placeholder.png"),
   "357-placeholder.png": require("../../assets/images/357-placeholder.png"),
@@ -21,9 +28,22 @@ export const ammunitionPlaceholderImages = {
 
 export type AmmunitionPlaceholderImageKey = keyof typeof ammunitionPlaceholderImages;
 
+/**
+ * Accessory-specific placeholder variants (e.g. a pistol with a red dot).
+ *
+ * Deliberately kept OUT of {@link placeholderImages} so they are resolved but
+ * never offered as manually-selectable placeholders in the Add/Edit-Firearm
+ * picker. Add a require entry here (plus a mapping in firearm-placeholder.ts)
+ * when a new variant asset is introduced.
+ */
+export const accessoryVariantPlaceholders = {
+  "pistol-reddot-placeholder.png": require("../../assets/images/pistol-reddot-placeholder.png"),
+};
+
 const allPlaceholderImages = {
   ...placeholderImages,
   ...ammunitionPlaceholderImages,
+  ...accessoryVariantPlaceholders,
 };
 
 /**

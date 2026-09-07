@@ -155,10 +155,36 @@ const getFirearmImages = async (firearmId: string): Promise<string[]> => {
   }
 };
 
+/**
+ * Replaces a firearm's photo list in place (used by placeholder-sync logic to
+ * swap the thumbnail when an accessory is mounted/unmounted). Does not touch
+ * any other firearm field.
+ */
+const setFirearmPhotos = async (
+  firearmId: string,
+  photos: string[]
+): Promise<void> => {
+  try {
+    const firearms = await getFirearms();
+    const firearm = firearms.find((f) => f.id === firearmId);
+    if (!firearm) return;
+
+    await writeEntity(firearmConfig, {
+      ...firearm,
+      photos,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    handleError(error, "Storage.setFirearmPhotos", { userMessage: "Failed to update firearm photos." });
+    throw error;
+  }
+};
+
 export const firearmService = {
   saveFirearm,
   getFirearms,
   deleteFirearm,
   updateFirearmRoundsFired,
   getFirearmImages,
+  setFirearmPhotos,
 };

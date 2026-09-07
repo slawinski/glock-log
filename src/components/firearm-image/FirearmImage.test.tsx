@@ -6,6 +6,7 @@ import { resolveImageSource } from "../../services/image-source-manager";
 // Mock the image source manager
 jest.mock("../../services/image-source-manager", () => ({
   resolveImageSource: jest.fn(),
+  DEFAULT_FIREARM_PLACEHOLDER_KEY: "pistol-placeholder.png",
 }));
 
 // Mock expo-image's Image as a passthrough host component so tests assert on

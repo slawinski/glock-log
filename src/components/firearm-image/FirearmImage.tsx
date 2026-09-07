@@ -1,7 +1,10 @@
 import React from "react";
 import { View } from "react-native";
 import { Image } from "expo-image";
-import { resolveImageSource } from "../../services/image-source-manager";
+import {
+  resolveImageSource,
+  DEFAULT_FIREARM_PLACEHOLDER_KEY,
+} from "../../services/image-source-manager";
 
 interface FirearmImageProps {
   size?: number;
@@ -20,7 +23,7 @@ export const FirearmImage = ({
 }: FirearmImageProps) => {
   const imageSource = photoUri
     ? resolveImageSource(photoUri)
-    : resolveImageSource("placeholder:pistol-placeholder.png");
+    : resolveImageSource(`placeholder:${DEFAULT_FIREARM_PLACEHOLDER_KEY}`);
 
   if (fill) {
     return (
