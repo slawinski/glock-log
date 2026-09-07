@@ -13,6 +13,7 @@ import { Controller } from "react-hook-form";
 import { RootStackParamList } from "../../app/App";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
+import { buildAutoAccessoryUsage } from "../../services/accessory-service";
 import {
   useEntityForm,
   useImagePicker,
@@ -36,6 +37,7 @@ import {
 } from "../../validation/inputSchemas";
 import {
   AmmunitionStorage,
+  AccessoryStorage,
   FirearmStorage,
   FirearmOwnership,
 } from "../../validation/storageSchemas";
@@ -55,6 +57,7 @@ export const AddRangeVisit = () => {
     { id: string; modelName: string; caliber: string; ownership: FirearmOwnership }[]
   >([]);
   const [ammunition, setAmmunition] = useState<AmmunitionStorage[]>([]);
+  const [accessories, setAccessories] = useState<AccessoryStorage[]>([]);
   const [selectedFirearms, setSelectedFirearms] = useState<string[]>([]);
   const [ammunitionUsed, setAmmunitionUsed] = useState<{
     [key: string]: { ammunitionId?: string; rounds: string };
@@ -91,10 +94,21 @@ export const AddRangeVisit = () => {
       }
     }
 
+    const roundsByFirearm: Record<string, number> = {};
+    for (const [key, value] of Object.entries(finalAmmunitionUsed)) {
+      roundsByFirearm[key] = value.rounds;
+    }
+    const accessoryUsage = buildAutoAccessoryUsage(
+      accessories,
+      selectedFirearms,
+      roundsByFirearm
+    );
+
     await storage.saveRangeVisitWithAmmunition({
       ...data,
       firearmsUsed: selectedFirearms,
       ammunitionUsed: finalAmmunitionUsed,
+      accessoryUsage,
       photos,
     });
     form.reset(form.getValues());
@@ -147,10 +161,12 @@ export const AddRangeVisit = () => {
 
   const loadData = async () => {
     try {
-      const [loadedFirearms, loadedAmmunition] = await Promise.all([
-        storage.getFirearms(),
-        storage.getAmmunition(),
-      ]);
+      const [loadedFirearms, loadedAmmunition, loadedAccessories] =
+        await Promise.all([
+          storage.getFirearms(),
+          storage.getAmmunition(),
+          storage.getAccessories(),
+        ]);
       setFirearms(
         loadedFirearms.map((f: FirearmStorage) => ({
           id: f.id,
@@ -160,6 +176,7 @@ export const AddRangeVisit = () => {
         }))
       );
       setAmmunition(loadedAmmunition);
+      setAccessories(loadedAccessories.filter((a) => a.status === "active"));
     } catch (error) {
       handleError(error, "AddRangeVisit.loadData", { isUserFacing: true, userMessage: "Failed to load data." });
       setError("Failed to load data.");

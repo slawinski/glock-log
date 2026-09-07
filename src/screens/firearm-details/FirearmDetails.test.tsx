@@ -89,6 +89,10 @@ describe("FirearmDetailsScreen", () => {
     jest.clearAllMocks();
     (storage.getCurrency as jest.Mock).mockResolvedValue("USD");
     (storage.getRangeVisits as jest.Mock).mockResolvedValue([]);
+    (storage.getCleaningSettings as jest.Mock).mockResolvedValue(undefined);
+    (storage.getCleaningEvents as jest.Mock).mockResolvedValue([]);
+    (storage.getFirearmPartsStatus as jest.Mock).mockResolvedValue([]);
+    (storage.getAccessories as jest.Mock).mockResolvedValue([]);
   });
 
   it("shows loading state initially", () => {

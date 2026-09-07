@@ -8,6 +8,18 @@ import {
   FirearmStorage,
   AmmunitionStorage,
   RangeVisitStorage,
+  AccessoryStorage,
+  accessoryStorageSchema,
+  PartSlot,
+  partSlotSchema,
+  PartInstance,
+  partInstanceSchema,
+  PartInstallationPeriod,
+  partInstallationPeriodSchema,
+  CleaningSettings,
+  cleaningSettingsSchema,
+  CleaningEvent,
+  cleaningEventSchema,
 } from "../validation/storageSchemas";
 import { handleError } from "./error-handler";
 import { cleanupOrphanedImages } from "./image-storage";
@@ -17,7 +29,14 @@ import {
   firearmKey,
   ammunitionKey,
   rangeVisitKey,
+  accessoryKey,
+  partSlotKey,
+  partInstanceKey,
+  partPeriodKey,
+  cleaningEventKey,
+  cleaningSettingsKey,
   validateBeforeSave,
+  readEntityCollection,
   writeEntityCollection,
   CollectionConfig,
 } from "./storage-helpers";
@@ -25,6 +44,7 @@ import { firearmService } from "./firearm-service";
 import { ammunitionService } from "./ammunition-service";
 import { rangeVisitService } from "./range-visit-service";
 import { settingsService } from "./settings-service";
+import { StorageFactory } from "./storage-factory";
 
 /**
  * The storage-shaped bundle carried inside a data-transfer archive.
@@ -34,6 +54,12 @@ export type ImportData = {
   firearms: FirearmStorage[];
   ammunition: AmmunitionStorage[];
   rangeVisits: RangeVisitStorage[];
+  accessories?: AccessoryStorage[];
+  partSlots?: PartSlot[];
+  partInstances?: PartInstance[];
+  partPeriods?: PartInstallationPeriod[];
+  cleaningSettings?: CleaningSettings[];
+  cleaningEvents?: CleaningEvent[];
 };
 
 /**
@@ -76,6 +102,90 @@ const visitConfig: CollectionConfig<RangeVisitStorage> = {
   indexKey: ENTITY_KEYS.RANGE_VISITS_INDEX,
   legacyKey: STORAGE_KEYS.RANGE_VISITS,
   schema: rangeVisitStorageSchema,
+};
+
+const accessoryConfig: CollectionConfig<AccessoryStorage> = {
+  entityKey: accessoryKey,
+  indexKey: ENTITY_KEYS.ACCESSORIES_INDEX,
+  legacyKey: ENTITY_KEYS.ACCESSORY,
+  schema: accessoryStorageSchema,
+};
+
+const partSlotConfig: CollectionConfig<PartSlot> = {
+  entityKey: partSlotKey,
+  indexKey: ENTITY_KEYS.PART_SLOTS_INDEX,
+  legacyKey: ENTITY_KEYS.PART_SLOT,
+  schema: partSlotSchema,
+};
+
+const partInstanceConfig: CollectionConfig<PartInstance> = {
+  entityKey: partInstanceKey,
+  indexKey: ENTITY_KEYS.PART_INSTANCES_INDEX,
+  legacyKey: ENTITY_KEYS.PART_INSTANCE,
+  schema: partInstanceSchema,
+};
+
+const partPeriodConfig: CollectionConfig<PartInstallationPeriod> = {
+  entityKey: partPeriodKey,
+  indexKey: ENTITY_KEYS.PART_PERIODS_INDEX,
+  legacyKey: ENTITY_KEYS.PART_PERIOD,
+  schema: partInstallationPeriodSchema,
+};
+
+const cleaningEventConfig: CollectionConfig<CleaningEvent> = {
+  entityKey: cleaningEventKey,
+  indexKey: ENTITY_KEYS.CLEANING_EVENTS_INDEX,
+  legacyKey: ENTITY_KEYS.CLEANING_EVENT,
+  schema: cleaningEventSchema,
+};
+
+const readCollectionOrEmpty = async <T extends { id: string }>(
+  config: CollectionConfig<T>
+): Promise<T[]> => {
+  try {
+    return readEntityCollection(config);
+  } catch {
+    return [];
+  }
+};
+
+const readCleaningSettingsAll = async (): Promise<CleaningSettings[]> => {
+  try {
+    const storage = StorageFactory.getStorage();
+    const raw = await storage.getItem(ENTITY_KEYS.CLEANING_SETTINGS_INDEX);
+    if (!raw) return [];
+    const ids: string[] = JSON.parse(raw);
+    const entries = await Promise.all(
+      ids.map((id) => storage.getItem(cleaningSettingsKey(id)))
+    );
+    const result: CleaningSettings[] = [];
+    for (const entry of entries) {
+      if (!entry) continue;
+      try {
+        result.push(cleaningSettingsSchema.parse(JSON.parse(entry)));
+      } catch {
+        // skip corrupt
+      }
+    }
+    return result;
+  } catch {
+    return [];
+  }
+};
+
+const writeCleaningSettingsAll = async (
+  settings: CleaningSettings[]
+): Promise<void> => {
+  const storage = StorageFactory.getStorage();
+  await Promise.all([
+    ...settings.map((s) =>
+      storage.setItem(cleaningSettingsKey(s.firearmId), JSON.stringify(s))
+    ),
+    storage.setItem(
+      ENTITY_KEYS.CLEANING_SETTINGS_INDEX,
+      JSON.stringify(settings.map((s) => s.firearmId))
+    ),
+  ]);
 };
 
 /**
@@ -326,11 +436,92 @@ export const importData = async (
       }
     }
 
-    // 6. Save integrated data (all entity keys + index keys, batched)
+    // 6. Integrate accessories, parts life, and cleaning data (no side effects).
+    let finalAccessories: AccessoryStorage[] = [];
+    let finalPartSlots: PartSlot[] = [];
+    let finalPartInstances: PartInstance[] = [];
+    let finalPartPeriods: PartInstallationPeriod[] = [];
+    let finalCleaningSettings: CleaningSettings[] = [];
+    let finalCleaningEvents: CleaningEvent[] = [];
+
+    if (strategy === "merge") {
+      finalAccessories = await readCollectionOrEmpty(accessoryConfig);
+      finalPartSlots = await readCollectionOrEmpty(partSlotConfig);
+      finalPartInstances = await readCollectionOrEmpty(partInstanceConfig);
+      finalPartPeriods = await readCollectionOrEmpty(partPeriodConfig);
+      finalCleaningEvents = await readCollectionOrEmpty(cleaningEventConfig);
+      finalCleaningSettings = await readCleaningSettingsAll();
+    }
+
+    const accessoryMap = new Map(finalAccessories.map((a) => [a.id, a]));
+    const partSlotMap = new Map(finalPartSlots.map((s) => [s.id, s]));
+    const partInstanceMap = new Map(finalPartInstances.map((i) => [i.id, i]));
+    const partPeriodMap = new Map(finalPartPeriods.map((p) => [p.id, p]));
+    const cleaningEventMap = new Map(finalCleaningEvents.map((e) => [e.id, e]));
+    const cleaningSettingsMap = new Map(
+      finalCleaningSettings.map((s) => [s.firearmId, s])
+    );
+
+    for (const accessory of data.accessories ?? []) {
+      try {
+        const validated = validateBeforeSave(accessory, accessoryStorageSchema);
+        accessoryMap.set(validated.id, validated);
+      } catch (e) {
+        console.warn("Skipping invalid accessory import", e);
+      }
+    }
+    for (const slot of data.partSlots ?? []) {
+      try {
+        const validated = validateBeforeSave(slot, partSlotSchema);
+        partSlotMap.set(validated.id, validated);
+      } catch (e) {
+        console.warn("Skipping invalid part slot import", e);
+      }
+    }
+    for (const instance of data.partInstances ?? []) {
+      try {
+        const validated = validateBeforeSave(instance, partInstanceSchema);
+        partInstanceMap.set(validated.id, validated);
+      } catch (e) {
+        console.warn("Skipping invalid part instance import", e);
+      }
+    }
+    for (const period of data.partPeriods ?? []) {
+      try {
+        const validated = validateBeforeSave(period, partInstallationPeriodSchema);
+        partPeriodMap.set(validated.id, validated);
+      } catch (e) {
+        console.warn("Skipping invalid part period import", e);
+      }
+    }
+    for (const event of data.cleaningEvents ?? []) {
+      try {
+        const validated = validateBeforeSave(event, cleaningEventSchema);
+        cleaningEventMap.set(validated.id, validated);
+      } catch (e) {
+        console.warn("Skipping invalid cleaning event import", e);
+      }
+    }
+    for (const settings of data.cleaningSettings ?? []) {
+      try {
+        const validated = validateBeforeSave(settings, cleaningSettingsSchema);
+        cleaningSettingsMap.set(validated.firearmId, validated);
+      } catch (e) {
+        console.warn("Skipping invalid cleaning settings import", e);
+      }
+    }
+
+    // 7. Save integrated data (all entity keys + index keys, batched)
     await Promise.all([
       writeEntityCollection(firearmConfig, Array.from(firearmMap.values())),
       writeEntityCollection(ammunitionConfig, Array.from(ammoMap.values())),
       writeEntityCollection(visitConfig, Array.from(visitMap.values())),
+      writeEntityCollection(accessoryConfig, Array.from(accessoryMap.values())),
+      writeEntityCollection(partSlotConfig, Array.from(partSlotMap.values())),
+      writeEntityCollection(partInstanceConfig, Array.from(partInstanceMap.values())),
+      writeEntityCollection(partPeriodConfig, Array.from(partPeriodMap.values())),
+      writeEntityCollection(cleaningEventConfig, Array.from(cleaningEventMap.values())),
+      writeCleaningSettingsAll(Array.from(cleaningSettingsMap.values())),
     ]);
 
     if (strategy === "restore") {
@@ -355,19 +546,41 @@ export const exportData = async (password: string): Promise<string> => {
   let tempDir = "";
   try {
     // 1. Fetch all data
-    const [firearms, ammunition, rangeVisits] = await Promise.all([
+    const [
+      firearms,
+      ammunition,
+      rangeVisits,
+      accessories,
+      partSlots,
+      partInstances,
+      partPeriods,
+      cleaningSettings,
+      cleaningEvents,
+    ] = await Promise.all([
       firearmService.getFirearms(),
       ammunitionService.getAmmunition(),
       rangeVisitService.getRangeVisits(),
+      readCollectionOrEmpty(accessoryConfig),
+      readCollectionOrEmpty(partSlotConfig),
+      readCollectionOrEmpty(partInstanceConfig),
+      readCollectionOrEmpty(partPeriodConfig),
+      readCleaningSettingsAll(),
+      readCollectionOrEmpty(cleaningEventConfig),
     ]);
 
     const exportBundle = {
-      version: "1.1.0", // Bumped version for image support
+      version: "1.2.0",
       timestamp: new Date().toISOString(),
       data: {
         firearms,
         ammunition,
         rangeVisits,
+        accessories,
+        partSlots,
+        partInstances,
+        partPeriods,
+        cleaningSettings,
+        cleaningEvents,
       },
     };
 
@@ -385,7 +598,7 @@ export const exportData = async (password: string): Promise<string> => {
     const imageSet = new Set<string>();
     firearms.forEach(f => f.photos?.forEach(p => !p.startsWith('placeholder:') && imageSet.add(p)));
     rangeVisits.forEach(v => v.photos?.forEach(p => !p.startsWith('placeholder:') && imageSet.add(p)));
-    // Ammunition doesn't have photos in current schema but good to be ready
+    accessories.forEach(a => a.photos?.forEach(p => !p.startsWith('placeholder:') && imageSet.add(p)));
 
     for (const imgPath of imageSet) {
       try {

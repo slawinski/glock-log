@@ -1,4 +1,5 @@
 import { z } from "zod";
+import * as Crypto from "expo-crypto";
 import { StorageFactory } from "./storage-factory";
 import { handleError } from "./error-handler";
 
@@ -38,6 +39,18 @@ export const ENTITY_KEYS = {
   FIREARMS_INDEX: "@storage:firearms-index",
   AMMUNITION_INDEX: "@storage:ammunition-index",
   RANGE_VISITS_INDEX: "@storage:range-visits-index",
+  ACCESSORY: "@storage:accessory",
+  ACCESSORIES_INDEX: "@storage:accessories-index",
+  PART_SLOT: "@storage:part-slot",
+  PART_SLOTS_INDEX: "@storage:part-slots-index",
+  PART_INSTANCE: "@storage:part-instance",
+  PART_INSTANCES_INDEX: "@storage:part-instances-index",
+  PART_PERIOD: "@storage:part-period",
+  PART_PERIODS_INDEX: "@storage:part-periods-index",
+  CLEANING_EVENT: "@storage:cleaning-event",
+  CLEANING_EVENTS_INDEX: "@storage:cleaning-events-index",
+  CLEANING_SETTINGS: "@storage:cleaning-settings",
+  CLEANING_SETTINGS_INDEX: "@storage:cleaning-settings-index",
 } as const;
 
 export const firearmKey = (id: string): string => `${ENTITY_KEYS.FIREARM}:${id}`;
@@ -45,6 +58,18 @@ export const ammunitionKey = (id: string): string =>
   `${ENTITY_KEYS.AMMUNITION}:${id}`;
 export const rangeVisitKey = (id: string): string =>
   `${ENTITY_KEYS.RANGE_VISIT}:${id}`;
+export const accessoryKey = (id: string): string =>
+  `${ENTITY_KEYS.ACCESSORY}:${id}`;
+export const partSlotKey = (id: string): string =>
+  `${ENTITY_KEYS.PART_SLOT}:${id}`;
+export const partInstanceKey = (id: string): string =>
+  `${ENTITY_KEYS.PART_INSTANCE}:${id}`;
+export const partPeriodKey = (id: string): string =>
+  `${ENTITY_KEYS.PART_PERIOD}:${id}`;
+export const cleaningEventKey = (id: string): string =>
+  `${ENTITY_KEYS.CLEANING_EVENT}:${id}`;
+export const cleaningSettingsKey = (firearmId: string): string =>
+  `${ENTITY_KEYS.CLEANING_SETTINGS}:${firearmId}`;
 
 export type CollectionConfig<T extends { id: string }> = {
   /** Builds the per-entity storage key for a given id. */
@@ -83,14 +108,11 @@ export function validateBeforeSave<T>(data: T, schema: z.ZodSchema<T>): T {
 
 // Helper function to generate a unique ID
 export function generateId(prefix: string): string {
-  // Generate a more secure random ID using crypto.getRandomValues if available
+  // Cryptographically secure random IDs via expo-crypto (never Math.random()).
   const timestamp = Date.now();
-  const randomPart =
-    typeof crypto !== "undefined" && crypto.getRandomValues
-      ? Array.from(crypto.getRandomValues(new Uint8Array(6)))
-          .map((b) => b.toString(36))
-          .join("")
-      : Math.random().toString(36).slice(2, 11);
+  const randomPart = Array.from(Crypto.getRandomBytes(6))
+    .map((b) => b.toString(36))
+    .join("");
 
   return `${prefix}-${timestamp}-${randomPart}`;
 }
@@ -166,7 +188,8 @@ export async function writeEntity<T extends { id: string }>(
   entity: T
 ): Promise<void> {
   const storage = StorageFactory.getStorage();
-  await storage.setItem(config.entityKey(entity.id), JSON.stringify(entity));
+  const validated = validateBeforeSave(entity, config.schema);
+  await storage.setItem(config.entityKey(validated.id), JSON.stringify(validated));
 }
 
 /**
@@ -183,9 +206,10 @@ export async function writeEntityAndIndex<T extends { id: string }>(
   existingIds: string[]
 ): Promise<void> {
   const storage = StorageFactory.getStorage();
-  const ids = isNew ? [...existingIds, entity.id] : existingIds;
+  const validated = validateBeforeSave(entity, config.schema);
+  const ids = isNew ? [...existingIds, validated.id] : existingIds;
   await Promise.all([
-    storage.setItem(config.entityKey(entity.id), JSON.stringify(entity)),
+    storage.setItem(config.entityKey(validated.id), JSON.stringify(validated)),
     storage.setItem(config.indexKey, JSON.stringify(ids)),
   ]);
 }

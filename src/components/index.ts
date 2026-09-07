@@ -25,3 +25,6 @@ export { EmptyState } from "./empty-state/EmptyState";
 export { MetricHero } from "./metric-hero/MetricHero";
 export { DetailSection, DetailRow } from "./detail-section";
 export { StickyActionBar } from "./sticky-action-bar/StickyActionBar";
+export { StatusBadge } from "./status-badge/StatusBadge";
+export { ChoiceGroup } from "./choice-group/ChoiceGroup";
+export type { ChoiceOption } from "./choice-group/ChoiceGroup";

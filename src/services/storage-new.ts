@@ -19,6 +19,11 @@ import { ammunitionService } from "./ammunition-service";
 import { rangeVisitService } from "./range-visit-service";
 import { settingsService } from "./settings-service";
 import { dataTransferService } from "./data-transfer-service";
+import { cleaningService } from "./cleaning-service";
+import { partsLifeService } from "./parts-life-service";
+import { accessoryService } from "./accessory-service";
+import { accessoryUsageService } from "./accessory-usage-service";
+import { computeAccessoryStats } from "./accessory-service";
 
 export type { SettingsData } from "./storage-service-interface";
 
@@ -27,5 +32,10 @@ export const storage: StorageService = {
   ...ammunitionService,
   ...rangeVisitService,
   ...settingsService,
+  ...cleaningService,
+  ...partsLifeService,
+  ...accessoryService,
+  ...accessoryUsageService,
+  getUsageStats: computeAccessoryStats,
   ...dataTransferService,
 };

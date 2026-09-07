@@ -11,6 +11,12 @@ jest.mock("../../services/storage-new", () => ({
     getFirearms: jest.fn(),
     getRangeVisits: jest.fn(),
     getAmmunition: jest.fn(),
+    getAccessories: jest.fn(),
+    getAllCleaningSettings: jest.fn(),
+    getAllCleaningEvents: jest.fn(),
+    getAllPartSlots: jest.fn(),
+    getAllPartInstances: jest.fn(),
+    getAllPartPeriods: jest.fn(),
     getCurrency: jest.fn(),
   },
 }));
@@ -176,6 +182,12 @@ describe("Home", () => {
     mockStorageApi.getFirearms.mockResolvedValue([mockFirearm]);
     mockStorageApi.getRangeVisits.mockResolvedValue([mockRangeVisit]);
     mockStorageApi.getAmmunition.mockResolvedValue([mockAmmunition]);
+    mockStorageApi.getAccessories.mockResolvedValue([]);
+    mockStorageApi.getAllCleaningSettings.mockResolvedValue([]);
+    mockStorageApi.getAllCleaningEvents.mockResolvedValue([]);
+    mockStorageApi.getAllPartSlots.mockResolvedValue([]);
+    mockStorageApi.getAllPartInstances.mockResolvedValue([]);
+    mockStorageApi.getAllPartPeriods.mockResolvedValue([]);
     mockStorageApi.getCurrency.mockResolvedValue("USD");
   });
 

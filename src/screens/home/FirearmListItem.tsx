@@ -8,12 +8,14 @@ type Props = {
   firearm: FirearmStorage;
   onPress: (firearmId: string) => void;
   showBorrowedBadge?: boolean;
+  needsAttention?: boolean;
 };
 
 export const FirearmListItem = ({
   firearm,
   onPress,
   showBorrowedBadge = false,
+  needsAttention = false,
 }: Props) => {
   const photoUri = firearm.photos?.[0];
   const isBorrowed = firearm.ownership === "borrowed";
@@ -31,14 +33,24 @@ export const FirearmListItem = ({
   return (
     <Pressable
       onPress={() => onPress(firearm.id)}
-      className="bg-terminal-bg border-2 border-terminal-border p-4 mb-4"
+      className="relative bg-terminal-bg border-2 border-terminal-border p-4 mb-4"
       style={({ pressed }) => pressed && { opacity: 0.7 }}
       accessibilityRole="button"
       accessibilityLabel={`${firearm.modelName} ${firearm.caliber}${
         isBorrowed ? " borrowed" : ""
-      }`}
+      }${needsAttention ? ", needs attention" : ""}`}
       testID={`firearm-list-item-${firearm.id}`}
     >
+      {needsAttention && (
+        <View
+          className="absolute top-2 right-2 bg-terminal-green px-1.5 py-0.5"
+          testID={`attention-badge-${firearm.id}`}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
+          <TerminalText className="text-sm text-terminal-bg">!</TerminalText>
+        </View>
+      )}
       <View
         className={`flex-row ${
           photoUri ? "min-h-[80px]" : "min-h-[72px]"

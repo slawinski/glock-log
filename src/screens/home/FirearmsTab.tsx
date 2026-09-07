@@ -2,12 +2,14 @@ import React, { useCallback, useMemo, useState } from "react";
 import { View, FlatList, ListRenderItemInfo } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { FirearmStorage } from "../../validation/storageSchemas";
+import { AttentionLevel } from "../../services/maintenance-attention";
 import { EmptyState, TerminalTabs } from "../../components";
 import { FirearmListItem } from "./FirearmListItem";
 import { HomeScreenNavigationProp } from "../../types/navigation";
 
 type Props = {
   firearms: FirearmStorage[];
+  attention?: Record<string, AttentionLevel>;
   onRefresh: () => void;
   refreshing: boolean;
 };
@@ -22,6 +24,7 @@ const FILTER_OPTIONS: { id: FirearmFilter; title: string }[] = [
 
 export const FirearmsTab = ({
   firearms,
+  attention = {},
   onRefresh,
   refreshing,
 }: Props) => {
@@ -63,9 +66,10 @@ export const FirearmsTab = ({
         firearm={item}
         onPress={handleFirearmPress}
         showBorrowedBadge={showBorrowedBadge}
+        needsAttention={!!attention[item.id]}
       />
     ),
-    [handleFirearmPress, showBorrowedBadge]
+    [handleFirearmPress, showBorrowedBadge, attention]
   );
 
   const renderEmptyState = useCallback(() => {

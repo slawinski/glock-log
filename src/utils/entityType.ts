@@ -15,6 +15,7 @@ export const EntityType = {
   FIREARM: "firearm",
   AMMUNITION: "ammunition",
   RANGE_VISIT: "range-visit",
+  ACCESSORY: "accessory",
 } as const;
 
 // eslint-disable-next-line no-redeclare -- companion type for the const above (separate TS declaration spaces)

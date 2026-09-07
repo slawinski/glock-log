@@ -144,6 +144,7 @@ describe("AddRangeVisitScreen", () => {
     jest.clearAllMocks();
     (storage.getFirearms as jest.Mock).mockResolvedValue(mockFirearms);
     (storage.getAmmunition as jest.Mock).mockResolvedValue(mockAmmunition);
+    (storage.getAccessories as jest.Mock).mockResolvedValue([]);
     (storage.saveRangeVisitWithAmmunition as jest.Mock).mockResolvedValue(
       undefined
     );

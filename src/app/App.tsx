@@ -28,6 +28,20 @@ import {
   Settings,
   CurrencySelection,
   DataTransfer,
+  LogCleaning,
+  CleaningHistory,
+  CleaningEventDetails,
+  CleaningSettings,
+  PartsLife,
+  FirearmParts,
+  PartDetails,
+  AddPart,
+  ReplacePart,
+  AddAccessory,
+  AccessoryDetails,
+  EditAccessory,
+  ManageFirearmAccessories,
+  AccessoryReconciliation,
 } from "../screens";
 
 export type RootStackParamList = {
@@ -46,6 +60,20 @@ export type RootStackParamList = {
   Settings: undefined;
   CurrencySelection: undefined;
   DataTransfer: undefined;
+  LogCleaning: { firearmId: string; eventId?: string };
+  CleaningHistory: { firearmId: string };
+  CleaningEventDetails: { id: string; firearmId: string };
+  CleaningSettings: { firearmId: string };
+  PartsLife: undefined;
+  FirearmParts: { firearmId: string };
+  PartDetails: { slotId: string };
+  AddPart: { firearmId: string };
+  ReplacePart: { slotId: string };
+  AddAccessory: undefined;
+  AccessoryDetails: { id: string };
+  EditAccessory: { id: string };
+  ManageFirearmAccessories: { firearmId: string };
+  AccessoryReconciliation: { accessoryId: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -166,6 +194,76 @@ const AppContent = () => {
                 name="DataTransfer"
                 component={DataTransfer}
                 options={{ title: "DATA TRANSFER" }}
+              />
+              <Stack.Screen
+                name="LogCleaning"
+                component={LogCleaning}
+                options={{ title: "LOG CLEANING" }}
+              />
+              <Stack.Screen
+                name="CleaningHistory"
+                component={CleaningHistory}
+                options={{ title: "CLEANING HISTORY" }}
+              />
+              <Stack.Screen
+                name="CleaningEventDetails"
+                component={CleaningEventDetails}
+                options={{ title: "CLEANING EVENT" }}
+              />
+              <Stack.Screen
+                name="CleaningSettings"
+                component={CleaningSettings}
+                options={{ title: "CLEANING INTERVALS" }}
+              />
+              <Stack.Screen
+                name="PartsLife"
+                component={PartsLife}
+                options={{ title: "PARTS LIFE" }}
+              />
+              <Stack.Screen
+                name="FirearmParts"
+                component={FirearmParts}
+                options={{ title: "PARTS LIFE" }}
+              />
+              <Stack.Screen
+                name="PartDetails"
+                component={PartDetails}
+                options={{ title: "PART DETAILS" }}
+              />
+              <Stack.Screen
+                name="AddPart"
+                component={AddPart}
+                options={{ title: "ADD TRACKED PART" }}
+              />
+              <Stack.Screen
+                name="ReplacePart"
+                component={ReplacePart}
+                options={{ title: "REPLACE PART" }}
+              />
+              <Stack.Screen
+                name="AddAccessory"
+                component={AddAccessory}
+                options={{ title: "NEW ACCESSORY" }}
+              />
+              <Stack.Screen
+                name="AccessoryDetails"
+                component={AccessoryDetails}
+                options={{ title: "ACCESSORY DETAILS" }}
+              />
+              <Stack.Screen
+                name="EditAccessory"
+                component={EditAccessory}
+                options={{ title: "EDIT ACCESSORY" }}
+              />
+              <Stack.Screen
+                name="ManageFirearmAccessories"
+                component={ManageFirearmAccessories}
+                options={{ title: "MANAGE ACCESSORIES" }}
+              />
+              <Stack.Screen
+                name="AccessoryReconciliation"
+                component={AccessoryReconciliation}
+                options={{ title: "REVIEW USAGE" }}
               />
             </Stack.Navigator>
           </NavigationContainer>

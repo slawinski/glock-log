@@ -61,6 +61,20 @@ jest.mock("../screens", () => ({
   Settings: () => null,
   CurrencySelection: () => null,
   DataTransfer: () => null,
+  LogCleaning: () => null,
+  CleaningHistory: () => null,
+  CleaningEventDetails: () => null,
+  CleaningSettings: () => null,
+  PartsLife: () => null,
+  FirearmParts: () => null,
+  PartDetails: () => null,
+  AddPart: () => null,
+  ReplacePart: () => null,
+  AddAccessory: () => null,
+  AccessoryDetails: () => null,
+  EditAccessory: () => null,
+  ManageFirearmAccessories: () => null,
+  AccessoryReconciliation: () => null,
 }));
 
 describe("App", () => {

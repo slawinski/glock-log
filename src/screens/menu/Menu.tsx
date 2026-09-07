@@ -20,6 +20,10 @@ export const Menu = () => {
       onPress: () => navigation.navigate("Stats"),
     },
     {
+      label: "PARTS LIFE",
+      onPress: () => navigation.navigate("PartsLife"),
+    },
+    {
       label: "SETTINGS",
       onPress: () => navigation.navigate("Settings"),
     },

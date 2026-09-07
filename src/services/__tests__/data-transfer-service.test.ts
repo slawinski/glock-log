@@ -165,7 +165,7 @@ describe("data-transfer-service", () => {
       const writtenPayloads = writeCalls
         .map((call) => String(call[1]))
         .join("\n");
-      expect(writtenPayloads).toContain('"version": "1.1.0"');
+      expect(writtenPayloads).toContain('"version": "1.2.0"');
       expect(writtenPayloads).toContain("firearm-1");
       expect(writtenPayloads).not.toContain("s3cret-pass");
 

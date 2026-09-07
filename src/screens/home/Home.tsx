@@ -12,24 +12,36 @@ import {
   FirearmStorage,
   RangeVisitStorage,
   AmmunitionStorage,
+  AccessoryStorage,
+  CleaningSettings,
+  CleaningEvent,
+  PartSlot,
+  PartInstance,
+  PartInstallationPeriod,
 } from "../../validation/storageSchemas";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
+import {
+  computeFirearmAttention,
+  AttentionLevel,
+} from "../../services/maintenance-attention";
 import { ErrorDisplay, HeaderButton, LoadingScreen, TerminalTabs } from "../../components";
 import { BottomButtonGroup } from "../../components/bottom-button-group/BottomButtonGroup";
 import { FirearmsTab } from "./FirearmsTab";
 import { VisitsTab } from "./VisitsTab";
 import { AmmunitionTab } from "./AmmunitionTab";
+import { AccessoriesTab } from "./AccessoriesTab";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "Home"
 >;
 
-type TabType = "firearms" | "visits" | "ammunition";
+type TabType = "firearms" | "gear" | "visits" | "ammunition";
 
 const TABS = [
   { id: "firearms", title: "GUNS" },
+  { id: "gear", title: "GEAR" },
   { id: "visits", title: "VISITS" },
   { id: "ammunition", title: "AMMO" },
 ];
@@ -39,6 +51,8 @@ export const Home = () => {
   const [firearms, setFirearms] = useState<FirearmStorage[]>([]);
   const [rangeVisits, setRangeVisits] = useState<RangeVisitStorage[]>([]);
   const [ammunition, setAmmunition] = useState<AmmunitionStorage[]>([]);
+  const [accessories, setAccessories] = useState<AccessoryStorage[]>([]);
+  const [attention, setAttention] = useState<Record<string, AttentionLevel>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -52,17 +66,54 @@ export const Home = () => {
       }
       setError(null);
 
-      const [firearmsData, visitsData, ammunitionData, currencyData] =
-        await Promise.all([
-          storage.getFirearms(),
-          storage.getRangeVisits(),
-          storage.getAmmunition(),
-          storage.getCurrency(),
-        ]);
+      const [
+        firearmsData,
+        visitsData,
+        ammunitionData,
+        accessoriesData,
+        cleaningSettingsData,
+        cleaningEventsData,
+        partSlotsData,
+        partInstancesData,
+        partPeriodsData,
+        currencyData,
+      ] = await Promise.all([
+        storage.getFirearms(),
+        storage.getRangeVisits(),
+        storage.getAmmunition(),
+        storage.getAccessories(),
+        storage.getAllCleaningSettings(),
+        storage.getAllCleaningEvents(),
+        storage.getAllPartSlots(),
+        storage.getAllPartInstances(),
+        storage.getAllPartPeriods(),
+        storage.getCurrency(),
+      ]);
+
+      const settingsByFirearm = new Map(
+        cleaningSettingsData.map((s: CleaningSettings) => [s.firearmId, s])
+      );
+      const attentionMap: Record<string, AttentionLevel> = {};
+      for (const firearm of firearmsData) {
+        const level = computeFirearmAttention(
+          firearm.id,
+          settingsByFirearm.get(firearm.id),
+          cleaningEventsData,
+          partSlotsData,
+          partInstancesData,
+          partPeriodsData,
+          visitsData
+        );
+        if (level) {
+          attentionMap[firearm.id] = level;
+        }
+      }
 
       setFirearms(firearmsData);
       setRangeVisits(visitsData);
       setAmmunition(ammunitionData);
+      setAccessories(accessoriesData);
+      setAttention(attentionMap);
       setCurrency(currencyData);
       if (isInitialLoad) {
         setIsInitialLoad(false);
@@ -110,6 +161,8 @@ export const Home = () => {
     switch (activeTab) {
       case "firearms":
         return "AddFirearm";
+      case "gear":
+        return "AddAccessory";
       case "visits":
         return "AddRangeVisit";
       case "ammunition":
@@ -123,6 +176,8 @@ export const Home = () => {
     switch (activeTab) {
       case "firearms":
         return "+ ADD FIREARM";
+      case "gear":
+        return "+ ADD ACCESSORY";
       case "visits":
         return "+ ADD VISIT";
       case "ammunition":
@@ -146,6 +201,17 @@ export const Home = () => {
         return (
           <FirearmsTab
             firearms={firearms}
+            attention={attention}
+            onRefresh={onRefresh}
+            refreshing={false}
+          />
+        );
+      case "gear":
+        return (
+          <AccessoriesTab
+            accessories={accessories}
+            firearms={firearms}
+            rangeVisits={rangeVisits}
             onRefresh={onRefresh}
             refreshing={false}
           />

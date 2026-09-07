@@ -10,6 +10,8 @@ import { RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../app/App";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
+import { calculateCleaningStatus } from "../../services/cleaning-calculation";
+import { getCurrentMount } from "../../services/accessory-service";
 import {
   DetailRow,
   DetailSection,
@@ -17,14 +19,19 @@ import {
   ImageGallery,
   LoadingScreen,
   MetricHero,
+  StatusBadge,
   TerminalButton,
   TerminalText,
 } from "../../components";
 import {
+  AccessoryStorage,
+  CleaningEvent,
+  CleaningSettings,
   FirearmStorage,
   RangeVisitStorage,
 } from "../../validation/storageSchemas";
-import { formatCurrency, formatDate } from "../../utils";
+import { PartLifeResult } from "../../services/parts-life-calculation";
+import { formatCurrency, formatDate, ACCESSORY_CATEGORY_LABELS } from "../../utils";
 import { useDeleteEntity } from "../../hooks";
 
 type FirearmDetailsScreenNavigationProp = NativeStackNavigationProp<
@@ -47,6 +54,10 @@ export const FirearmDetails = () => {
   const route = useRoute<FirearmDetailsScreenRouteProp>();
   const [firearm, setFirearm] = useState<FirearmStorage | null>(null);
   const [rangeVisits, setRangeVisits] = useState<RangeVisitStorage[]>([]);
+  const [cleaningSettings, setCleaningSettings] = useState<CleaningSettings | undefined>();
+  const [cleaningEvents, setCleaningEvents] = useState<CleaningEvent[]>([]);
+  const [partsStatus, setPartsStatus] = useState<PartLifeResult[]>([]);
+  const [accessories, setAccessories] = useState<AccessoryStorage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currency, setCurrency] = useState<string>("USD");
@@ -55,11 +66,15 @@ export const FirearmDetails = () => {
     try {
       setLoading(true);
       setError(null);
-      const [firearms, visits, currentCurrency] = await Promise.all([
-        storage.getFirearms(),
-        storage.getRangeVisits(),
-        storage.getCurrency(),
-      ]);
+      const [firearms, visits, settings, events, allAccessories, currentCurrency] =
+        await Promise.all([
+          storage.getFirearms(),
+          storage.getRangeVisits(),
+          storage.getCleaningSettings(route.params.id),
+          storage.getCleaningEvents(route.params.id),
+          storage.getAccessories(),
+          storage.getCurrency(),
+        ]);
       const foundFirearm = firearms.find((f) => f.id === route.params.id);
       if (foundFirearm) {
         setFirearm(foundFirearm);
@@ -67,6 +82,13 @@ export const FirearmDetails = () => {
         setError("Firearm not found");
       }
       setRangeVisits(visits);
+      setCleaningSettings(settings);
+      setCleaningEvents(events);
+      setAccessories(
+        allAccessories.filter((a) => a.status === "active")
+      );
+      const parts = await storage.getFirearmPartsStatus(route.params.id, visits);
+      setPartsStatus(parts);
       setCurrency(currentCurrency);
     } catch (error) {
       handleError(error, "FirearmDetails.fetchFirearm", { isUserFacing: true, userMessage: "Failed to load firearm details." });
@@ -85,7 +107,12 @@ export const FirearmDetails = () => {
   const { confirmDelete } = useDeleteEntity(
     async () => {
       if (!firearm) return;
-      await storage.deleteFirearm(firearm.id);
+      await Promise.all([
+        storage.deleteFirearm(firearm.id),
+        storage.deleteCleaningForFirearm(firearm.id),
+        storage.deletePartsForFirearm(firearm.id),
+        storage.handleFirearmDeletion(firearm.id),
+      ]);
     },
     {
       label: "Firearm",
@@ -120,6 +147,21 @@ export const FirearmDetails = () => {
     )
     .slice(0, 5);
 
+  const cleaningStatus = calculateCleaningStatus(
+    cleaningSettings,
+    cleaningEvents,
+    rangeVisits,
+    firearm.id
+  );
+
+  const partsNeedingAttention = partsStatus.filter(
+    (p) => p.status === "due" || p.status === "due_soon"
+  );
+
+  const mountedAccessories = accessories.filter(
+    (a) => getCurrentMount(a)?.firearmId === firearm.id
+  );
+
   return (
     <View className="flex-1 bg-terminal-bg">
       <ScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1 }}>
@@ -151,6 +193,110 @@ export const FirearmDetails = () => {
             label="rounds fired"
             className="mb-6"
           />
+
+          <DetailSection title="CLEANING">
+            {!cleaningStatus.fieldStrip.enabled && !cleaningStatus.completeDisassembly.enabled ? (
+              <TerminalText className="text-terminal-muted mb-3">
+                Cleaning intervals are not configured.
+              </TerminalText>
+            ) : (
+              <>
+                {cleaningStatus.fieldStrip.enabled && (
+                  <CleaningIntervalRow
+                    label="FIELD STRIP"
+                    roundsSince={cleaningStatus.fieldStrip.roundsSinceCleaning}
+                    interval={cleaningStatus.fieldStrip.interval}
+                    remaining={cleaningStatus.fieldStrip.remainingRounds}
+                    status={cleaningStatus.fieldStrip.status}
+                    lastCleanedAt={cleaningStatus.fieldStrip.lastCleaningEvent?.performedAt}
+                  />
+                )}
+                {cleaningStatus.completeDisassembly.enabled && (
+                  <CleaningIntervalRow
+                    label="COMPLETE"
+                    roundsSince={cleaningStatus.completeDisassembly.roundsSinceCleaning}
+                    interval={cleaningStatus.completeDisassembly.interval}
+                    remaining={cleaningStatus.completeDisassembly.remainingRounds}
+                    status={cleaningStatus.completeDisassembly.status}
+                    lastCleanedAt={cleaningStatus.completeDisassembly.lastCleaningEvent?.performedAt}
+                  />
+                )}
+              </>
+            )}
+            <View className="mt-3">
+              <TerminalButton
+                caption="Manage cleaning"
+                variant="primary"
+                onPress={() =>
+                  navigation.navigate("CleaningHistory", { firearmId: firearm.id })
+                }
+              />
+            </View>
+          </DetailSection>
+
+          <DetailSection title="PARTS LIFE">
+            {partsStatus.length === 0 ? (
+              <TerminalText className="text-terminal-muted mb-3">
+                No components are being tracked.
+              </TerminalText>
+            ) : (
+              <>
+                {partsNeedingAttention.length > 0 && (
+                  <TerminalText className="text-terminal-muted mb-2">
+                    {partsNeedingAttention.length} PART
+                    {partsNeedingAttention.length === 1 ? "" : "S"} NEEDS ATTENTION
+                  </TerminalText>
+                )}
+                {partsStatus.map((part) => (
+                  <View key={part.slot?.id} className="py-2 border-b border-terminal-border/30">
+                    <View className="flex-row justify-between items-center">
+                      <TerminalText>{part.slot?.name}</TerminalText>
+                      {part.status === "due" && <StatusBadge label="DUE" variant="due" />}
+                      {part.status === "due_soon" && (
+                        <StatusBadge label="DUE SOON" variant="due_soon" />
+                      )}
+                    </View>
+                    <TerminalText className="text-terminal-muted">
+                      {formatPartUsage(part)}
+                    </TerminalText>
+                  </View>
+                ))}
+              </>
+            )}
+            <View className="mt-3">
+              <TerminalButton
+                caption="Manage parts"
+                onPress={() =>
+                  navigation.navigate("FirearmParts", { firearmId: firearm.id })
+                }
+              />
+            </View>
+          </DetailSection>
+
+          <DetailSection title="ACCESSORIES">
+            {mountedAccessories.length === 0 ? (
+              <TerminalText className="text-terminal-muted mb-3">
+                No accessories mounted.
+              </TerminalText>
+            ) : (
+              mountedAccessories.map((accessory) => (
+                <View key={accessory.id} className="py-2 border-b border-terminal-border/30">
+                  <TerminalText>{accessory.modelName}</TerminalText>
+                  <TerminalText className="text-terminal-muted">
+                    {ACCESSORY_CATEGORY_LABELS[accessory.category]}
+                  </TerminalText>
+                </View>
+              ))
+            )}
+            <View className="mt-3">
+              <TerminalButton
+                caption="Manage accessories"
+                onPress={() =>
+                  navigation.navigate("ManageFirearmAccessories", { firearmId: firearm.id })
+                }
+              />
+            </View>
+          </DetailSection>
 
           <DetailSection title="OVERVIEW">
             {firearm.ownership !== "borrowed" && (
@@ -210,4 +356,53 @@ export const FirearmDetails = () => {
       </ScrollView>
     </View>
   );
+};
+
+type CleaningIntervalRowProps = {
+  label: string;
+  roundsSince: number | null;
+  interval: number | null;
+  remaining: number | null;
+  status: string;
+  lastCleanedAt?: string;
+};
+
+const CleaningIntervalRow = ({
+  label,
+  roundsSince,
+  interval,
+  remaining,
+  status,
+  lastCleanedAt,
+}: CleaningIntervalRowProps) => (
+  <View className="py-3 border-b border-terminal-border/30">
+    <View className="flex-row justify-between items-center">
+      <TerminalText>{label}</TerminalText>
+      {status === "due" && <StatusBadge label="DUE" variant="due" />}
+      {status === "due_soon" && <StatusBadge label="DUE SOON" variant="due_soon" />}
+    </View>
+    <TerminalText className="text-terminal-muted">
+      {roundsSince === null
+        ? "Tracking not initialized"
+        : interval !== null && remaining !== null && remaining >= 0
+          ? `${roundsSince} / ${interval} RDS · ${remaining} remaining`
+          : interval !== null && remaining !== null
+            ? `${roundsSince} / ${interval} RDS · ${Math.abs(remaining)} overdue`
+            : `${roundsSince} rounds`}
+    </TerminalText>
+    {lastCleanedAt && (
+      <TerminalText className="text-terminal-muted text-sm">
+        Last cleaned {formatDate(lastCleanedAt, "dd MMM yyyy")}
+      </TerminalText>
+    )}
+  </View>
+);
+
+const formatPartUsage = (part: PartLifeResult): string => {
+  if (part.status === "baseline_unknown") return `${part.trackedUsage}+ rounds tracked`;
+  if (part.currentUsage === null) return "no part installed";
+  if (!part.slot?.serviceIntervalRounds) return `${part.currentUsage} rounds · no interval`;
+  const interval = part.slot.serviceIntervalRounds;
+  if (part.currentUsage >= interval) return `${part.currentUsage} / ${interval} · ${part.currentUsage - interval} over`;
+  return `${part.currentUsage} / ${interval} · ${interval - part.currentUsage} remaining`;
 };

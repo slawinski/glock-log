@@ -58,6 +58,9 @@ const saveRangeVisit = async (visit: RangeVisitInput): Promise<void> => {
     const storageData: RangeVisitStorage = {
       ...visit,
       ammunitionUsed: visit.ammunitionUsed || {},
+      // Preserve saved accessory usage when an edit doesn't provide it, so
+      // backfilled/manual records are not wiped by an unrelated visit edit.
+      accessoryUsage: visit.accessoryUsage ?? existingVisit?.accessoryUsage,
       id: visitId,
       createdAt: existingVisit?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
