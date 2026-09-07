@@ -86,6 +86,10 @@ export const AccessoryDetails = () => {
       confirmMessage: "This permanently removes the accessory.",
       errorContext: "AccessoryDetails.handleDelete",
       errorUserMessage: "Failed to delete accessory.",
+      resolveErrorMessage: (error) =>
+        error instanceof Error && error.message === "ACCESSORY_HAS_HISTORY"
+          ? "This accessory has usage history and cannot be deleted. Archive it instead."
+          : undefined,
     },
     () => navigation.goBack()
   );

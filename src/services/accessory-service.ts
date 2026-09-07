@@ -181,7 +181,7 @@ const deleteAccessory = async (id: string): Promise<void> => {
     const hasUsage = visits.some((v) =>
       (v.accessoryUsage ?? []).some((u) => u.accessoryId === id)
     );
-    if (hasUsage || accessory.mountHistory.length > 0) {
+    if (hasUsage) {
       throw new Error("ACCESSORY_HAS_HISTORY");
     }
 

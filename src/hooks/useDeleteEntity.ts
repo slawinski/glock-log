@@ -18,6 +18,11 @@ export type UseDeleteEntityOptions = {
   errorContext: string;
   /** User-facing message shown when deletion fails. */
   errorUserMessage: string;
+  /**
+   * Optionally map a thrown error to a specific user-facing message. When it
+   * returns `undefined`, {@link errorUserMessage} is used instead.
+   */
+  resolveErrorMessage?: (error: unknown) => string | undefined;
 };
 
 /**
@@ -38,6 +43,7 @@ export const useDeleteEntity = (
     confirmMessage,
     errorContext,
     errorUserMessage,
+    resolveErrorMessage,
   } = options;
 
   const confirmDelete = useCallback(() => {
@@ -60,7 +66,7 @@ export const useDeleteEntity = (
             } catch (error) {
               handleError(error, errorContext, {
                 isUserFacing: true,
-                userMessage: errorUserMessage,
+                userMessage: resolveErrorMessage?.(error) ?? errorUserMessage,
               });
             }
           },
@@ -75,6 +81,7 @@ export const useDeleteEntity = (
     confirmMessage,
     errorContext,
     errorUserMessage,
+    resolveErrorMessage,
   ]);
 
   return { confirmDelete };

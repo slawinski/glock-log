@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   LayoutChangeEvent,
+  Pressable,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -13,8 +14,6 @@ import { RootStackParamList } from "../../app/App";
 import { storage } from "../../services/storage-new";
 import { useEntityForm, useImagePicker, useUnsavedChanges } from "../../hooks";
 import {
-  ChoiceGroup,
-  ChoiceOption,
   ImageGallery,
   SectionHeading,
   StickyActionBar,
@@ -43,9 +42,7 @@ const FIELD_ORDER = [
   "notes",
 ] as const;
 
-const FIREARM_TYPE_OPTIONS: ChoiceOption<FirearmType>[] = (
-  Object.keys(FIREARM_TYPE_LABELS) as FirearmType[]
-).map((value) => ({ value, label: FIREARM_TYPE_LABELS[value] }));
+const FIREARM_TYPES = Object.keys(FIREARM_TYPE_LABELS) as FirearmType[];
 
 export const AddFirearm = () => {
   const navigation = useNavigation<AddFirearmScreenNavigationProp>();
@@ -198,14 +195,32 @@ export const AddFirearm = () => {
           <Controller
             control={control}
             name="firearmType"
-            render={({ field: { onChange, value } }) => (
-              <ChoiceGroup
-                options={FIREARM_TYPE_OPTIONS}
-                value={value}
-                onChange={onChange}
-                accessibilityLabel="Firearm type"
-                testIDPrefix="firearm-type-"
-              />
+            render={({ field: { value, onChange } }) => (
+              <View className="flex-row flex-wrap">
+                {FIREARM_TYPES.map((type) => (
+                  <Pressable
+                    key={type}
+                    onPress={() => onChange(type)}
+                    className={`border px-2 py-1 mr-2 mb-2 ${
+                      value === type
+                        ? "bg-terminal-green border-terminal-green"
+                        : "border-terminal-border"
+                    }`}
+                    accessibilityRole="button"
+                    accessibilityLabel={FIREARM_TYPE_LABELS[type]}
+                    accessibilityState={{ selected: value === type }}
+                    testID={`firearm-type-option-${type}`}
+                  >
+                    <TerminalText
+                      className={`text-sm ${
+                        value === type ? "text-terminal-bg" : ""
+                      }`}
+                    >
+                      {FIREARM_TYPE_LABELS[type]}
+                    </TerminalText>
+                  </Pressable>
+                ))}
+              </View>
             )}
           />
 
