@@ -44,6 +44,7 @@ const validFirearmInput = (
   datePurchased: now,
   amountPaid: 550,
   ownership: "mine",
+  firearmType: "pistol",
   ...overrides,
 });
 
@@ -117,7 +118,7 @@ describe("storage service", () => {
       expect(saved.roundsFired).toBe(120);
     });
 
-    it("saves real photo uris via image storage and keeps placeholders", async () => {
+    it("saves real photo uris via image storage and drops placeholders", async () => {
       await storage.saveFirearm(
         validFirearmInput({
           photos: ["file://one.jpg", "placeholder:abc", "file://two.jpg"],
@@ -136,16 +137,14 @@ describe("storage service", () => {
         "firearm",
         saved.id
       );
-      // Real images are stored first, placeholders are appended after them.
+      // Generated placeholder entries never reach storage.
       expect(saved.photos).toEqual([
         "/mock/images/one.jpg",
         "/mock/images/two.jpg",
-        "placeholder:abc",
       ]);
       expect(storeImagePaths).toHaveBeenCalledWith("firearm", saved.id, [
         "/mock/images/one.jpg",
         "/mock/images/two.jpg",
-        "placeholder:abc",
       ]);
     });
 
@@ -213,9 +212,9 @@ describe("storage service", () => {
       // NOTE: peeks at the raw storage key; adjust alongside storage layout changes.
       memoryStorage.map.set("@storage:firearms", "not-json");
 
-      // The async validation rejection is not re-wrapped by the get* catch block,
-      // so the raw "Data validation failed" message propagates.
-      await expect(storage.getFirearms()).rejects.toThrow("Data validation failed");
+      await expect(storage.getFirearms()).rejects.toThrow(
+        "Please check your input and try again."
+      );
     });
   });
 

@@ -1,10 +1,9 @@
 import React from "react";
 import { View } from "react-native";
 import { Image } from "expo-image";
-import {
-  resolveImageSource,
-  DEFAULT_FIREARM_PLACEHOLDER_KEY,
-} from "../../services/image-source-manager";
+import { resolveImageSource } from "../../services/image-source-manager";
+import { FirearmArtwork } from "../../features/firearm-visuals";
+import { AccessoryStorage, FirearmType } from "../../validation/storageSchemas";
 
 interface FirearmImageProps {
   size?: number;
@@ -12,6 +11,8 @@ interface FirearmImageProps {
   className?: string;
   photoUri?: string;
   testID?: string;
+  firearmType?: FirearmType;
+  mountedAccessories?: AccessoryStorage[];
 }
 
 export const FirearmImage = ({
@@ -20,10 +21,29 @@ export const FirearmImage = ({
   className = "",
   photoUri,
   testID,
+  firearmType,
+  mountedAccessories = [],
 }: FirearmImageProps) => {
-  const imageSource = photoUri
-    ? resolveImageSource(photoUri)
-    : resolveImageSource(`placeholder:${DEFAULT_FIREARM_PLACEHOLDER_KEY}`);
+  // No user cover photo → derived loadout artwork (firearm types only). Real
+  // photos (firearm or ammunition) keep the original photo rendering path.
+  if (!photoUri) {
+    return (
+      <View
+        className={`justify-center items-center ${className}`}
+        style={{ width: size, height: size }}
+        testID={testID}
+      >
+        <FirearmArtwork
+          firearmType={firearmType ?? "other"}
+          mountedAccessories={mountedAccessories}
+          size={size * 0.9}
+          testID={testID ? `${testID}-artwork` : undefined}
+        />
+      </View>
+    );
+  }
+
+  const imageSource = resolveImageSource(photoUri);
 
   if (fill) {
     return (

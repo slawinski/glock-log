@@ -1,5 +1,6 @@
 import {
   AccessoryCategory,
+  FirearmType,
   CleaningType,
   PartBaselineType,
   PartReplacementReason,
@@ -20,6 +21,16 @@ export const ACCESSORY_CATEGORY_LABELS: Record<AccessoryCategory, string> = {
   stock_brace: "Stock / brace",
   sling: "Sling",
   mount_adapter: "Mount / adapter",
+  other: "Other",
+};
+
+export const FIREARM_TYPE_LABELS: Record<FirearmType, string> = {
+  pistol: "Pistol",
+  revolver: "Revolver",
+  pcc: "PCC",
+  rifle: "Rifle",
+  bolt_action_rifle: "Bolt-action rifle",
+  shotgun: "Shotgun",
   other: "Other",
 };
 

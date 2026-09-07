@@ -1,40 +1,42 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react-native";
 import { PlaceholderImagePicker } from "./PlaceholderImagePicker";
-import { placeholderImages } from "../../services/image-source-manager";
+import { ammunitionPlaceholderImages } from "../../services/image-source-manager";
 
 describe("PlaceholderImagePicker", () => {
   it("renders all placeholder image options", () => {
     render(
-      <PlaceholderImagePicker images={placeholderImages} onSelect={() => {}} />
+      <PlaceholderImagePicker
+        images={ammunitionPlaceholderImages}
+        onSelect={() => {}}
+      />
     );
-    // There are 5 firearm placeholder images.
-    expect(screen.getAllByTestId(/placeholder-image-option-/).length).toBe(5);
+    // There are 6 ammunition placeholder images.
+    expect(screen.getAllByTestId(/placeholder-image-option-/).length).toBe(6);
   });
 
   it("calls onSelect with the correct image key when an option is pressed", () => {
     const mockOnSelect = jest.fn();
     render(
-      <PlaceholderImagePicker images={placeholderImages} onSelect={mockOnSelect} />
+      <PlaceholderImagePicker
+        images={ammunitionPlaceholderImages}
+        onSelect={mockOnSelect}
+      />
     );
-    const carbineOption = screen.getByTestId(
-      "placeholder-image-carbine-placeholder.png"
-    );
-    fireEvent.press(carbineOption);
-    expect(mockOnSelect).toHaveBeenCalledWith("carbine-placeholder.png");
+    const option = screen.getByTestId("placeholder-image-22-placeholder.png");
+    fireEvent.press(option);
+    expect(mockOnSelect).toHaveBeenCalledWith("22-placeholder.png");
   });
 
   it("highlights the selected image", () => {
     render(
       <PlaceholderImagePicker
-        images={placeholderImages}
+        images={ammunitionPlaceholderImages}
         onSelect={() => {}}
-        selectedImageKey="pistol-placeholder.png"
+        selectedImageKey="22-placeholder.png"
       />
     );
-    const pistolOption = screen.getByTestId(
-      "placeholder-image-pistol-placeholder.png"
-    );
-    expect(pistolOption).toBeTruthy();
+    const option = screen.getByTestId("placeholder-image-22-placeholder.png");
+    expect(option).toBeTruthy();
   });
 });

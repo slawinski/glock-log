@@ -12,6 +12,7 @@ describe("Firearm Input Schema", () => {
       datePurchased: new Date().toISOString(),
       amountPaid: "599.99",
       initialRoundsFired: "500",
+      firearmType: "pistol",
       photos: ["photo1.jpg", "photo2.jpg"],
       notes: "My first Glock",
     };
@@ -31,6 +32,7 @@ describe("Firearm Input Schema", () => {
       datePurchased: new Date().toISOString(),
       amountPaid: "",
       initialRoundsFired: "",
+      firearmType: "pistol",
     });
     expect(result.success).toBe(true);
     if (result.success) {

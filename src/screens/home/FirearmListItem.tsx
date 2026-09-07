@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { View, Pressable, LayoutChangeEvent } from "react-native";
-import { FirearmStorage } from "../../validation/storageSchemas";
+import { AccessoryStorage, FirearmStorage } from "../../validation/storageSchemas";
 import { TerminalText, FirearmImage } from "../../components";
 import { formatDate } from "../../utils";
 
 type Props = {
   firearm: FirearmStorage;
+  mountedAccessories: AccessoryStorage[];
   onPress: (firearmId: string) => void;
   showBorrowedBadge?: boolean;
   needsAttention?: boolean;
@@ -13,14 +14,16 @@ type Props = {
 
 export const FirearmListItem = ({
   firearm,
+  mountedAccessories,
   onPress,
   showBorrowedBadge = false,
   needsAttention = false,
 }: Props) => {
   const photoUri = firearm.photos?.[0];
   const isBorrowed = firearm.ownership === "borrowed";
-  // The photo fills the card's vertical space, so its square size follows the
-  // text column's rendered height (which grows when the name wraps to 2 lines).
+  // The photo/artwork fills the card's vertical space, so its square size
+  // follows the text column's rendered height (which grows when the name
+  // wraps to 2 lines).
   const [imageSize, setImageSize] = useState(80);
 
   const handleTextLayout = (event: LayoutChangeEvent) => {
@@ -51,19 +54,15 @@ export const FirearmListItem = ({
           <TerminalText className="text-sm text-terminal-bg">!</TerminalText>
         </View>
       )}
-      <View
-        className={`flex-row ${
-          photoUri ? "min-h-[80px]" : "min-h-[72px]"
-        }`}
-      >
-        {photoUri && (
-          <FirearmImage
-            photoUri={photoUri}
-            size={imageSize}
-            fill
-            className="mr-3 rounded-lg"
-          />
-        )}
+      <View className="flex-row min-h-[80px]">
+        <FirearmImage
+          photoUri={photoUri}
+          firearmType={firearm.firearmType ?? "other"}
+          mountedAccessories={mountedAccessories}
+          size={imageSize}
+          fill
+          className="mr-3 rounded-lg"
+        />
         <View className="flex-1" onLayout={handleTextLayout}>
           <View className="flex-row items-center justify-between">
             <TerminalText className="text-lg flex-1" numberOfLines={1}>

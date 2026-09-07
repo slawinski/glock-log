@@ -14,13 +14,14 @@ import { RootStackParamList } from "../../app/App";
 import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import { useEntityForm, useImagePicker, useUnsavedChanges } from "../../hooks";
-import { normalizeImagePath, placeholderImages } from "../../services/image-source-manager";
+import { normalizeImagePath } from "../../services/image-source-manager";
 
 import {
+  ChoiceGroup,
+  ChoiceOption,
   ErrorDisplay,
   ImageGallery,
   LoadingScreen,
-  PlaceholderImagePicker,
   SectionHeading,
   StickyActionBar,
   TerminalButton,
@@ -29,7 +30,10 @@ import {
   TerminalText,
   ToggleButton,
 } from "../../components";
+import { FirearmArtwork } from "../../features/firearm-visuals";
 import { firearmInputSchema, FirearmFormData, FirearmInput } from "../../validation/inputSchemas";
+import { FirearmType } from "../../validation/storageSchemas";
+import { FIREARM_TYPE_LABELS } from "../../utils";
 
 type EditFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -44,6 +48,10 @@ const FIELD_ORDER = [
   "datePurchased",
   "notes",
 ] as const;
+
+const FIREARM_TYPE_OPTIONS: ChoiceOption<FirearmType>[] = (
+  Object.keys(FIREARM_TYPE_LABELS) as FirearmType[]
+).map((value) => ({ value, label: FIREARM_TYPE_LABELS[value] }));
 
 export const EditFirearm = () => {
   const navigation = useNavigation<EditFirearmScreenNavigationProp>();
@@ -83,6 +91,7 @@ export const EditFirearm = () => {
         amountPaid: "",
         initialRoundsFired: "",
         ownership: "mine",
+        firearmType: "pistol",
         notes: "",
       },
       entityName: "update firearm",
@@ -96,6 +105,7 @@ export const EditFirearm = () => {
   } = form;
 
   const ownership = useWatch({ control, name: "ownership" });
+  const firearmType = useWatch({ control, name: "firearmType" });
 
   const dirtyRef = useRef(false);
   const photosChanged =
@@ -132,6 +142,7 @@ export const EditFirearm = () => {
           datePurchased: firearm.datePurchased,
           amountPaid: String(firearm.amountPaid),
           ownership: firearm.ownership ?? "mine",
+          firearmType: firearm.firearmType ?? "other",
           notes: firearm.notes ?? "",
         });
         const loadedPhotos = (firearm.photos || []).map(normalizeImagePath);
@@ -160,10 +171,6 @@ export const EditFirearm = () => {
     if (assets.length > 0 && assets[0].uri) {
       setPhotos((prev) => [...prev, assets[0].uri!]);
     }
-  };
-
-  const handlePlaceholderSelect = (imageName: string) => {
-    setPhotos((prev) => [...prev, `placeholder:${imageName}`]);
   };
 
   const handleDeletePhoto = (index: number) => {
@@ -255,6 +262,29 @@ export const EditFirearm = () => {
               </TerminalText>
             )}
           </View>
+
+          <SectionHeading title="FIREARM TYPE" className="mt-7" />
+          <View className="mb-4 items-center">
+            <FirearmArtwork
+              firearmType={firearmType}
+              mountedAccessories={[]}
+              size={160}
+              testID="firearm-type-preview"
+            />
+          </View>
+          <Controller
+            control={control}
+            name="firearmType"
+            render={({ field: { onChange, value } }) => (
+              <ChoiceGroup
+                options={FIREARM_TYPE_OPTIONS}
+                value={value}
+                onChange={onChange}
+                accessibilityLabel="Firearm type"
+                testIDPrefix="firearm-type-"
+              />
+            )}
+          />
 
           <SectionHeading title="OWNERSHIP" className="mt-7" />
           <View className="mb-4">
@@ -348,12 +378,6 @@ export const EditFirearm = () => {
                 allowThumbnailSelection={true}
               />
             )}
-            <View className="mt-4">
-              <PlaceholderImagePicker
-                images={placeholderImages}
-                onSelect={handlePlaceholderSelect}
-              />
-            </View>
           </View>
 
           <SectionHeading title="NOTES" className="mt-7" />

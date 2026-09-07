@@ -255,7 +255,7 @@ describe("FirearmsTab", () => {
     expect(dateElements.length).toBeGreaterThan(0);
   });
 
-  it("displays firearm image only when a photo exists", () => {
+  it("renders an image (photo or loadout artwork) for every firearm", () => {
     const { getAllByTestId } = renderWithNavigation(
       <FirearmsTab
         firearms={mockFirearms}
@@ -265,7 +265,7 @@ describe("FirearmsTab", () => {
     );
 
     const images = getAllByTestId("firearm-image");
-    expect(images).toHaveLength(1);
+    expect(images).toHaveLength(2);
   });
 
   it("handles firearm item press", () => {
@@ -318,7 +318,7 @@ describe("FirearmsTab", () => {
     expect(mockOnRefresh).toBeDefined();
   });
 
-  it("handles firearm without photos", () => {
+  it("shows loadout artwork for a firearm without photos", () => {
     const firearmWithoutPhotos = {
       id: "3",
       modelName: "Beretta 92FS",
@@ -339,7 +339,7 @@ describe("FirearmsTab", () => {
     );
 
     expect(getByText("Beretta 92FS")).toBeTruthy();
-    expect(queryByTestId("firearm-image")).toBeNull();
+    expect(queryByTestId("firearm-image")).toBeTruthy();
   });
 
   it("truncates long model names", () => {

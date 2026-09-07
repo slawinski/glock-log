@@ -61,7 +61,7 @@ describe("image-source-manager", () => {
     it("handles placeholder identifiers correctly", () => {
       // Note: We can't easily test actual require() values here, 
       // but we can test that it doesn't return a {uri} object for valid placeholders
-      const result = resolveImageSource("placeholder:pistol-placeholder.png");
+      const result = resolveImageSource("placeholder:22-placeholder.png");
       expect(result).not.toEqual({ uri: expect.any(String) });
     });
   });

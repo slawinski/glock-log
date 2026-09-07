@@ -196,6 +196,7 @@ export const AddRangeVisit = () => {
         modelName,
         caliber,
         ownership: "borrowed",
+        firearmType: "other",
         datePurchased: new Date().toISOString(),
         amountPaid: 0,
       });

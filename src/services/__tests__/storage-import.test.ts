@@ -42,6 +42,7 @@ const validFirearmInput = (
   datePurchased: now,
   amountPaid: 550,
   ownership: "mine",
+  firearmType: "pistol",
   ...overrides,
 });
 

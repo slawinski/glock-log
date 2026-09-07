@@ -21,7 +21,6 @@ import {
 } from "./storage-helpers";
 import { firearmService } from "./firearm-service";
 import { rangeVisitService } from "./range-visit-service";
-import { effectivePlaceholderKey, basePlaceholderKeyFor } from "./firearm-placeholder";
 import {
   saveImageToFileSystem,
   storeImagePaths,
@@ -39,56 +38,6 @@ export const getCurrentMount = (
   accessory: AccessoryStorage
 ): AccessoryMountSession | null =>
   accessory.mountHistory.find((m) => m.unmountedAt === undefined) ?? null;
-
-const isVariantKey = (key: string): boolean =>
-  basePlaceholderKeyFor(key) !== key;
-
-/**
- * Re-syncs a firearm's placeholder thumbnail against the accessory categories
- * currently mounted on it (e.g. swaps a pistol placeholder for the red-dot
- * variant while a red dot is mounted, and back when it is removed).
- *
- * Best-effort: a placeholder-sync failure never fails the mount operation that
- * triggered it.
- */
-const syncFirearmPlaceholder = async (firearmId: string): Promise<void> => {
-  try {
-    const accessories = await getAccessories();
-    const mountedCategories = Array.from(
-      new Set(
-        accessories
-          .filter(
-            (a) => a.status === "active" && getCurrentMount(a)?.firearmId === firearmId
-          )
-          .map((a) => a.category)
-      )
-    );
-
-    const firearms = await firearmService.getFirearms();
-    const firearm = firearms.find((f) => f.id === firearmId);
-    if (!firearm) return;
-
-    const current = firearm.photos?.[0];
-    const effective = effectivePlaceholderKey(current, mountedCategories);
-    if (effective === null) return;
-
-    const target = `placeholder:${effective}`;
-    if (current === target) return;
-    // Don't materialize a plain base placeholder onto a photo-less firearm
-    // unless we're actually applying a variant.
-    if (!isVariantKey(effective) && current === undefined) return;
-
-    const photos = firearm.photos ? [...firearm.photos] : [];
-    if (photos.length === 0) {
-      photos.push(target);
-    } else {
-      photos[0] = target;
-    }
-    await firearmService.setFirearmPhotos(firearmId, photos);
-  } catch (error) {
-    handleError(error, "AccessoryService.syncFirearmPlaceholder", { userMessage: "Failed to sync firearm placeholder." });
-  }
-};
 
 const getAccessories = async (): Promise<AccessoryStorage[]> => {
   try {
@@ -189,7 +138,6 @@ const archiveAccessory = async (id: string): Promise<void> => {
     const accessory = await getAccessory(id);
     if (!accessory) throw new Error("Accessory not found");
     const now = new Date().toISOString();
-    const activeFirearmId = getCurrentMount(accessory)?.firearmId;
     const mountHistory = accessory.mountHistory.map((m) =>
       m.unmountedAt === undefined
         ? { ...m, unmountedAt: now, reasonEnded: "accessory_archived" as const }
@@ -201,7 +149,6 @@ const archiveAccessory = async (id: string): Promise<void> => {
       mountHistory,
       updatedAt: now,
     });
-    if (activeFirearmId) await syncFirearmPlaceholder(activeFirearmId);
   } catch (error) {
     handleError(error, "AccessoryService.archiveAccessory", { userMessage: "Failed to archive accessory." });
     throw error;
@@ -279,7 +226,6 @@ const mountAccessory = async (
       mountHistory: [...accessory.mountHistory, session],
       updatedAt: now,
     });
-    await syncFirearmPlaceholder(firearmId);
   } catch (error) {
     if (error instanceof Error && error.message === "ACCESSORY_ALREADY_MOUNTED") {
       throw error;
@@ -298,7 +244,6 @@ const unmountAccessory = async (
     if (!accessory) throw new Error("Accessory not found");
     const active = getCurrentMount(accessory);
     if (!active) return;
-    const firearmId = active.firearmId;
     const mountHistory = accessory.mountHistory.map((m) =>
       m.id === active.id
         ? { ...m, unmountedAt, reasonEnded: "unmounted" as const }
@@ -309,7 +254,6 @@ const unmountAccessory = async (
       mountHistory,
       updatedAt: new Date().toISOString(),
     });
-    await syncFirearmPlaceholder(firearmId);
   } catch (error) {
     handleError(error, "AccessoryService.unmountAccessory", { userMessage: "Failed to unmount accessory." });
     throw error;
@@ -325,7 +269,6 @@ const moveAccessory = async (
     const accessory = await getAccessory(accessoryId);
     if (!accessory) throw new Error("Accessory not found");
     const active = getCurrentMount(accessory);
-    const sourceFirearmId = active?.firearmId;
     const now = new Date().toISOString();
     const mountHistory = active
       ? accessory.mountHistory.map((m) =>
@@ -349,8 +292,6 @@ const moveAccessory = async (
       mountHistory: [...mountHistory, session],
       updatedAt: now,
     });
-    if (sourceFirearmId) await syncFirearmPlaceholder(sourceFirearmId);
-    await syncFirearmPlaceholder(newFirearmId);
   } catch (error) {
     handleError(error, "AccessoryService.moveAccessory", { userMessage: "Failed to move accessory." });
     throw error;

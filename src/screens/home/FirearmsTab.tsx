@@ -1,14 +1,16 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { View, FlatList, ListRenderItemInfo } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { FirearmStorage } from "../../validation/storageSchemas";
+import { AccessoryStorage, FirearmStorage } from "../../validation/storageSchemas";
 import { AttentionLevel } from "../../services/maintenance-attention";
+import { deriveCurrentMounts } from "../../features/firearm-visuals";
 import { EmptyState, TerminalTabs } from "../../components";
 import { FirearmListItem } from "./FirearmListItem";
 import { HomeScreenNavigationProp } from "../../types/navigation";
 
 type Props = {
   firearms: FirearmStorage[];
+  accessories?: AccessoryStorage[];
   attention?: Record<string, AttentionLevel>;
   onRefresh: () => void;
   refreshing: boolean;
@@ -24,12 +26,18 @@ const FILTER_OPTIONS: { id: FirearmFilter; title: string }[] = [
 
 export const FirearmsTab = ({
   firearms,
+  accessories = [],
   attention = {},
   onRefresh,
   refreshing,
 }: Props) => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [filter, setFilter] = useState<FirearmFilter>("mine");
+
+  const mountedByFirearm = useMemo(
+    () => deriveCurrentMounts(accessories),
+    [accessories]
+  );
 
   const borrowedCount = useMemo(
     () => firearms.filter((item) => item.ownership === "borrowed").length,
@@ -64,12 +72,13 @@ export const FirearmsTab = ({
     ({ item }: ListRenderItemInfo<FirearmStorage>) => (
       <FirearmListItem
         firearm={item}
+        mountedAccessories={mountedByFirearm.get(item.id) ?? []}
         onPress={handleFirearmPress}
         showBorrowedBadge={showBorrowedBadge}
         needsAttention={!!attention[item.id]}
       />
     ),
-    [handleFirearmPress, showBorrowedBadge, attention]
+    [handleFirearmPress, showBorrowedBadge, attention, mountedByFirearm]
   );
 
   const renderEmptyState = useCallback(() => {

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   firearmOwnershipSchema,
+  firearmTypeSchema,
   accessoryCategorySchema,
   accessoryUsageSchema,
   cleaningTypeSchema,
@@ -46,6 +47,7 @@ export const firearmInputSchema = z.object({
   // Kept as a string while editing; an empty value is treated as 0 on save.
   amountPaid: numericString(0, "Enter a valid amount."),
   ownership: firearmOwnershipSchema.default("mine"),
+  firearmType: firearmTypeSchema,
   // Kept as a string while editing; an empty value is treated as 0 on save.
   initialRoundsFired: numericString(0, "Enter a valid number.").optional(),
   photos: z.array(z.string()).optional(),

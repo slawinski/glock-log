@@ -19,6 +19,11 @@ import {
   removeEntityAndIndex,
   CollectionConfig,
 } from "./storage-helpers";
+import {
+  inferLegacyFirearmType,
+  isPlaceholderPhoto,
+  stripPlaceholderPhotos,
+} from "../features/firearm-visuals/legacy";
 
 const firearmConfig: CollectionConfig<FirearmStorage> = {
   entityKey: firearmKey,
@@ -42,25 +47,19 @@ const saveFirearm = async (firearm: FirearmInput): Promise<string> => {
     let savedImagePaths: string[] = [];
     if (firearm.photos && firearm.photos.length > 0) {
       const imageUrisToSave = firearm.photos.filter(
-        (p) => !p.startsWith("placeholder:")
-      );
-      const placeholderPhotos = firearm.photos.filter((p) =>
-        p.startsWith("placeholder:")
+        (p) => !isPlaceholderPhoto(p)
       );
 
       if (imageUrisToSave.length > 0) {
-        const newImagePaths = await Promise.all(
+        savedImagePaths = await Promise.all(
           imageUrisToSave.map(async (imageUri) => {
             return await saveImageToFileSystem(imageUri, "firearm", firearmId);
           })
         );
-        savedImagePaths = [...newImagePaths, ...placeholderPhotos];
-      } else {
-        savedImagePaths = placeholderPhotos;
-      }
 
-      // Store image paths in MMKV
-      storeImagePaths("firearm", firearmId, savedImagePaths);
+        // Store image paths in MMKV
+        storeImagePaths("firearm", firearmId, savedImagePaths);
+      }
     }
 
     const { initialRoundsFired, ...restOfFirearm } = firearm;
@@ -98,11 +97,50 @@ const saveFirearm = async (firearm: FirearmInput): Promise<string> => {
 
 const getFirearms = async (): Promise<FirearmStorage[]> => {
   try {
-    return readEntityCollection(firearmConfig);
+    const firearms = await readEntityCollection(firearmConfig);
+    return migrateLegacyFirearmVisualState(firearms);
   } catch (error) {
     const appError = handleStorageError(error, "load firearms");
     throw new Error(appError.userMessage);
   }
+};
+
+/**
+ * One-time migration from the pre-visual-loadout schema: infers a firearm type
+ * from legacy placeholder photo entries (falling back to "other") and removes
+ * every generated placeholder entry from `photos`, leaving only real user
+ * images. Idempotent — records that are already migrated pass through without
+ * a write.
+ */
+const migrateLegacyFirearmVisualState = async (
+  firearms: FirearmStorage[]
+): Promise<FirearmStorage[]> => {
+  return Promise.all(
+    firearms.map(async (firearm) => {
+      const photos = firearm.photos ?? [];
+      const hasPlaceholders = photos.some(isPlaceholderPhoto);
+      const needsType = firearm.firearmType === undefined;
+
+      if (!hasPlaceholders && !needsType) return firearm;
+
+      const firearmType =
+        firearm.firearmType ?? inferLegacyFirearmType(photos) ?? "other";
+      const cleanedPhotos = stripPlaceholderPhotos(photos);
+      const changed =
+        firearmType !== firearm.firearmType ||
+        cleanedPhotos.length !== photos.length;
+
+      if (!changed) return firearm;
+
+      const migrated: FirearmStorage = {
+        ...firearm,
+        firearmType,
+        photos: cleanedPhotos,
+      };
+      await writeEntity(firearmConfig, migrated);
+      return migrated;
+    })
+  );
 };
 
 const deleteFirearm = async (id: string): Promise<void> => {
@@ -155,36 +193,10 @@ const getFirearmImages = async (firearmId: string): Promise<string[]> => {
   }
 };
 
-/**
- * Replaces a firearm's photo list in place (used by placeholder-sync logic to
- * swap the thumbnail when an accessory is mounted/unmounted). Does not touch
- * any other firearm field.
- */
-const setFirearmPhotos = async (
-  firearmId: string,
-  photos: string[]
-): Promise<void> => {
-  try {
-    const firearms = await getFirearms();
-    const firearm = firearms.find((f) => f.id === firearmId);
-    if (!firearm) return;
-
-    await writeEntity(firearmConfig, {
-      ...firearm,
-      photos,
-      updatedAt: new Date().toISOString(),
-    });
-  } catch (error) {
-    handleError(error, "Storage.setFirearmPhotos", { userMessage: "Failed to update firearm photos." });
-    throw error;
-  }
-};
-
 export const firearmService = {
   saveFirearm,
   getFirearms,
   deleteFirearm,
   updateFirearmRoundsFired,
   getFirearmImages,
-  setFirearmPhotos,
 };

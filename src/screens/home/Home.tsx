@@ -201,6 +201,7 @@ export const Home = () => {
         return (
           <FirearmsTab
             firearms={firearms}
+            accessories={accessories}
             attention={attention}
             onRefresh={onRefresh}
             refreshing={false}

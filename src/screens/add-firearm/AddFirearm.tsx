@@ -13,8 +13,9 @@ import { RootStackParamList } from "../../app/App";
 import { storage } from "../../services/storage-new";
 import { useEntityForm, useImagePicker, useUnsavedChanges } from "../../hooks";
 import {
+  ChoiceGroup,
+  ChoiceOption,
   ImageGallery,
-  PlaceholderImagePicker,
   SectionHeading,
   StickyActionBar,
   TerminalButton,
@@ -23,8 +24,10 @@ import {
   TerminalText,
   ToggleButton,
 } from "../../components";
-import { placeholderImages } from "../../services/image-source-manager";
+import { FirearmArtwork } from "../../features/firearm-visuals";
 import { firearmInputSchema, FirearmFormData, FirearmInput } from "../../validation/inputSchemas";
+import { FirearmType } from "../../validation/storageSchemas";
+import { FIREARM_TYPE_LABELS } from "../../utils";
 
 type AddFirearmScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -39,6 +42,10 @@ const FIELD_ORDER = [
   "datePurchased",
   "notes",
 ] as const;
+
+const FIREARM_TYPE_OPTIONS: ChoiceOption<FirearmType>[] = (
+  Object.keys(FIREARM_TYPE_LABELS) as FirearmType[]
+).map((value) => ({ value, label: FIREARM_TYPE_LABELS[value] }));
 
 export const AddFirearm = () => {
   const navigation = useNavigation<AddFirearmScreenNavigationProp>();
@@ -65,6 +72,7 @@ export const AddFirearm = () => {
         amountPaid: "",
         initialRoundsFired: "",
         ownership: "mine",
+        firearmType: "pistol",
         notes: "",
       },
       entityName: "create firearm",
@@ -77,6 +85,7 @@ export const AddFirearm = () => {
   } = form;
 
   const ownership = useWatch({ control, name: "ownership" });
+  const firearmType = useWatch({ control, name: "firearmType" });
 
   const dirtyRef = useRef(false);
   const localDirty = photos.length > 0;
@@ -106,10 +115,6 @@ export const AddFirearm = () => {
         .filter(Boolean);
       setPhotos((prev) => [...prev, ...newImageUris]);
     }
-  };
-
-  const handlePlaceholderSelect = (imageName: string) => {
-    setPhotos([`placeholder:${imageName}`]);
   };
 
   const handleDeleteImage = (index: number) => {
@@ -180,6 +185,29 @@ export const AddFirearm = () => {
               </TerminalText>
             )}
           </View>
+
+          <SectionHeading title="FIREARM TYPE" className="mt-7" />
+          <View className="mb-4 items-center">
+            <FirearmArtwork
+              firearmType={firearmType}
+              mountedAccessories={[]}
+              size={160}
+              testID="firearm-type-preview"
+            />
+          </View>
+          <Controller
+            control={control}
+            name="firearmType"
+            render={({ field: { onChange, value } }) => (
+              <ChoiceGroup
+                options={FIREARM_TYPE_OPTIONS}
+                value={value}
+                onChange={onChange}
+                accessibilityLabel="Firearm type"
+                testIDPrefix="firearm-type-"
+              />
+            )}
+          />
 
           <SectionHeading title="OWNERSHIP" className="mt-7" />
           <View className="mb-4">
@@ -297,15 +325,6 @@ export const AddFirearm = () => {
                   onDeleteImage={handleDeleteImage}
                   size="medium"
                   showDeleteButton={true}
-                />
-              </View>
-            )}
-
-            {photos.length === 0 && (
-              <View className="w-full mb-4">
-                <PlaceholderImagePicker
-                  images={placeholderImages}
-                  onSelect={handlePlaceholderSelect}
                 />
               </View>
             )}

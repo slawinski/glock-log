@@ -12,6 +12,7 @@ import { handleError } from "../../services/error-handler";
 import { storage } from "../../services/storage-new";
 import { calculateCleaningStatus } from "../../services/cleaning-calculation";
 import { getCurrentMount } from "../../services/accessory-service";
+import { FirearmArtwork } from "../../features/firearm-visuals";
 import {
   DetailRow,
   DetailSection,
@@ -178,12 +179,21 @@ export const FirearmDetails = () => {
             )}
           </View>
 
-          {firearm.photos && firearm.photos.length > 0 && (
+          {firearm.photos && firearm.photos.length > 0 ? (
             <View className="mb-6">
               <ImageGallery
                 images={firearm.photos}
                 size="large"
                 showDeleteButton={false}
+              />
+            </View>
+          ) : (
+            <View className="mb-6 items-center">
+              <FirearmArtwork
+                firearmType={firearm.firearmType ?? "other"}
+                mountedAccessories={mountedAccessories}
+                size={220}
+                testID="firearm-artwork"
               />
             </View>
           )}

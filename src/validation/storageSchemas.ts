@@ -7,6 +7,22 @@ import { z } from "zod";
 export const firearmOwnershipSchema = z.enum(["mine", "borrowed"]);
 export type FirearmOwnership = z.infer<typeof firearmOwnershipSchema>;
 
+/**
+ * Physical archetype of a firearm. Distinct from accessory "category": this
+ * describes what the gun itself is, and drives the generated loadout artwork
+ * (the base silhouette plus any mounted-accessory layers).
+ */
+export const firearmTypeSchema = z.enum([
+  "pistol",
+  "revolver",
+  "pcc",
+  "rifle",
+  "bolt_action_rifle",
+  "shotgun",
+  "other",
+]);
+export type FirearmType = z.infer<typeof firearmTypeSchema>;
+
 export const firearmStorageSchema = z.object({
   id: z.string(),
   modelName: z.string(),
@@ -16,6 +32,10 @@ export const firearmStorageSchema = z.object({
   // Optional for backward compatibility: records saved before the ownership
   // field existed omit it, and an absent value is treated as "mine".
   ownership: firearmOwnershipSchema.optional(),
+  // Optional for backward compatibility: records saved before the visual
+  // loadout system existed omit it. Reads normalize an absent value via
+  // legacy placeholder inference, falling back to "other".
+  firearmType: firearmTypeSchema.optional(),
   photos: z.array(z.string()).optional(),
   roundsFired: z.number(),
   notes: z.string().optional(),

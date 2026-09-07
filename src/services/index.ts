@@ -17,11 +17,9 @@ export type { AppError } from "./error-handler";
 export { StorageInit } from "./storage-init";
 
 export {
-  placeholderImages,
   normalizeImagePath,
   resolveImageSource,
 } from "./image-source-manager";
-export type { PlaceholderImageKey } from "./image-source-manager";
 
 // Derived maintenance-state calculators (pure; consumed by screens).
 export {
@@ -60,9 +58,3 @@ export type { AccessoryUsageStats } from "./accessory-service";
 
 export { computeFirearmAttention } from "./maintenance-attention";
 export type { AttentionLevel } from "./maintenance-attention";
-
-export {
-  variantPlaceholderKeyFor,
-  basePlaceholderKeyFor,
-  effectivePlaceholderKey,
-} from "./firearm-placeholder";

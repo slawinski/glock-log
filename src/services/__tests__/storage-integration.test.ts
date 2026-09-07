@@ -36,6 +36,7 @@ describe("Storage Integration with Images", () => {
       datePurchased: new Date().toISOString(),
       amountPaid: 500,
       ownership: "mine",
+      firearmType: "pistol",
       photos: ["file://mock/image1.jpg", "file://mock/image2.jpg"],
       notes: "Test firearm",
     };
