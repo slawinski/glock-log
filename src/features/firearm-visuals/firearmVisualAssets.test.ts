@@ -1,6 +1,6 @@
 import { FIREARM_VISUAL_ASSETS } from "./firearmVisualAssets";
 import { FIREARM_VISUAL_SLOTS } from "./visualSlots";
-import { FirearmVisualSlot } from "./types";
+import { FirearmVisualAssetManifest, FirearmVisualSlot } from "./types";
 import {
   accessoryCategorySchema,
   firearmTypeSchema,
@@ -49,5 +49,38 @@ describe("FIREARM_VISUAL_ASSETS manifest", () => {
     const rifle = FIREARM_VISUAL_ASSETS.rifle.layers;
     expect(rifle.red_dot?.visualSlot).toBe("primary_optic");
     expect(rifle.magnifier?.visualSlot).toBe("optic_auxiliary");
+  });
+
+  it("ships the complete layered asset pack for every firearm type", () => {
+    const layerKeys = (type: FirearmType) =>
+      Object.keys(FIREARM_VISUAL_ASSETS[type].layers).sort();
+
+    expect(layerKeys("pistol")).toEqual(
+      ["flashlight", "laser", "red_dot", "suppressor"].sort()
+    );
+    expect(layerKeys("revolver")).toEqual([]);
+    expect(layerKeys("pcc")).toEqual(
+      ["flashlight", "grip", "laser", "magnifier", "red_dot", "scope", "suppressor"].sort()
+    );
+    expect(layerKeys("rifle")).toEqual(
+      ["bipod", "flashlight", "grip", "laser", "magnifier", "red_dot", "scope", "suppressor"].sort()
+    );
+    expect(layerKeys("bolt_action_rifle")).toEqual(
+      ["bipod", "scope", "suppressor"].sort()
+    );
+    expect(layerKeys("shotgun")).toEqual(["flashlight", "red_dot"].sort());
+    expect(layerKeys("other")).toEqual([]);
+  });
+
+  it("stacks muzzle and support layers beneath optics", () => {
+    const manifest: FirearmVisualAssetManifest = FIREARM_VISUAL_ASSETS;
+    for (const type of types) {
+      const layers = manifest[type].layers;
+      const optic = layers.red_dot ?? layers.scope;
+      if (!optic) continue;
+      for (const low of [layers.suppressor, layers.bipod]) {
+        if (low) expect(low.zIndex).toBeLessThan(optic.zIndex);
+      }
+    }
   });
 });
