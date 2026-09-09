@@ -35,11 +35,19 @@ const saveAmmunition = async (ammunition: AmmunitionInput): Promise<void> => {
     if (isUpdate) {
       existingAmmunition = ammunitionList.find((a) => a.id === ammunitionId);
     }
+    const purchasedQuantity =
+      existingAmmunition?.purchasedQuantity ?? ammunition.quantity;
+
     const storageData: AmmunitionStorage = {
       ...ammunition,
       id: ammunitionId,
       createdAt: existingAmmunition?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      purchasedQuantity,
+      pricePerRound:
+        ammunition.amountPaid > 0 && purchasedQuantity > 0
+          ? ammunition.amountPaid / purchasedQuantity
+          : undefined,
     };
 
     const validatedAmmunition = validateBeforeSave(

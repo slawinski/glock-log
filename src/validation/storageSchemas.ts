@@ -49,6 +49,11 @@ export const ammunitionStorageSchema = z.object({
   brand: z.string(),
   grain: z.string(),
   quantity: z.number(),
+  // Immutable original quantity at purchase time. Unlike `quantity` (which is
+  // current inventory and decreases as rounds are consumed), this value never
+  // changes and is the denominator used to reconstruct the historical unit
+  // price. Absent for legacy records, where it is treated as `quantity`.
+  purchasedQuantity: z.number().optional(),
   datePurchased: z.string().datetime(),
   amountPaid: z.number(),
   pricePerRound: z.number().optional(),
@@ -107,6 +112,14 @@ export const rangeVisitStorageSchema = z.object({
       z.object({
         ammunitionId: z.string(),
         rounds: z.number(),
+        // Historical snapshots captured when the visit is saved. They make
+        // firing-cost statistics resilient to later ammunition edits/deletion
+        // and give a usable label for hard-deleted firearms.
+        pricePerRoundSnapshot: z.number().optional(),
+        caliberSnapshot: z.string().optional(),
+        brandSnapshot: z.string().optional(),
+        grainSnapshot: z.string().optional(),
+        firearmNameSnapshot: z.string().optional(),
       })
     )
     .optional(),

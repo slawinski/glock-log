@@ -30,6 +30,7 @@ export const STORAGE_KEYS = {
   AMMUNITION: "@storage:ammunition",
   RANGE_VISITS: "@storage:range-visits",
   SETTINGS: "@storage:settings",
+  STATS_PERIOD: "@storage:stats-period",
 } as const;
 
 export const ENTITY_KEYS = {

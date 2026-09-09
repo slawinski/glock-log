@@ -70,11 +70,7 @@ export const AddAmmunition = () => {
   }, []);
 
   const saveAmmunition = async (data: AmmunitionInput) => {
-    const pricePerRound =
-      data.amountPaid && data.quantity
-        ? data.amountPaid / data.quantity
-        : undefined;
-    await storage.saveAmmunition({ ...data, photos, pricePerRound });
+    await storage.saveAmmunition({ ...data, photos });
     form.reset(form.getValues());
     dirtyRef.current = false;
     navigation.goBack();

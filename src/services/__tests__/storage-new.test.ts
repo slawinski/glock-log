@@ -258,6 +258,63 @@ describe("storage service", () => {
     });
   });
 
+  describe("ammunition pricing history", () => {
+    it("persists purchasedQuantity equal to quantity on create", async () => {
+      await storage.saveAmmunition(validAmmunitionInput({ quantity: 100 }));
+
+      const [saved] = await storage.getAmmunition();
+      expect(saved.purchasedQuantity).toBe(100);
+    });
+
+    it("preserves purchasedQuantity on edit when quantity changes", async () => {
+      await storage.saveAmmunition(validAmmunitionInput({ quantity: 100 }));
+      const [created] = await storage.getAmmunition();
+
+      await storage.saveAmmunition(
+        validAmmunitionInput({ id: created.id, quantity: 40 })
+      );
+
+      const [updated] = await storage.getAmmunition();
+      expect(updated.quantity).toBe(40);
+      expect(updated.purchasedQuantity).toBe(100);
+    });
+
+    it("keeps pricePerRound based on purchasedQuantity after quantity decreases", async () => {
+      await storage.saveAmmunition(
+        validAmmunitionInput({ quantity: 100, amountPaid: 25 })
+      );
+      const [created] = await storage.getAmmunition();
+      expect(created.pricePerRound).toBeCloseTo(0.25);
+
+      await storage.saveAmmunition(
+        validAmmunitionInput({ id: created.id, quantity: 25, amountPaid: 25 })
+      );
+
+      const [updated] = await storage.getAmmunition();
+      expect(updated.purchasedQuantity).toBe(100);
+      expect(updated.pricePerRound).toBeCloseTo(0.25);
+    });
+
+    it("overrides a caller-supplied pricePerRound computed from current quantity", async () => {
+      await storage.saveAmmunition(
+        validAmmunitionInput({ quantity: 100, amountPaid: 25 })
+      );
+      const [created] = await storage.getAmmunition();
+
+      await storage.saveAmmunition(
+        validAmmunitionInput({
+          id: created.id,
+          quantity: 25,
+          amountPaid: 25,
+          pricePerRound: 1,
+        })
+      );
+
+      const [updated] = await storage.getAmmunition();
+      expect(updated.pricePerRound).toBeCloseTo(0.25);
+    });
+  });
+
   describe("range visits", () => {
     it("creates a range visit defaulting ammunitionUsed to {}", async () => {
       await storage.saveRangeVisit(validRangeVisitInput({ notes: "cold day" }));
@@ -309,6 +366,65 @@ describe("storage service", () => {
 
     it("returns an empty array when nothing is stored", async () => {
       expect(await storage.getRangeVisits()).toEqual([]);
+    });
+  });
+
+  describe("range visit snapshots", () => {
+    it("stores ammunition and firearm snapshots per entry", async () => {
+      await storage.saveFirearm(validFirearmInput({ modelName: "Glock 19" }));
+      await storage.saveFirearm(validFirearmInput({ modelName: "Beretta 92" }));
+      await storage.saveAmmunition(
+        validAmmunitionInput({
+          caliber: "9mm",
+          brand: "Fiocchi",
+          grain: "115gr",
+          quantity: 100,
+          amountPaid: 25,
+        })
+      );
+      await storage.saveAmmunition(
+        validAmmunitionInput({
+          caliber: ".40 S&W",
+          brand: "Winchester",
+          grain: "180gr",
+          quantity: 50,
+          amountPaid: 20,
+        })
+      );
+      const [glock, beretta] = await storage.getFirearms();
+      const [fiocchi, winchester] = await storage.getAmmunition();
+
+      await storage.saveRangeVisit(
+        validRangeVisitInput({
+          firearmsUsed: [glock.id, beretta.id],
+          ammunitionUsed: {
+            [glock.id]: { ammunitionId: fiocchi.id, rounds: 10 },
+            [beretta.id]: { ammunitionId: winchester.id, rounds: 5 },
+          },
+        })
+      );
+
+      const [visit] = await storage.getRangeVisits();
+      expect(visit.ammunitionUsed).toEqual({
+        [glock.id]: {
+          ammunitionId: fiocchi.id,
+          rounds: 10,
+          pricePerRoundSnapshot: 0.25,
+          caliberSnapshot: "9mm",
+          brandSnapshot: "Fiocchi",
+          grainSnapshot: "115gr",
+          firearmNameSnapshot: "Glock 19",
+        },
+        [beretta.id]: {
+          ammunitionId: winchester.id,
+          rounds: 5,
+          pricePerRoundSnapshot: 0.4,
+          caliberSnapshot: ".40 S&W",
+          brandSnapshot: "Winchester",
+          grainSnapshot: "180gr",
+          firearmNameSnapshot: "Beretta 92",
+        },
+      });
     });
   });
 
@@ -396,7 +512,15 @@ describe("storage service", () => {
 
       const [visit] = await storage.getRangeVisits();
       expect(visit.ammunitionUsed).toEqual({
-        [firearm.id]: { ammunitionId: ammo.id, rounds: 25 },
+        [firearm.id]: {
+          ammunitionId: ammo.id,
+          rounds: 25,
+          pricePerRoundSnapshot: 0.25,
+          caliberSnapshot: "9mm",
+          brandSnapshot: "Fiocchi",
+          grainSnapshot: "115gr",
+          firearmNameSnapshot: "Glock 19",
+        },
       });
 
       const [updatedAmmo] = await storage.getAmmunition();

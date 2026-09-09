@@ -143,7 +143,7 @@ const AppContent = () => {
               <Stack.Screen
                 name="Stats"
                 component={Stats}
-                options={{ title: "SYSTEM STATISTICS" }}
+                options={{ title: "STATISTICS" }}
               />
               <Stack.Screen
                 name="AddRangeVisit"

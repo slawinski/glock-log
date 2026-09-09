@@ -62,6 +62,27 @@ const setCrtEffectEnabled = async (enabled: boolean): Promise<void> => {
   }
 };
 
+const setStatsPeriod = async (period: string): Promise<void> => {
+  try {
+    const storage = StorageFactory.getStorage();
+    await storage.setItem(STORAGE_KEYS.STATS_PERIOD, period);
+  } catch (error) {
+    handleError(error, "Storage.setStatsPeriod", { userMessage: "Failed to update statistics period." });
+    throw error;
+  }
+};
+
+const getStatsPeriod = async (): Promise<string> => {
+  try {
+    const storage = StorageFactory.getStorage();
+    const period = await storage.getItem(STORAGE_KEYS.STATS_PERIOD);
+    return period || "6M";
+  } catch (error) {
+    handleError(error, "Storage.getStatsPeriod", { userMessage: "Failed to get statistics period." });
+    return "6M";
+  }
+};
+
 const getCurrency = async (): Promise<string> => {
   try {
     const settings = await getSettings();
@@ -109,6 +130,8 @@ export const settingsService = {
   setCurrency,
   setBiometricLockEnabled,
   setCrtEffectEnabled,
+  setStatsPeriod,
+  getStatsPeriod,
   getCurrency,
   clearAllData,
 };

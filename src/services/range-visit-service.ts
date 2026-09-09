@@ -55,9 +55,31 @@ const saveRangeVisit = async (visit: RangeVisitInput): Promise<void> => {
       storeImagePaths("range-visit", visitId, savedImagePaths);
     }
 
+    const ammunitionById = new Map(
+      (await ammunitionService.getAmmunition()).map((a) => [a.id, a])
+    );
+    const firearmsById = new Map(
+      (await firearmService.getFirearms()).map((f) => [f.id, f])
+    );
+
+    const ammunitionUsed = Object.fromEntries(
+      Object.entries(visit.ammunitionUsed || {}).map(([firearmId, entry]) => [
+        firearmId,
+        {
+          ...entry,
+          pricePerRoundSnapshot: ammunitionById.get(entry.ammunitionId)
+            ?.pricePerRound,
+          caliberSnapshot: ammunitionById.get(entry.ammunitionId)?.caliber,
+          brandSnapshot: ammunitionById.get(entry.ammunitionId)?.brand,
+          grainSnapshot: ammunitionById.get(entry.ammunitionId)?.grain,
+          firearmNameSnapshot: firearmsById.get(firearmId)?.modelName,
+        },
+      ])
+    );
+
     const storageData: RangeVisitStorage = {
       ...visit,
-      ammunitionUsed: visit.ammunitionUsed || {},
+      ammunitionUsed,
       // Preserve saved accessory usage when an edit doesn't provide it, so
       // backfilled/manual records are not wiped by an unrelated visit edit.
       accessoryUsage: visit.accessoryUsage ?? existingVisit?.accessoryUsage,
