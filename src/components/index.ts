@@ -10,6 +10,7 @@ export { BottomButtonGroup } from "./bottom-button-group/BottomButtonGroup";
 export { ChartToggles } from "./chart-toggles/ChartToggles";
 export { ToggleButton } from "./chart-toggles/ToggleButton";
 export { FirearmImage } from "./firearm-image/FirearmImage";
+export { AccessoryImage } from "./accessory-image";
 export { ImageGallery } from "./image-gallery/ImageGallery";
 export { DeleteButton } from "./image-gallery/DeleteButton";
 export { PlaceholderImagePicker } from "./placeholder-image-picker/PlaceholderImagePicker";

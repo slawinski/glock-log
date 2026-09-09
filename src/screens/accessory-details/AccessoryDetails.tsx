@@ -13,9 +13,11 @@ import { storage } from "../../services/storage-new";
 import { computeAccessoryStats, getCurrentMount } from "../../services/accessory-service";
 import { findReconciliation } from "../../services/accessory-reconciliation";
 import {
+  AccessoryImage,
   DetailRow,
   DetailSection,
   ErrorDisplay,
+  ImageGallery,
   LoadingScreen,
   MetricHero,
   TerminalButton,
@@ -143,6 +145,7 @@ export const AccessoryDetails = () => {
   }
 
   const stats = computeAccessoryStats(accessory, visits);
+  const photos = accessory.photos?.filter((photo) => photo.length > 0) ?? [];
   const mount = getCurrentMount(accessory);
   const mountedFirearm = mount
     ? firearms.find((f) => f.id === mount.firearmId)
@@ -164,6 +167,24 @@ export const AccessoryDetails = () => {
             {ACCESSORY_CATEGORY_LABELS[accessory.category].toUpperCase()}
             {accessory.status === "archived" ? " · ARCHIVED" : ""}
           </TerminalText>
+
+          {photos.length > 0 ? (
+            <View className="mb-6">
+              <ImageGallery
+                images={photos}
+                size="large"
+                showDeleteButton={false}
+              />
+            </View>
+          ) : (
+            <View className="mb-6 items-center">
+              <AccessoryImage
+                category={accessory.category}
+                size={220}
+                testID="accessory-artwork"
+              />
+            </View>
+          )}
 
           <MetricHero
             value={stats.totalExposure.toLocaleString("en-US")}
